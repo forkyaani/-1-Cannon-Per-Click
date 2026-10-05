@@ -29,24 +29,24 @@ needs a second pass doubles its job.
 - [x] A1. `tools/blender/kit.py`: move the shared kit (box, ball, tube, lathe, mat, export) out of the island script · **30 min**
 - [x] A2. Theme table for the 5 worlds: ground, rock, plant, accent and sky colours, prop kinds (craters, spires, ice, lava) · **20 min**
 - [ ] A3. `earth_island.py` becomes `island.py <world>`: same layout, look from the theme · **45 min**
-- [ ] A4. `earth_base.py` becomes `base.py <world>`: same path and pads, look from the theme · **45 min**
+- [x] A4. `earth_base.py` becomes `base.py <world>`: same path and pads, look from the theme · **45 min**
 - [x] A5. `creatures.py <world>`: one run makes a world's 5 monsters and 2 bosses as one .fbx · **1 h 00**
 - [x] A6. One Studio setup script (`tools/studio/setup_models.luau`) that turns any imported .fbx into its templates **[S]** · **30 min**
 - [x] A7. Short import guide for d1v in `place/README.md` · **10 min**
 
 ## B. Bases (the first thing every player sees)
 
-- [ ] B1. Finish the Earth base model (road, 16 pads, gate, monster portal, teleporters, backdrop) · **40 min**
+- [x] B1. Finish the Earth base model (road, 16 pads, gate, monster portal, teleporters, backdrop) · **40 min**
 - [ ] B2. `Plots.wear`: hook that puts a base model over the part-built base (keep pads, prompts, signs, walls) · **40 min**
 - [ ] B3. Colliders list for the Earth base · **10 min**
 - [ ] B4. Import and test the Earth base **[S]** · **20 min**
-- [ ] B5. Moon base: theme, render, check the photo · **20 min**
+- [x] B5. Moon base: theme, render, check the photo · **20 min**
 - [ ] B6. Moon base: import and test **[S]** · **15 min**
-- [ ] B7. Mars base: theme, render, check the photo · **20 min**
+- [x] B7. Mars base: theme, render, check the photo · **20 min**
 - [ ] B8. Mars base: import and test **[S]** · **15 min**
-- [ ] B9. Neptune base: theme, render, check the photo · **20 min**
+- [x] B9. Neptune base: theme, render, check the photo · **20 min**
 - [ ] B10. Neptune base: import and test **[S]** · **15 min**
-- [ ] B11. The Sun base: theme, render, check the photo · **20 min**
+- [x] B11. The Sun base: theme, render, check the photo · **20 min**
 - [ ] B12. The Sun base: import and test **[S]** · **15 min**
 
 ## C. Islands
