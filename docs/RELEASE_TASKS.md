@@ -31,8 +31,8 @@ needs a second pass doubles its job.
 - [ ] A3. `earth_island.py` becomes `island.py <world>`: same layout, look from the theme · **45 min**
 - [ ] A4. `earth_base.py` becomes `base.py <world>`: same path and pads, look from the theme · **45 min**
 - [ ] A5. `creatures.py <world>`: one run makes a world's 5 monsters and 2 bosses as one .fbx · **1 h 00**
-- [ ] A6. One Studio setup script (`tools/studio/setup_models.luau`) that turns any imported .fbx into its templates **[S]** · **30 min**
-- [ ] A7. Short import guide for d1v in `place/README.md` · **10 min**
+- [x] A6. One Studio setup script (`tools/studio/setup_models.luau`) that turns any imported .fbx into its templates **[S]** · **30 min**
+- [x] A7. Short import guide for d1v in `place/README.md` · **10 min**
 
 ## B. Bases (the first thing every player sees)
 
