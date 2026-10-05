@@ -12,3 +12,6 @@ out.rbxl
 __pycache__/
 *.pyc
 .claude/
+
+# The one place file that is kept: models and lighting live only in it (see place/README.md)
+!place/ProjectEgg.rbxl
