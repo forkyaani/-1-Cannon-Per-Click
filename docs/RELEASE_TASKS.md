@@ -28,7 +28,7 @@ needs a second pass doubles its job.
 
 - [x] A1. `tools/blender/kit.py`: move the shared kit (box, ball, tube, lathe, mat, export) out of the island script · **30 min**
 - [x] A2. Theme table for the 5 worlds: ground, rock, plant, accent and sky colours, prop kinds (craters, spires, ice, lava) · **20 min**
-- [ ] A3. `earth_island.py` becomes `island.py <world>`: same layout, look from the theme · **45 min**
+- [x] A3. `earth_island.py` becomes `island.py <world>`: same layout, look from the theme · **45 min**
 - [x] A4. `earth_base.py` becomes `base.py <world>`: same path and pads, look from the theme · **45 min**
 - [x] A5. `creatures.py <world>`: one run makes a world's 5 monsters and 2 bosses as one .fbx · **1 h 00**
 - [x] A6. One Studio setup script (`tools/studio/setup_models.luau`) that turns any imported .fbx into its templates **[S]** · **30 min**
@@ -52,16 +52,16 @@ needs a second pass doubles its job.
 ## C. Islands
 
 - [x] C1. Earth island (live)
-- [ ] C2. Moon island: theme, render, check the photo · **20 min**
+- [x] C2. Moon island: theme, render, check the photo · **20 min**
 - [ ] C3. Moon island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C4. Moon island: import and test **[S]** · **15 min**
-- [ ] C5. Mars island: theme, render, check the photo · **20 min**
+- [x] C5. Mars island: theme, render, check the photo · **20 min**
 - [ ] C6. Mars island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C7. Mars island: import and test **[S]** · **15 min**
-- [ ] C8. Neptune island: theme, render, check the photo · **20 min**
+- [x] C8. Neptune island: theme, render, check the photo · **20 min**
 - [ ] C9. Neptune island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C10. Neptune island: import and test **[S]** · **15 min**
-- [ ] C11. The Sun island: theme, render, check the photo · **20 min**
+- [x] C11. The Sun island: theme, render, check the photo · **20 min**
 - [ ] C12. The Sun island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C13. The Sun island: import and test **[S]** · **15 min**
 

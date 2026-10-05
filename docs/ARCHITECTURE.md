@@ -517,7 +517,7 @@ arrival pad, facing it, and the statues and the scenery stand at the rim.
 Require it with `require(script.Parent.Parent.Islands)` from a server feature. All return nil for an unknown
 island or spot.
 
-**A world with a Blender island** (Earth so far; `tools/blender/earth_island.py`, imported into the place as
+**A world with a Blender island** (Earth so far; `tools/blender/island.py <World>` makes any of the five, `earth_island.py` is its old name for Earth; imported into the place as
 `ReplicatedStorage.IslandModels`) wears it over the island built from parts. `IslandModels.<World>` is a model
 of scenery meshes whose pivot is the middle of the island on the ground, in island space;
 `IslandModels.<World>Shells` holds the landmark meshes (`EggPedestal`, `Stall`, `Portal`, `PortalSheet`,
