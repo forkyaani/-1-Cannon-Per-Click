@@ -1,0 +1,2441 @@
+-- The idle defence, all server authoritative (docs/IDLE_DEFENSE.md, docs/DEFENSE_SPEC.md):
+-- monsters walk the path of the player's plot -> the towers on the pads shoot them, and so do the mini cannons
+-- near the player -> kills pay coins -> coins buy pads, towers and upgrades -> the next level.
+-- A monster that reaches the gate costs lives; at zero the level is failed and the player drops back one.
+-- Nothing is tapped and there is no big cannon. Nothing resets either, except in a rebirth: a rare prestige
+-- the player chooses after beating a world's final boss (Config.Rebirth, the `rebirth` action).
+--
+-- Features (src/server/Features) build on this file through the plug-in API near the bottom (Game.modify,
+-- Game.on, Game.actions, Game.items ...) instead of editing it. See docs/ARCHITECTURE.md.
+local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local Config = require(ReplicatedStorage.Shared.Config)
+local Format = require(ReplicatedStorage.Shared.Format)
+local Items = require(ReplicatedStorage.Shared.Items)
+local Layout = require(ReplicatedStorage.Shared.Layout)
+local Data = require(script.Parent.Data)
+local Leaderboard = require(script.Parent.Leaderboard)
+local Marketplace = require(script.Parent.Marketplace)
+local Passes = require(script.Parent.Passes)
+local Plots = require(script.Parent.Plots)
+
+local Game = {}
+
+local Defense = Config.Defense
+local STEP = Defense.tick -- seconds per simulation step
+local MAX_SPEED = 3 -- the fastest game speed a player can pick
+local MAX_STEPS = 10 -- simulation steps one frame may run to catch up; past that the fight just runs slow
+local MAX_SHOTS_PER_STEP = 5 -- per tower and per player's mini cannons: bounds the work of one step
+local FIELD_SECONDS = 1 / Defense.syncHz
+local RELEASE_SECONDS = 2 -- how long an emptied plot keeps being reported as empty (field messages can get lost)
+local HOOK_SECONDS = 0.5 -- the `tick` hook
+local SYNC_SECONDS = 0.1 -- how often changed state is pushed to clients
+local META_SECONDS = 1
+local AUTOSAVE_SECONDS = 120
+local ACTION_COOLDOWN = 0.08
+local WALK_SPEED = 20
+local MAX_CAMERA_ZOOM = 45 -- keeps the marketplace camera below the rooftops
+local TRIPLE_HATCH = 3 -- eggs hatched by one "Hatch x3" (the x3 Egg Opener pass)
+local MAX_UPGRADE_LEVELS = 1000 -- what `upgradeTower` takes for "max"
+local MAX_TOWER_RATE = 10 -- the most the `towerRate` modifiers may speed the towers up
+local MAX_LIVES = 999 -- the most the `lives` modifiers may give a level
+local MAX_EQUIP_SLOTS = 20 -- the most mini cannons the `equipSlots` modifiers may let a player equip
+
+local MAX_RECEIPTS = 50 -- Robux purchase ids remembered per player, so a retried receipt is not granted twice
+
+local states = {}
+local slots = {}
+local released = {} -- [slot] = os.clock() until which its field is still sent as empty
+local rng = Random.new()
+
+-- Plug-in points for features.
+-- A modifier adjusts a derived number: fn(player, data, state, value) -> value. It is kept as { fn, label }:
+-- the label (a string, a function(player, data, state) -> string, a list of parts or nil, or nothing) is what
+-- the STATS window calls it (Game.breakdown). What each kind is, is listed at Game.modify.
+local modifiers = {}
+for _, kind in {
+	"perClick", "damage", "coins", "heal", "autoShots", "luck",
+	"towerRate", "towerRange", "bossDamage", "lives", "monsterSpeed", "upgradeCost", "petShots", "crateDrops", "gems",
+	"equipSlots", "petRange",
+} do
+	modifiers[kind] = {}
+end
+modifiers.power = modifiers.perClick -- the same list: `perClick` is the name the clicker's features know it by
+local OTHER_LABEL = "Other" -- what a modifier registered without a label is called
+-- A hook is told that something happened: fn(player, data, state, ...).
+local hooks = {
+	ready = {}, leave = {}, shot = {}, kill = {}, waveCleared = {}, hatch = {}, rebirth = {}, tick = {},
+	levelStart = {}, levelFailed = {}, leak = {},
+	action = {}, -- just before a client's action or a prompt is handled: (name), "prompt" for a prompt
+}
+
+-- A feature's mistake must not break a shot, a kill or a save: a failing modifier or hook is skipped,
+-- with one warning per kind so the log is not flooded.
+local warned = {}
+local function report(what: string, err)
+	if not warned[what] then
+		warned[what] = true
+		warn(`[Game] {what} failed (further failures are not logged): {err}`)
+	end
+end
+
+-- What a modifier is called right now. A label that is a function may answer nil ("not active"), or a list
+-- of parts { { label = string, weight = number } } when one modifier stands for several sources (the same
+-- enchantment on three mini cannons): each part is then listed on its own (see `modified`).
+local function labelOf(modifier, data, state): any
+	local label = modifier.label
+	if typeof(label) == "function" then
+		local ok, result = pcall(label, state.player, data, state)
+		label = if ok then result else nil
+	end
+	return if typeof(label) == "string" or typeof(label) == "table" then label else nil
+end
+
+-- One line of a breakdown: what the number is after this source, and what the source did to it.
+local function note(sources, label: string, before: number, after: number)
+	if sources and after ~= before then
+		table.insert(sources, { label = label, value = after, mult = if before ~= 0 then after / before else nil, add = after - before })
+	end
+end
+
+-- Runs a number through the modifiers of its kind, one at a time. A result that is not a number is skipped.
+-- sources, when given, collects one line per modifier that changed the number (Game.breakdown).
+local function modified(kind: string, data, state, value: number, sources: { any }?): number
+	for _, modifier in modifiers[kind] do
+		local ok, result = pcall(modifier.fn, state.player, data, state, value)
+		if ok and typeof(result) == "number" and result == result then
+			if sources and result ~= value then
+				local label = labelOf(modifier, data, state)
+				local total = 0
+				if typeof(label) == "table" then
+					for _, part in label do
+						if typeof(part) == "table" and typeof(part.label) == "string" and typeof(part.weight) == "number" and part.weight > 0 then
+							total += part.weight
+						end
+					end
+				end
+				if total > 0 then
+					-- Several sources behind one modifier: what it changed is shared out by weight, one line each.
+					local done, before = 0, value
+					for _, part in label do
+						if typeof(part) == "table" and typeof(part.label) == "string" and typeof(part.weight) == "number" and part.weight > 0 then
+							done += part.weight
+							local after = if done >= total then result else value + (result - value) * done / total
+							note(sources, part.label, before, after)
+							before = after
+						end
+					end
+				else
+					note(sources, if typeof(label) == "string" then label else OTHER_LABEL, value, result)
+				end
+			end
+			value = result
+		elseif not ok then
+			report(`a feature's {kind} modifier`, result)
+		end
+	end
+	return value
+end
+
+local function fire(event: string, player: Player, ...)
+	for _, hook in hooks[event] do
+		local ok, err = pcall(hook, player, ...)
+		if not ok then
+			report(`a feature's {event} hook`, err)
+		end
+	end
+end
+
+local remotes = Instance.new("Folder")
+remotes.Name = "Remotes"
+local function newRemote(name: string, className: string?): RemoteEvent
+	local remote = Instance.new(className or "RemoteEvent") :: any
+	remote.Name = name
+	remote.Parent = remotes
+	return remote
+end
+local actionRemote = newRemote("Action")
+local notifyRemote = newRemote("Notify")
+local hatchRemote = newRemote("Hatch")
+local featureRemote = newRemote("Feature") -- server -> client messages for features: (channel, ...)
+-- The monsters of every plot, several times a second. A message that gets lost is replaced by the next one,
+-- so it is sent unreliably where the engine has that; the client connects OnClientEvent either way.
+local fieldRemote = newRemote("Field", if pcall(Instance.new, "UnreliableRemoteEvent") then "UnreliableRemoteEvent" else nil)
+remotes.Parent = ReplicatedStorage
+
+local function notify(player: Player, text: string, kind: string?)
+	notifyRemote:FireClient(player, text, kind or "info")
+end
+
+----------------------------------------------------------------------------------------------------
+-- Derived values
+----------------------------------------------------------------------------------------------------
+local function boostActive(data, id: string): boolean
+	return (data.boosts[id] or 0) > os.time()
+end
+
+-- A running boost as the STATS window lists it: "2x Power (12:40 left)".
+local function boostLabel(data, id: string): string
+	local boost = Config.Boosts[id]
+	return `{if boost then boost.name else id} ({Format.duration((data.boosts[id] or 0) - os.time())} left)`
+end
+
+-- Every derived number is the core's own part, then the modifiers of its kind, then a limit that keeps a
+-- feature's mistake from breaking the fight. CORE[kind] = { base, value, finish }:
+--   base     what the number starts as, before any source (1 for a multiplier)
+--   value    fn(player, data, state, sources?) -> the core's own part. With sources it also notes each of the
+--            core's sources there, by name, for Game.breakdown
+--   finish   fn(value) -> the number that is used
+-- Passes is required further up, so the functions below can ask it.
+local CORE = {}
+
+local function atLeast(low: number)
+	return function(value: number): number
+		return math.max(low, value)
+	end
+end
+
+local function between(low: number, high: number)
+	return function(value: number): number
+		return math.clamp(value, low, high)
+	end
+end
+
+local function plain(base: number, finish)
+	return {
+		base = base,
+		value = function(): number
+			return base
+		end,
+		finish = finish,
+	}
+end
+
+-- What all tower and mini cannon damage is multiplied by: mini cannons, the Veteran level, rebirths, the
+-- 2x Power boost, then whatever features add (the `perClick` / `power` modifiers).
+CORE.perClick = {
+	base = 1,
+	value = function(_player: Player, data, state, sources): number
+		local value = 1 + Config.petBonus(state.equipped, state.towerNames)
+		note(sources, "Mini cannons", 1, value)
+		local level = Config.veteranLevel(data.masteryKills)
+		local before = value
+		value *= 1 + level * Config.VeteranBonusPerLevel
+		note(sources, `Veteran level {level}`, before, value)
+		before = value
+		value *= Config.rebirthMult(data.rebirths)
+		note(sources, if data.rebirths == 1 then "1 rebirth" else `{data.rebirths} rebirths`, before, value)
+		if boostActive(data, "power2x") then
+			before = value
+			value *= 2
+			note(sources, boostLabel(data, "power2x"), before, value)
+		end
+		return value
+	end,
+	finish = atLeast(0),
+}
+
+-- Coin multiplier on every kill. Coin Magnet perk: every equipped mini cannon that has it adds its share.
+CORE.coins = {
+	base = 1,
+	value = function(_player: Player, data, state, sources): number
+		local value = 1
+		for _, id in state.equipped do
+			value += Config.Pets[id].coinBonus
+		end
+		note(sources, "Coin Magnet mini cannons", 1, value)
+		if boostActive(data, "coins2x") then
+			note(sources, boostLabel(data, "coins2x"), value, value * 2)
+			value *= 2
+		end
+		return value
+	end,
+	finish = atLeast(0),
+}
+
+-- Share of its max HP every monster of the current level heals per second (0 in most worlds).
+-- Heal Block perk: every equipped mini cannon that has it slows the healing, down to MinHealShare of normal.
+CORE.heal = {
+	base = function(state): number
+		return state.plan.regen -- the level's own rate
+	end,
+	value = function(_player: Player, _data, state, sources): number
+		local share = 1
+		for _, id in state.equipped do
+			share *= 1 - Config.Pets[id].healCut
+		end
+		local regen = state.plan.regen
+		local value = regen * math.max(Config.MinHealShare, share)
+		note(sources, "Heal Block mini cannons", regen, value)
+		return value
+	end,
+	finish = atLeast(0),
+}
+
+-- Shots per second from the equipped mini cannons, all together.
+-- Rapid Fire perk: a mini cannon that has it fires that many times as fast.
+CORE.autoShots = {
+	base = 0,
+	value = function(_player: Player, _data, state, sources): number
+		local shots = 0
+		for _, id in state.equipped do
+			shots += Config.AutoShotsPerPet * Config.Pets[id].fireRate
+		end
+		note(sources, "Mini cannons", 0, shots)
+		return shots
+	end,
+	finish = atLeast(0),
+}
+
+-- Luck when hatching: the x3 Luck pass.
+CORE.luck = {
+	base = 1,
+	value = function(player: Player, _data, _state, sources): number
+		if Passes.owns(player, "tripleLuck") then
+			note(sources, Config.Passes.tripleLuck.name, 1, Config.LuckPassMultiplier)
+			return Config.LuckPassMultiplier
+		end
+		return 1
+	end,
+	finish = atLeast(1),
+}
+
+-- The kinds the core adds nothing to: only features change them (mastery, enchants, powerups ...).
+CORE.damage = plain(1, atLeast(0)) -- as a breakdown only: a shot's own damage goes through `modified` directly
+CORE.towerRate = plain(1, between(0.1, MAX_TOWER_RATE))
+CORE.towerRange = plain(1, between(0.25, 4))
+CORE.bossDamage = plain(1, atLeast(0))
+CORE.monsterSpeed = plain(1, between(0.2, 3))
+CORE.upgradeCost = plain(1, between(0.1, 10))
+CORE.petShots = plain(1, atLeast(0))
+CORE.petRange = plain(1, between(0.25, 4)) -- multiplier on Defense.petRange
+CORE.crateDrops = plain(1, atLeast(0))
+CORE.gems = plain(0, atLeast(0))
+CORE.lives = plain(Defense.lives, function(value: number): number
+	return math.clamp(math.floor(value + 0.5), 1, MAX_LIVES)
+end)
+CORE.power = CORE.perClick
+
+-- How many mini cannons the player can equip at once: the base, the weekly shop's extra slots, every pass
+-- they own that adds slots, then what features add (the Slots mastery track).
+CORE.equipSlots = {
+	base = Config.MaxEquipped,
+	value = function(player: Player, data, _state, sources): number
+		local count = Config.MaxEquipped
+		if data.extraSlots > 0 then
+			note(sources, "Weekly shop slots", count, count + data.extraSlots)
+			count += data.extraSlots
+		end
+		for key, pass in Config.Passes do
+			if pass.slots and Passes.owns(player, key) then
+				note(sources, pass.name, count, count + pass.slots)
+				count += pass.slots
+			end
+		end
+		return count
+	end,
+	finish = function(value: number): number
+		return math.clamp(math.floor(value + 0.5), 1, MAX_EQUIP_SLOTS)
+	end,
+}
+
+-- The number of that kind for this player, right now.
+local function derived(kind: string, data, state): number
+	local core = CORE[kind]
+	return core.finish(modified(kind, data, state, core.value(state.player, data, state, nil)))
+end
+
+local function powerMult(data, state): number
+	return derived("perClick", data, state)
+end
+
+local function coinMult(data, state): number
+	return derived("coins", data, state)
+end
+
+local function healRate(data, state): number
+	return derived("heal", data, state)
+end
+
+-- Mini cannon shots per second, all together: what they fire, times the `petShots` multiplier.
+local function autoShotsPerSecond(data, state): number
+	return derived("autoShots", data, state) * derived("petShots", data, state)
+end
+
+-- How many mini cannons the player can equip at once (CORE.equipSlots, with the `equipSlots` modifiers).
+local function equipSlots(player: Player, data): number
+	return derived("equipSlots", data, states[player])
+end
+
+-- Cannon Power: the damage per second of all the player's towers on one target, with the power multiplier and
+-- the fire-rate multiplier. The headline number of the HUD, and a leaderboard.
+local function totalDps(state, power: number, rate: number): number
+	local dps = 0
+	for _, tower in state.towerList do
+		dps += tower.base * tower.def.rate
+	end
+	return dps * power * rate
+end
+
+-- How many mini cannons the player can store: the base, plus every pass they own that adds storage.
+local function petStorage(player: Player): number
+	local count = Config.MaxPets
+	for key, pass in Config.Passes do
+		if pass.storage and Passes.owns(player, key) then
+			count += pass.storage
+		end
+	end
+	return count
+end
+
+-- Today's mission table, reset when the UTC day rolls over.
+local function missions(data)
+	local day = Config.dayNumber(os.time())
+	if data.missions.day ~= day then
+		data.missions = { day = day, progress = {}, claimed = {} }
+	end
+	return data.missions
+end
+
+local function track(data, state, key: string, amount: number)
+	local today = missions(data)
+	today.progress[key] = (today.progress[key] or 0) + amount
+	state.metaDirty = true
+end
+
+-- Which streak day the next daily claim pays (or today's, if already claimed).
+local function dailyIndex(data, day: number): number
+	if data.daily.last == day then
+		return math.max(1, data.daily.streak)
+	elseif data.daily.last == day - 1 then
+		return data.daily.streak % #Config.Daily + 1
+	end
+	return 1
+end
+
+----------------------------------------------------------------------------------------------------
+-- Replication: hot numbers as attributes (throttled), everything else as one JSON "Meta" attribute.
+-- The monsters themselves go out on the Field remote (see "The field" below).
+----------------------------------------------------------------------------------------------------
+local function sync(player: Player)
+	local data, state = Data.get(player), states[player]
+	if not data or not state then
+		return
+	end
+	state.dirty = false
+	local level, into, need = Config.veteranLevel(data.masteryKills)
+	local power = powerMult(data, state)
+	local rate = derived("towerRate", data, state)
+	local dps = totalDps(state, power, rate)
+	state.dps = dps -- for the leaderboard: the save does not hold it
+	local alive = 0
+	for _, monster in state.monsters do
+		if not monster.dead then
+			alive += 1
+		end
+	end
+	player:SetAttribute("Slot", state.slot)
+	-- Where the player is: "plot", "market" or "island" (then Island is which one, else 0). InMarket is true
+	-- away from the plot, in the marketplace and on an island alike: the HUD and the travel button go by it.
+	player:SetAttribute("Place", state.place)
+	player:SetAttribute("Island", state.island)
+	player:SetAttribute("InMarket", state.place ~= "plot")
+	player:SetAttribute("Coins", data.coins)
+	player:SetAttribute("Diamonds", data.diamonds)
+	player:SetAttribute("Candy", data.candy)
+	player:SetAttribute("Wave", data.wave)
+	player:SetAttribute("Cleared", data.cleared)
+	player:SetAttribute("BestCleared", data.bestCleared)
+	player:SetAttribute("AutoAdvance", data.autoAdvance)
+	player:SetAttribute("GameSpeed", data.speed)
+	player:SetAttribute("Lives", state.lives)
+	player:SetAttribute("LivesMax", state.livesMax)
+	player:SetAttribute("Phase", state.phase)
+	player:SetAttribute("MonstersLeft", if state.phase == "fight" then alive + state.plan.count - state.spawned else 0)
+	player:SetAttribute("LevelMonsters", state.plan.count)
+	player:SetAttribute("PowerMult", power)
+	player:SetAttribute("CannonPower", dps) -- the headline number: the towers' total damage per second
+	player:SetAttribute("Dps", dps) -- the same, under the name the level HUD read first
+	player:SetAttribute("EquippedPets", #state.equipped)
+	player:SetAttribute("VeteranLevel", level)
+	player:SetAttribute("VeteranInto", into)
+	player:SetAttribute("VeteranNeed", need)
+	player:SetAttribute("Rebirths", data.rebirths)
+	player:SetAttribute("HealRate", healRate(data, state))
+	-- What the features do to every tower, for the client: its shots and its range ring follow them.
+	player:SetAttribute("TowerRate", rate)
+	player:SetAttribute("TowerRange", derived("towerRange", data, state))
+	player:SetAttribute("UpgradeCost", derived("upgradeCost", data, state))
+	player:SetAttribute("PetRange", derived("petRange", data, state)) -- the client draws the mini cannons' shots that far
+	player:SetAttribute("WaveEndsAt", 0) -- levels are not timed
+	-- For src/client/Hud.luau as it stands (another session owns it): its big pill reads Power, its bar the
+	-- Mastery attributes. Remove these when it reads CannonPower and Veteran*.
+	player:SetAttribute("PerClick", power)
+	player:SetAttribute("Power", dps)
+	player:SetAttribute("Cannon", 1)
+	player:SetAttribute("MasteryLevel", level)
+	player:SetAttribute("MasteryInto", into)
+	player:SetAttribute("MasteryNeed", need)
+
+	-- The player list: the same three numbers as the boards.
+	local stats = state.leaderstats
+	stats.Gems.Value = data.diamonds
+	stats.Rebirths.Value = data.rebirths
+	stats["Cannon Power"].Value = Format.abbreviate(dps)
+end
+
+local function syncMeta(player: Player)
+	local data, state = Data.get(player), states[player]
+	if not data or not state then
+		return
+	end
+	state.metaDirty = false
+	state.lastMeta = os.clock()
+	local now = os.time()
+	local day, week = Config.dayNumber(now), Config.weekNumber(now)
+	local counts = {}
+	for _, id in data.pets do
+		counts[id] = (counts[id] or 0) + 1
+	end
+	local today = missions(data)
+	player:SetAttribute("Meta", HttpService:JSONEncode({
+		pets = counts,
+		petCount = #data.pets,
+		storage = petStorage(player),
+		hatches = data.totalHatches,
+		equipped = state.equipped,
+		slots = equipSlots(player, data),
+		passes = Passes.list(player),
+		missions = { progress = today.progress, claimed = today.claimed },
+		daily = { claimed = data.daily.last == day, index = dailyIndex(data, day) },
+		weekly = { week = week, bought = if data.weekly.week == week then data.weekly.bought else {} },
+		event = { active = Config.halloweenActive(now), bought = data.event.bought },
+		boosts = data.boosts,
+		pads = data.pads,
+		towers = data.towers,
+		-- The next pad's price; left out once every pad is owned.
+		padPrice = if #data.pads < Layout.PAD_COUNT then Config.padPrice(#data.pads + 1) else nil,
+	}))
+end
+
+local function syncAll(player: Player)
+	sync(player)
+	syncMeta(player)
+end
+
+----------------------------------------------------------------------------------------------------
+-- Towers, mini cannons and inventory helpers
+----------------------------------------------------------------------------------------------------
+-- data.towers is keyed by the pad index as a string (JSON has no number keys).
+local function padKey(pad: number): string
+	return tostring(pad)
+end
+
+-- A whole pad index out of whatever the client sent, or nil.
+local function padIndex(value: unknown): number?
+	if typeof(value) ~= "number" or value ~= value or value % 1 ~= 0 or value < 1 or value > Layout.PAD_COUNT then
+		return nil
+	end
+	return value
+end
+
+-- An owned pad with no tower on it, or nil.
+local function freePad(data): number?
+	for _, pad in data.pads do
+		if not data.towers[padKey(pad)] then
+			return pad
+		end
+	end
+	return nil
+end
+
+-- Makes a loaded save's pads and towers safe to play: whole pad indices in range, each once, the free pad
+-- always owned; towers only on owned pads, of kinds that exist, at levels that exist; never no tower at all.
+local function cleanTowers(data)
+	local owned, pads = {}, {}
+	for _, pad in data.pads do
+		if padIndex(pad) and not owned[pad] then
+			owned[pad] = true
+			table.insert(pads, pad)
+		end
+	end
+	if not owned[1] then
+		owned[1] = true
+		table.insert(pads, 1, 1)
+	end
+	data.pads = pads
+
+	local towers, count = {}, 0
+	for key, tower in data.towers do
+		local pad = padIndex(tonumber(key))
+		if pad and owned[pad] and typeof(tower) == "table" and typeof(tower.kind) == "string" and Config.Towers[tower.kind] and typeof(tower.level) == "number" and tower.level == tower.level then
+			towers[padKey(pad)] = { kind = tower.kind, level = math.clamp(math.floor(tower.level), 1, Config.TowerMaxLevel) }
+			count += 1
+		end
+	end
+	if count == 0 then
+		towers[padKey(1)] = { kind = "cannon", level = 1 }
+	end
+	data.towers = towers
+end
+
+-- Rebuilds the runtime towers (state.towers[pad], state.towerList in pad order) from the saved ones.
+-- A tower that was already there keeps its cooldown, so an upgrade never gives a free shot.
+local function refreshTowers(data, state)
+	local before = state.towers
+	local towers, list = {}, {}
+	local total = 0
+	for key, saved in data.towers do
+		local pad = tonumber(key) :: number
+		local def = Config.Towers[saved.kind]
+		local spot = Layout.PADS[pad]
+		local previous = before[pad]
+		local tower = {
+			pad = pad,
+			kind = saved.kind,
+			level = saved.level,
+			def = def,
+			base = Config.towerDamage(saved.kind, saved.level), -- one shot, before multipliers
+			interval = 1 / def.rate,
+			cd = if previous then previous.cd else 0,
+			x = spot.X,
+			z = spot.Y,
+			range2 = def.range * def.range, -- before the `towerRange` modifiers
+		}
+		towers[pad] = tower
+		table.insert(list, tower)
+		total += tower.base
+	end
+	table.sort(list, function(a, b)
+		return a.pad < b.pad
+	end)
+	state.towers = towers
+	state.towerList = list
+	state.towerNames = Config.towerNames(data.towers)
+	-- A mini cannon's shot before multipliers: a share of the player's average tower shot.
+	state.heroBase = if #list > 0 then total / #list * Defense.petShotShare else 0
+	state.dirty = true
+	state.metaDirty = true
+end
+
+-- Recomputes which mini cannons are equipped (always the strongest) and rebuilds their models.
+local function refreshPets(player: Player)
+	local data, state = Data.get(player), states[player]
+	state.equipped = Config.equippedPets(data.pets, equipSlots(player, data))
+	if state.petsModel then
+		state.petsModel:Destroy()
+	end
+	state.petsModel = Plots.buildPets(state.slot, state.equipped, player.UserId)
+	state.dirty = true
+end
+
+-- Adds a mini cannon. When storage is full it replaces the weakest one, unless the new one is weaker
+-- (force skips that check, for things the player paid for). Returns whether it was kept.
+local function addPet(player: Player, data, id: string, force: boolean?): boolean
+	if #data.pets < petStorage(player) then
+		table.insert(data.pets, id)
+		return true
+	end
+	local weakest = 1
+	for index, other in data.pets do
+		if Config.Pets[other].bonus < Config.Pets[data.pets[weakest]].bonus then
+			weakest = index
+		end
+	end
+	if force or Config.Pets[id].bonus > Config.Pets[data.pets[weakest]].bonus then
+		data.pets[weakest] = id
+		return true
+	end
+	return false
+end
+
+local function addBoost(data, id: string, minutes: number)
+	data.boosts[id] = math.max(os.time(), data.boosts[id] or 0) + minutes * 60
+end
+
+----------------------------------------------------------------------------------------------------
+-- Levels
+-- state.monsters is the list of living monsters, in the order they spawned:
+--   { id, d = studs along the path, hp, max, speed, slowUntil, slow, burnUntil, burn, boss, x, z (plot space) }
+-- A monster is only ever taken out of the list by sweep(), and sweep() only runs when nothing is walking the
+-- list (state.busy == 0): a shot can kill, a kill can run a feature's hook, and that hook can deal more damage.
+----------------------------------------------------------------------------------------------------
+local function startLevel(player: Player, data, state)
+	data.wave = math.clamp(data.wave, 1, Config.TotalWaves)
+	local plan = Config.levelPlan(data.wave)
+	state.plan = plan
+	state.monsters = {}
+	state.spawned = 0
+	state.spawnIn = 0
+	state.phase = "fight"
+	state.failed = false
+	state.failShare = 0
+	state.livesMax = derived("lives", data, state)
+	state.lives = state.livesMax
+	state.levelCoins = 0
+	state.petOwed = 0
+	-- What the clicker called the current monster's health. Features written for it still read these two; they
+	-- now hold the monster a shot is about to hit.
+	state.hp, state.maxHp = plan.hp, plan.hp
+	local world = Config.worldOf(data.wave)
+	if world ~= state.world then
+		state.world = world
+		Plots.setWorld(state.slot, world)
+	end
+	state.dirty = true
+	fire("levelStart", player, data, state, data.wave)
+end
+
+-- The pause between two levels. The next one is whatever data.wave says when it ends.
+local function startBreak(state)
+	state.phase = "break"
+	state.breakLeft = Defense.breakSeconds
+	state.monsters = {}
+	state.failed = false
+	state.dirty = true
+end
+
+-- Every monster of the level is gone and there are lives left.
+local function levelCleared(player: Player, data, state)
+	local wave, plan = data.wave, state.plan
+	local worldIndex, localWave = Config.worldOf(wave)
+	-- First in this run, and first ever: after a rebirth the levels are cleared again, but what a first clear
+	-- gives (gems, a new tower, a feature's gift) is given once.
+	local firstRun = wave > data.cleared
+	local firstClear = wave > data.bestCleared
+	track(data, state, "waves", 1)
+
+	if firstRun then
+		data.cleared = wave
+		data.bestCleared = math.max(data.bestCleared, wave)
+		if plan.kind ~= "normal" then
+			notify(player, `{plan.monster.name} defeated! +{Format.abbreviate(state.levelCoins)} coins`, "good")
+		end
+		local nextWorld = Config.Worlds[worldIndex + 1]
+		if localWave == Config.WavesPerWorld then
+			if firstClear and nextWorld then
+				notify(player, `{nextWorld.name} unlocked! {nextWorld.twist}`, "good")
+			end
+			if wave >= Config.rebirthWave(data.rebirths) then
+				notify(player, "You can REBIRTH now: open WORLDS to see what it gives and what it resets.", "good")
+			end
+		end
+	end
+	if firstClear then
+		data.bestCleared = math.max(data.bestCleared, wave)
+		if wave % Config.MilestoneEvery == 0 then
+			data.diamonds += Config.MilestoneDiamonds
+			notify(player, `First clear of {Config.waveLabel(wave)}! +{Config.MilestoneDiamonds} gems`, "good")
+		end
+		for _, kind in Config.TowerOrder do
+			if Config.Towers[kind].unlock == wave then
+				-- Where it can go: an empty pad if there is one, else a pad that has to be bought first.
+				local where = "Build it on your empty pad."
+				if not freePad(data) then
+					where = if #data.pads < Layout.PAD_COUNT
+						then "Buy a pad to build it on."
+						else "Sell a tower to make room for it."
+				end
+				notify(player, `New tower unlocked: {Config.Towers[kind].name}! {where}`, "good")
+			end
+		end
+	end
+
+	fire("waveCleared", player, data, state, wave, firstClear)
+	Game.send(player, "defense", "cleared", wave, state.levelCoins)
+
+	-- With auto-advance on, straight to the next level, and on into the next world: nothing resets there.
+	-- With it off the same level comes again, for farming.
+	if data.autoAdvance and wave < Config.TotalWaves then
+		data.wave = wave + 1
+	end
+	startBreak(state)
+end
+
+-- Too many monsters reached the gate: back one level, and auto-advance goes off so the player can farm it.
+local function levelFailed(player: Player, data, state)
+	local wave, plan = data.wave, state.plan
+	-- A boss that got through still pays for the damage it took: Defense.failShare of its coins, in proportion.
+	-- An attempt that nearly made it is then worth something, and never as much as the kill.
+	local reward = 0
+	if plan.kind ~= "normal" and state.failShare > 0 then
+		reward = math.floor(plan.coins * coinMult(data, state) * state.failShare * Defense.failShare)
+		if reward == reward and reward > 0 and reward < math.huge then
+			data.coins += reward
+			state.levelCoins += reward
+		else
+			reward = 0
+		end
+	end
+	-- What to do about it. A player who has the coins for an upgrade is told to spend them.
+	local advice = "Farm coins, upgrade your towers, then press > to try again."
+	local mult = derived("upgradeCost", data, state)
+	for _, tower in data.towers do
+		if tower.level < Config.TowerMaxLevel and Config.towerUpgradeCost(tower.kind, tower.level, mult) <= data.coins then
+			advice = "You have the coins: walk up to a tower and press UPGRADE, then press > to try again."
+			break
+		end
+	end
+	if reward > 0 then
+		local percent = math.floor(state.failShare * 100 + 0.5)
+		notify(player, `{plan.monster.name} got through with {100 - percent}% health left: +{Format.abbreviate(reward)} coins. {advice}`, "bad")
+	else
+		notify(player, `The monsters broke through! {advice}`, "bad")
+	end
+	fire("levelFailed", player, data, state, wave)
+	Game.send(player, "defense", "failed", wave, reward)
+	if wave > 1 then
+		data.wave = wave - 1
+	end
+	data.autoAdvance = false
+	startBreak(state)
+end
+
+-- Takes the dead and the leaked out of the list, then ends the level if it is over.
+local function sweep(player: Player, data, state)
+	if state.busy > 0 or state.phase ~= "fight" then
+		return
+	end
+	local monsters = state.monsters
+	local kept = 0
+	for index = 1, #monsters do
+		local monster = monsters[index]
+		if not monster.dead then
+			kept += 1
+			monsters[kept] = monster
+		end
+	end
+	for index = #monsters, kept + 1, -1 do
+		monsters[index] = nil
+	end
+	if state.failed then
+		levelFailed(player, data, state)
+	elseif kept == 0 and state.spawned >= state.plan.count then
+		levelCleared(player, data, state)
+	end
+end
+
+-- Rewards for a monster that just died.
+local function defeat(player: Player, data, state, monster)
+	monster.dead = true
+	monster.hp = 0
+	local plan = state.plan
+	local reward = math.floor(plan.coins * coinMult(data, state))
+	data.coins += reward
+	state.levelCoins += reward
+	data.totalKills += 1
+	track(data, state, "kills", 1)
+	if plan.kind ~= "normal" then
+		track(data, state, "bosses", 1)
+		-- Gems a boss drops (the `gems` modifiers; nothing without a feature). Whole gems are paid, the rest waits.
+		local gems = derived("gems", data, state)
+		if gems > 0 and gems < math.huge then
+			state.gemsOwed += gems
+			local whole = math.floor(state.gemsOwed)
+			state.gemsOwed -= whole
+			data.diamonds += whole
+		end
+	end
+	if Config.halloweenActive(os.time()) then
+		data.candy += if plan.kind == "normal" then Config.Halloween.candyPerKill else Config.Halloween.candyPerBoss
+	end
+
+	local before = Config.veteranLevel(data.masteryKills)
+	data.masteryKills += 1
+	local after = Config.veteranLevel(data.masteryKills)
+	if after > before then
+		local percent = math.floor(after * Config.VeteranBonusPerLevel * 100 + 0.5)
+		notify(player, `Veteran level {after}! +{percent}% tower damage`, "good")
+	end
+	state.dirty = true
+	fire("kill", player, data, state, { wave = data.wave, kind = plan.kind, reward = reward })
+end
+
+-- Whether a number can be dealt as damage. One that is not a number, or infinite, is a feature's mistake (a
+-- division by zero): the first would leave a monster that can neither be hurt nor die, the second kills
+-- whatever it touches. Both are dropped.
+local function usable(amount: unknown): boolean
+	return typeof(amount) == "number" and amount == amount and amount > 0 and amount < math.huge
+end
+
+-- Takes health off one monster.
+local function hurt(player: Player, data, state, monster, amount: number)
+	if monster.dead or not usable(amount) then
+		return
+	end
+	monster.hp -= amount
+	if monster.hp <= 0 then
+		defeat(player, data, state, monster)
+	end
+end
+
+-- The living monster furthest along the path: the one a shot with no range of its own goes for.
+local function leadMonster(state)
+	local lead, best = nil, -1
+	for _, monster in state.monsters do
+		if not monster.dead and monster.d > best then
+			lead, best = monster, monster.d
+		end
+	end
+	return lead
+end
+
+-- The same, among the monsters within `range2` (squared studs) of a point in plot space.
+local function leadWithin(state, x: number, z: number, range2: number)
+	local lead, best = nil, -1
+	for _, monster in state.monsters do
+		if not monster.dead and monster.d > best then
+			local dx, dz = monster.x - x, monster.z - z
+			if dx * dx + dz * dz <= range2 then
+				lead, best = monster, monster.d
+			end
+		end
+	end
+	return lead
+end
+
+-- A shot lands on `target`: who else it hits (a chain jumps on, a splash catches the neighbours), what it
+-- leaves behind (a slow, a burn), and the damage. def is the tower's Config entry; a mini cannon's shot has none.
+local function land(player: Player, data, state, target, damage: number, def)
+	local victims = { target }
+	if def and def.chain then
+		local reach2 = Defense.chainRange * Defense.chainRange
+		local from = target
+		for _ = 1, def.chain do
+			local nearest, near = nil, reach2
+			for _, monster in state.monsters do
+				if not monster.dead and not table.find(victims, monster) then
+					local dx, dz = monster.x - from.x, monster.z - from.z
+					local distance2 = dx * dx + dz * dz
+					if distance2 <= near then
+						nearest, near = monster, distance2
+					end
+				end
+			end
+			if not nearest then
+				break
+			end
+			table.insert(victims, nearest)
+			from = nearest
+		end
+	end
+	if def and def.splash then
+		local reach2 = def.splash * def.splash
+		for _, monster in state.monsters do
+			if not monster.dead and not table.find(victims, monster) then
+				local dx, dz = monster.x - target.x, monster.z - target.z
+				if dx * dx + dz * dz <= reach2 then
+					table.insert(victims, monster)
+				end
+			end
+		end
+	end
+
+	local now = state.clock
+	for _, monster in victims do
+		if def and def.slow and (now >= monster.slowUntil or def.slow >= monster.slow) then
+			monster.slow = def.slow
+			monster.slowUntil = now + def.slowSeconds
+		end
+		if def and def.burn and usable(damage) then
+			-- A new burn takes over what is left of the old one and spreads it over its own time.
+			local left = monster.burn * math.max(0, monster.burnUntil - now)
+			monster.burnUntil = now + def.burnSeconds
+			monster.burn = (left + def.burn * damage * def.burnSeconds) / def.burnSeconds
+		end
+		hurt(player, data, state, monster, damage)
+	end
+end
+
+-- What a shot of `damage` is worth once the features have had their say: the `bossDamage` modifiers on a boss
+-- level (a giant, a mid boss, a world boss), then the `damage` modifiers.
+local function shotValue(data, state, damage: number): number
+	if state.plan.kind ~= "normal" then
+		damage *= derived("bossDamage", data, state)
+	end
+	return modified("damage", data, state, damage)
+end
+
+-- One shot from a tower or from a mini cannon ("a hero shot"), through the `damage` modifiers and the `shot` hook.
+local function shoot(player: Player, data, state, target, damage: number, source: string, tower)
+	state.hp, state.maxHp = target.hp, target.max
+	-- Features may change shot.damage before it lands (a crit, an ammo type).
+	local shot = {
+		manual = false,
+		damage = shotValue(data, state, damage),
+		source = source,
+		kind = if tower then tower.kind else nil,
+		pad = if tower then tower.pad else nil,
+		target = target, -- the monster it is about to hit (the core's own table: read it, hurt it with Game.hurt)
+	}
+	fire("shot", player, data, state, shot)
+	if typeof(shot.damage) == "number" and not target.dead then
+		land(player, data, state, target, shot.damage, if tower then tower.def else nil)
+	end
+end
+
+-- Where the player's character is, in the space of their own plot. Nothing while they have no character.
+local function characterSpot(player: Player, state): (number?, number?)
+	local character = player.Character
+	local root = character and character.PrimaryPart
+	if not root then
+		return nil, nil
+	end
+	local spot = state.plotCFrame:PointToObjectSpace(root.Position)
+	return spot.X, spot.Z
+end
+
+-- One simulation step of one player's plot.
+local function simulate(player: Player, data, state, dt: number)
+	state.clock += dt
+	local now = state.clock
+	local plan, monsters = state.plan, state.monsters
+
+	-- Spawn what is due.
+	state.spawnIn -= dt
+	while state.spawned < plan.count and state.spawnIn <= 0 do
+		state.spawned += 1
+		state.spawnIn += plan.gap
+		state.nextId += 1
+		local start = Layout.pathAt(0)
+		table.insert(monsters, {
+			id = state.nextId,
+			d = 0,
+			hp = plan.hp,
+			max = plan.hp,
+			speed = plan.speed,
+			slowUntil = 0,
+			slow = 0,
+			burnUntil = 0,
+			burn = 0,
+			boss = plan.kind ~= "normal",
+			x = start.X,
+			z = start.Y,
+		})
+	end
+
+	-- Walk, heal, burn.
+	local regen = if plan.regen > 0 then healRate(data, state) else 0
+	local pace = derived("monsterSpeed", data, state) * dt
+	for _, monster in monsters do
+		if not monster.dead then
+			monster.d += (if now < monster.slowUntil then monster.speed * (1 - monster.slow) else monster.speed) * pace
+			local spot = Layout.pathAt(monster.d)
+			monster.x, monster.z = spot.X, spot.Y
+			if regen > 0 and monster.hp < monster.max then
+				monster.hp = math.min(monster.max, monster.hp + monster.max * regen * dt)
+			end
+			if now < monster.burnUntil then
+				hurt(player, data, state, monster, monster.burn * dt)
+			end
+		end
+	end
+
+	-- Towers: each one whose cooldown is up fires at the monster furthest along within its range.
+	local power = powerMult(data, state)
+	local bossLevel = plan.kind ~= "normal"
+	local rate = derived("towerRate", data, state)
+	local reach = derived("towerRange", data, state)
+	local reach2 = reach * reach
+	for _, tower in state.towerList do
+		tower.cd -= dt
+		local shots = 0
+		while tower.cd <= 0 and shots < MAX_SHOTS_PER_STEP do
+			local target = leadWithin(state, tower.x, tower.z, tower.range2 * reach2)
+			if not target then
+				tower.cd = 0 -- loaded and waiting
+				break
+			end
+			shots += 1
+			tower.cd += tower.interval / rate
+			local damage = tower.base * power
+			if bossLevel and tower.def.boss then
+				damage *= tower.def.boss
+			end
+			shoot(player, data, state, target, damage, "tower", tower)
+		end
+		if tower.cd < 0 then
+			tower.cd = 0
+		end
+	end
+
+	-- Mini cannons: they fire at the monster furthest along near the player, while the player is on the plot.
+	local petRate = if state.place == "plot" then autoShotsPerSecond(data, state) else 0
+	if petRate > 0 then
+		local x, z = characterSpot(player, state)
+		if x and z then
+			state.petOwed += petRate * dt
+			local shots = 0
+			local range = Defense.petRange * derived("petRange", data, state)
+			local range2 = range * range
+			while state.petOwed >= 1 and shots < MAX_SHOTS_PER_STEP do
+				local target = leadWithin(state, x, z, range2)
+				if not target then
+					break
+				end
+				shots += 1
+				state.petOwed -= 1
+				shoot(player, data, state, target, state.heroBase * power, "pet", nil)
+			end
+		end
+		-- Shots are not saved up while there is nothing to shoot at.
+		state.petOwed = math.min(state.petOwed, 1)
+	end
+
+	-- Monsters at the end of the path cost lives.
+	for _, monster in monsters do
+		if not monster.dead and monster.d >= Layout.PATH_LENGTH then
+			monster.dead = true
+			state.lives = math.max(0, state.lives - plan.leak)
+			-- How much of it was shot off: what a failed boss level pays for (levelFailed).
+			state.failShare = math.clamp(1 - monster.hp / monster.max, 0, 1)
+			state.dirty = true
+			fire("leak", player, data, state, monster)
+			Game.send(player, "defense", "leak", state.lives)
+			if state.lives <= 0 then
+				state.failed = true
+				break
+			end
+		end
+	end
+end
+
+local function stepPlayer(player: Player, dt: number)
+	local data, state = Data.get(player), states[player]
+	if not data or not state then
+		return
+	end
+	if state.phase == "break" then
+		state.clock += dt
+		state.breakLeft -= dt
+		if state.breakLeft <= 0 then
+			startLevel(player, data, state)
+		end
+		return
+	end
+	state.busy += 1
+	local ok, err = pcall(simulate, player, data, state, dt)
+	state.busy -= 1
+	if not ok then
+		report("the simulation step", err)
+	end
+	sweep(player, data, state)
+end
+
+----------------------------------------------------------------------------------------------------
+-- The field: what the monsters of a plot are doing, sent to its owner and to everyone near it.
+--   Field:FireClient(watcher, slot, level, lives, livesMax, flat)
+--   flat = { id, d, hpShare, flags,  id, d, hpShare, flags, ... }   flags: 1 slowed, 2 burning, 4 boss
+-- An unreliable message carries about 900 bytes: 20 monsters. Config.levelPlan never asks for more.
+----------------------------------------------------------------------------------------------------
+local function sendFields()
+	local now = os.clock()
+	local spots = {}
+	local everyone = Players:GetPlayers()
+	for _, watcher in everyone do
+		local character = watcher.Character
+		local root = character and character.PrimaryPart
+		if root then
+			spots[watcher] = root.Position
+		end
+	end
+	for owner, state in states do
+		local data = Data.get(owner)
+		if not data then
+			continue
+		end
+		local flat = {}
+		for _, monster in state.monsters do
+			if not monster.dead then
+				local flags = (if state.clock < monster.slowUntil then 1 else 0)
+					+ (if state.clock < monster.burnUntil then 2 else 0)
+					+ (if monster.boss then 4 else 0)
+				table.insert(flat, monster.id)
+				table.insert(flat, math.floor(monster.d * 10 + 0.5) / 10)
+				table.insert(flat, math.clamp(monster.hp / monster.max, 0, 1))
+				table.insert(flat, flags)
+			end
+		end
+		local origin = state.plotCFrame.Position
+		for _, watcher in everyone do
+			local spot = spots[watcher]
+			if watcher == owner or (spot and (spot - origin).Magnitude <= Defense.watchDistance) then
+				fieldRemote:FireClient(watcher, state.slot, data.wave, state.lives, state.livesMax, flat)
+			end
+		end
+	end
+	for slot, untilTime in released do
+		if slots[slot] or now > untilTime then
+			released[slot] = nil
+		end
+		if not slots[slot] then
+			fieldRemote:FireAllClients(slot, 0, 0, 0, {})
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+-- Eggs: hatched at their stand, in the marketplace or on a world's island (see the prompt wiring in Game.start).
+----------------------------------------------------------------------------------------------------
+-- The player's luck when hatching: the x3 Luck pass times whatever features add through the luck modifier.
+-- hatchOne rolls with it, and the Huge feature sends it to the client, where the egg stands show the odds for it.
+function Game.luck(_player: Player, data, state): number
+	return derived("luck", data, state)
+end
+
+-- Pays for and hatches one egg. Returns { pet = id, kept = boolean, chance = number }, or nil if the player
+-- could not pay. chance is the percentage that mini cannon had for this player: the reveal of a Secret or a
+-- Huge says how rare it was.
+local function hatchOne(player: Player, data, state, egg)
+	if data[egg.currency] < egg.cost then
+		return nil
+	end
+	data[egg.currency] -= egg.cost
+	-- Two draws make one roll, so it is fine enough for a 1 in 100,000,000 chance whatever a single NextNumber
+	-- resolves. The egg stands show each player the odds for this same luck (Config.eggOdds).
+	local roll = (rng:NextInteger(0, 9_999) + rng:NextNumber()) / 10_000
+	local petId, chance = Config.rollEgg(egg, roll, Game.luck(player, data, state))
+	-- A Secret or a Huge is always kept: in a full storage it takes the place of the weakest mini cannon.
+	local kept = addPet(player, data, petId, Config.Pets[petId].hidden)
+	data.totalHatches += 1
+	track(data, state, "hatches", 1)
+	return { pet = petId, kept = kept, chance = chance }
+end
+
+-- Hatches up to `count` eggs, each paid for on its own, stopping early if the player runs out.
+-- The client is sent one list of results, so one reveal can show several eggs.
+local function hatchEgg(player: Player, data, state, egg, count: number)
+	if egg.event and not Config.halloweenActive(os.time()) then
+		notify(player, "The Halloween event has ended", "bad")
+		return
+	end
+	if data.bestCleared < egg.unlock then
+		notify(player, `Clear {Config.waveLabel(egg.unlock)} to unlock the {egg.name}`, "bad")
+		return
+	end
+	local results = {}
+	for _ = 1, count do
+		local result = hatchOne(player, data, state, egg)
+		if not result then
+			break
+		end
+		table.insert(results, result)
+	end
+	if #results == 0 then
+		notify(player, `Not enough {Config.CurrencyNames[egg.currency]} for the {egg.name}`, "bad")
+		return
+	end
+	refreshPets(player)
+	fire("hatch", player, data, state, egg, results)
+	hatchRemote:FireClient(player, egg.id, results)
+end
+
+-- "Hatch x3" belongs to the x3 Egg Opener pass. Anyone without it is offered the pass instead.
+local function hatchTriple(player: Player, data, state, egg)
+	if Passes.owns(player, "tripleHatch") then
+		hatchEgg(player, data, state, egg, TRIPLE_HATCH)
+	elseif not Passes.prompt(player, "tripleHatch") then
+		notify(player, `{Config.Passes.tripleHatch.name} is not on sale yet`, "info")
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+-- Places: the player's own plot, the marketplace, and the world islands. The player walks freely in each;
+-- goHome, goMarket and goIsland teleport between them. state.place is "plot", "market" or "island", and
+-- state.island which island (0 when on none). state.inMarket is true in the marketplace only: features that
+-- mean the town square (trading, the story's "visit the marketplace") read it.
+----------------------------------------------------------------------------------------------------
+-- Where a place is, for the places the core does not build itself. A module registers a destination:
+--   Game.places.island = function(index: number): CFrame   -- where a player arrives on that world's island
+Game.places = {}
+-- Prompts that send whoever triggers them back to their plot: a module that builds a portal home adds its
+-- prompt here before Game.start, which wires them like the marketplace's own.
+Game.homePrompts = {} :: { ProximityPrompt }
+
+-- Where a player arrives on a world's island, or nil while nothing has registered the islands (or it failed).
+local function islandSpawn(index: number): CFrame?
+	local finder = Game.places.island
+	if typeof(finder) ~= "function" then
+		return nil
+	end
+	local ok, result = pcall(finder, index)
+	if not ok then
+		report("Game.places.island", result)
+	end
+	return if ok and typeof(result) == "CFrame" then result else nil
+end
+
+-- Moves the player. Returns false, and leaves them where they are, when the place cannot be reached.
+local function setPlace(player: Player, place: string, island: number?): boolean
+	local state = states[player]
+	local destination: CFrame
+	if place == "island" then
+		local spawn = islandSpawn(island or 0)
+		if not spawn then
+			return false
+		end
+		destination = spawn
+	elseif place == "market" then
+		destination = Layout.marketSpawn()
+	else
+		place = "plot"
+		destination = Layout.plotSpawn(state.slot)
+	end
+	state.place = place
+	state.island = if place == "island" then island else 0
+	state.inMarket = place == "market"
+	state.dirty = true
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not character or not humanoid then
+		return true
+	end
+	if place ~= "plot" then
+		-- Spread arrivals out a little so players do not land inside each other.
+		destination += Vector3.new(rng:NextNumber(-4, 4), 0, rng:NextNumber(-3, 3))
+	end
+	-- Make sure the destination has streamed in before the character lands there.
+	pcall(player.RequestStreamAroundAsync, player, destination.Position, 5)
+	if not character.Parent then
+		return true
+	end
+	humanoid.WalkSpeed = WALK_SPEED
+	character:PivotTo(destination)
+	return true
+end
+
+----------------------------------------------------------------------------------------------------
+-- Actions the client can request. Every one validates on the server: an argument is whatever a client chose
+-- to send.
+----------------------------------------------------------------------------------------------------
+local actions = {}
+Game.actions = actions -- features add their own: Game.actions.name = function(player, data, state, argument)
+
+function actions.goMarket(player: Player)
+	setPlace(player, "market")
+end
+
+function actions.goHome(player: Player)
+	setPlace(player, "plot")
+end
+
+-- To a world's island. Open once the player has reached that world (Config.worldUnlocked).
+function actions.goIsland(player: Player, data, _state, index: unknown)
+	if typeof(index) ~= "number" or index % 1 ~= 0 or not Config.Worlds[index] then
+		return
+	end
+	local world = Config.Worlds[index]
+	if not Config.worldUnlocked(index, data.bestCleared) then
+		notify(player, `Reach {world.name} to unlock its island`, "bad")
+	elseif not setPlace(player, "island", index) then
+		notify(player, `The {world.name} island is not open yet`, "info")
+	end
+end
+
+function actions.buyPass(player: Player, _data, _state, key: unknown)
+	if typeof(key) ~= "string" or not Config.Passes[key] then
+		return
+	end
+	if Passes.owns(player, key) then
+		notify(player, `You already own {Config.Passes[key].name}`, "info")
+	elseif not Passes.prompt(player, key) then
+		notify(player, `{Config.Passes[key].name} is not on sale yet`, "info")
+	end
+end
+
+-- Buys the pad the player is standing at. Pads are bought in any order; the price goes by how many they own.
+function actions.buyPad(player: Player, data, state, argument: unknown)
+	local pad = padIndex(argument)
+	if not pad or table.find(data.pads, pad) then
+		return
+	end
+	local price = Config.padPrice(#data.pads + 1)
+	if data.coins < price then
+		notify(player, `Need {Format.abbreviate(price - data.coins)} more coins for this pad`, "bad")
+		return
+	end
+	data.coins -= price
+	table.insert(data.pads, pad)
+	Plots.setPads(state.slot, data.pads)
+	state.metaDirty = true
+	notify(player, "Pad bought! Build a tower on it.", "good")
+end
+
+-- argument: { pad = number, kind = string }
+function actions.buildTower(player: Player, data, state, argument: unknown)
+	if typeof(argument) ~= "table" then
+		return
+	end
+	local pad, kind = padIndex(argument.pad), argument.kind
+	local def = if typeof(kind) == "string" then Config.Towers[kind] else nil
+	if not pad or not def or not table.find(data.pads, pad) or data.towers[padKey(pad)] then
+		return
+	end
+	if data.bestCleared < def.unlock then
+		notify(player, `Clear {Config.waveLabel(def.unlock)} to unlock the {def.name}`, "bad")
+		return
+	end
+	if data.coins < def.cost then
+		notify(player, `Need {Format.abbreviate(def.cost - data.coins)} more coins`, "bad")
+		return
+	end
+	data.coins -= def.cost
+	data.towers[padKey(pad)] = { kind = kind, level = 1 }
+	refreshTowers(data, state)
+	Plots.setTower(state.slot, pad, kind, 1)
+	notify(player, `{def.name} built!`, "good")
+end
+
+-- argument: { pad = number, levels = number }. Buys up to `levels` upgrades (1, 10, or 1000 for "max"), as
+-- many as the coins allow.
+function actions.upgradeTower(player: Player, data, state, argument: unknown)
+	if typeof(argument) ~= "table" then
+		return
+	end
+	local pad, levels = padIndex(argument.pad), argument.levels
+	local tower = if pad then data.towers[padKey(pad)] else nil
+	if not pad or not tower or typeof(levels) ~= "number" or levels ~= levels or levels < 1 then
+		return
+	end
+	if tower.level >= Config.TowerMaxLevel then
+		notify(player, "This tower is at its top level", "info")
+		return
+	end
+	local mult = derived("upgradeCost", data, state)
+	local reached, spent = Config.towerUpgrades(tower.kind, tower.level, data.coins, math.min(math.floor(levels), MAX_UPGRADE_LEVELS), mult)
+	if reached == tower.level then
+		local cost = Config.towerUpgradeCost(tower.kind, tower.level, mult)
+		notify(player, `Need {Format.abbreviate(cost - data.coins)} more coins`, "bad")
+		return
+	end
+	local tierBefore = Config.towerTier(tower.level)
+	track(data, state, "upgrades", reached - tower.level)
+	data.coins -= spent
+	tower.level = reached
+	refreshTowers(data, state)
+	Plots.setTower(state.slot, pad, tower.kind, reached)
+	local tier = Config.towerTier(reached)
+	if tier > tierBefore then
+		notify(player, `{Config.Cannons[tier].short} {Config.Towers[tower.kind].name}! Level {reached}`, "good")
+	end
+end
+
+-- Removes the tower and refunds a share of the coins put into it. The last tower cannot be sold.
+function actions.sellTower(player: Player, data, state, argument: unknown)
+	local pad = padIndex(argument)
+	local tower = if pad then data.towers[padKey(pad)] else nil
+	if not pad or not tower then
+		return
+	end
+	if #state.towerList <= 1 then
+		notify(player, "You cannot sell your last tower", "bad")
+		return
+	end
+	-- A player whose upgrades are discounted (the `upgradeCost` modifiers) is refunded at the discount too:
+	-- selling must never pay more than building cost.
+	local discount = math.min(1, derived("upgradeCost", data, state))
+	local refund = math.floor(Config.towerInvested(tower.kind, tower.level) * Defense.sellRefund * discount)
+	data.towers[padKey(pad)] = nil
+	data.coins += refund
+	refreshTowers(data, state)
+	Plots.setTower(state.slot, pad, nil, nil)
+	notify(player, `Sold for {Format.abbreviate(refund)} coins`, "info")
+end
+
+function actions.nextWave(player: Player, data, state)
+	if data.wave < Config.TotalWaves and data.wave <= data.cleared then
+		data.wave += 1
+		startLevel(player, data, state)
+	end
+end
+
+function actions.prevWave(player: Player, data, state)
+	if data.wave > 1 then
+		data.wave -= 1
+		startLevel(player, data, state)
+	end
+end
+
+function actions.travel(player: Player, data, state, worldIndex: unknown)
+	if typeof(worldIndex) ~= "number" or not Config.Worlds[worldIndex] then
+		return
+	end
+	local first = (worldIndex - 1) * Config.WavesPerWorld + 1
+	if data.cleared < first - 1 then
+		notify(player, `Clear {Config.waveLabel(first - 1)} to unlock {Config.Worlds[worldIndex].name}`, "bad")
+		return
+	end
+	-- Land on the furthest level reached in that world.
+	data.wave = math.clamp(data.cleared + 1, first, first + Config.WavesPerWorld - 1)
+	startLevel(player, data, state)
+end
+
+function actions.toggleAuto(_player: Player, data)
+	data.autoAdvance = not data.autoAdvance
+end
+
+-- The speed button: 1x, 2x, 3x, then back to 1x. A number picks that speed.
+function actions.setSpeed(_player: Player, data, _state, speed: unknown)
+	if typeof(speed) == "number" and speed == speed then
+		data.speed = math.clamp(math.floor(speed), 1, MAX_SPEED)
+	else
+		data.speed = data.speed % MAX_SPEED + 1
+	end
+end
+
+<<<<<<< /Users/yaani/Roblox Game/src/server/Game.luau
+=======
+-- Rebirth, the rare prestige (Config.Rebirth): allowed once the final boss of world (rebirths + 1) is beaten
+-- in this run. It puts the levels, the coins, the pads and the towers back to a new save's, and keeps
+-- everything else: mini cannons, gems, candy, items, boosts, what the features saved (mastery, enchants, the
+-- story), the Veteran level and every unlock (bestCleared). It pays gems and adds tower damage for good.
+-- The argument must be `true`: the WORLDS window sends it on the second, confirming press.
+function actions.rebirth(player: Player, data, state, confirmed: unknown)
+	if confirmed ~= true then
+		return
+	end
+	local need = Config.rebirthWave(data.rebirths)
+	if need > Config.TotalWaves then
+		notify(player, "You have taken every rebirth there is", "info")
+		return
+	end
+	if data.cleared < need then
+		notify(player, `Beat {Config.Worlds[Config.worldOf(need)].finalBoss.name} ({Config.waveLabel(need)}) to rebirth`, "bad")
+		return
+	end
+
+	for _, tower in state.towerList do
+		Plots.setTower(state.slot, tower.pad, nil, nil)
+	end
+	data.rebirths += 1
+	data.wave = Data.fresh("wave")
+	data.cleared = Data.fresh("cleared")
+	data.coins = Data.fresh("coins")
+	data.pads = Data.fresh("pads")
+	data.towers = Data.fresh("towers")
+	data.autoAdvance = Data.fresh("autoAdvance")
+	data.diamonds += Config.Rebirth.gems
+	cleanTowers(data)
+
+	state.towers = {} -- no cooldown carries over
+	Plots.setPads(state.slot, data.pads)
+	refreshTowers(data, state)
+	for _, tower in state.towerList do
+		Plots.setTower(state.slot, tower.pad, tower.kind, tower.level)
+	end
+	refreshPets(player) -- the set bonus goes by the towers' tier names
+	startLevel(player, data, state)
+	state.metaDirty = true
+
+	local percent = math.floor((Config.rebirthMult(data.rebirths) - 1) * 100 + 0.5)
+	notify(player, `REBIRTH {data.rebirths}! +{percent}% tower damage forever and +{Config.Rebirth.gems} gems. Back to {Config.waveLabel(1)}.`, "good")
+	fire("rebirth", player, data, state)
+	Game.send(player, "defense", "rebirth", data.rebirths)
+end
+
+>>>>>>> /private/tmp/claude-501/-Users-yaani-Roblox-Game/d57371e9-cfb2-4d41-a855-adae18cece7c/scratchpad/stage3/src/server/Game.luau
+function actions.claimDaily(player: Player, data)
+	local day = Config.dayNumber(os.time())
+	if data.daily.last == day then
+		notify(player, "Already claimed today - come back tomorrow!", "bad")
+		return
+	end
+	local index = dailyIndex(data, day)
+	local reward = Config.Daily[index]
+	data.daily.last = day
+	data.daily.streak = index
+	data.diamonds += reward.diamonds
+	local extras = ""
+	if reward.boost then
+		-- Like a boost from the shops (see purchase): powerup items for the backpack when Features/Powerups
+		-- defines them, the boost itself right away when it does not.
+		local powerup = Items.get(reward.boost) :: any
+		if powerup and powerup.seconds then
+			Game.items.give(player, reward.boost, math.ceil(reward.minutes * 60 / powerup.seconds))
+			extras ..= ` and {powerup.name} ({reward.minutes} min) in your BACKPACK`
+		else
+			addBoost(data, reward.boost, reward.minutes)
+			extras ..= ` and {Config.Boosts[reward.boost].name} for {reward.minutes} min`
+		end
+	end
+	if reward.pet then
+		addPet(player, data, reward.pet, true)
+		refreshPets(player)
+		extras ..= ` and a {Config.Pets[reward.pet].name}`
+	end
+	notify(player, `Day {index} reward: +{reward.diamonds} gems{extras}`, "good")
+end
+
+function actions.claimMission(player: Player, data, _state, missionId: unknown)
+	local today = missions(data)
+	for _, mission in Config.Missions do
+		if mission.id == missionId then
+			if today.claimed[mission.id] or (today.progress[mission.key] or 0) < mission.goal then
+				return
+			end
+			today.claimed[mission.id] = true
+			data.diamonds += mission.reward
+			notify(player, `Mission complete! +{mission.reward} gems`, "good")
+			return
+		end
+	end
+end
+
+-- Shared purchase path for the weekly diamond shop and the event candy shop.
+local function purchase(player: Player, data, items, itemId: unknown, bought, currency: string)
+	local item
+	for _, candidate in items do
+		if candidate.id == itemId then
+			item = candidate
+		end
+	end
+	if not item then
+		return
+	end
+	local count = bought[item.id] or 0
+	if count >= item.limit then
+		notify(player, "Sold out", "bad")
+		return
+	end
+	if item.kind == "slot" and data.extraSlots >= Config.MaxExtraSlots then
+		notify(player, "Mini cannon slots are already maxed", "bad")
+		return
+	end
+	if data[currency] < item.cost then
+		notify(player, `Not enough {Config.CurrencyNames[currency]}`, "bad")
+		return
+	end
+	data[currency] -= item.cost
+	bought[item.id] = count + 1
+
+	if item.kind == "pet" then
+		addPet(player, data, item.pet, true)
+		refreshPets(player)
+	elseif item.kind == "boost" then
+		-- A boost is sold as powerup items for the backpack (Features/Powerups), so the player picks the moment
+		-- it starts. One item runs for powerup.seconds; they get as many as cover the minutes paid for.
+		-- Without that feature there is no such item, and the boost starts at once as it always did.
+		local powerup = Items.get(item.boost) :: any
+		if powerup and powerup.seconds then
+			Game.items.give(player, item.boost, math.ceil(item.minutes * 60 / powerup.seconds))
+			notify(player, `Bought {item.name}! Use it from your BACKPACK`, "good")
+			return
+		end
+		addBoost(data, item.boost, item.minutes)
+	elseif item.kind == "slot" then
+		data.extraSlots += 1
+		refreshPets(player)
+	elseif item.kind == "diamonds" then
+		data.diamonds += item.amount
+	end
+	notify(player, `Bought {item.name}!`, "good")
+end
+
+function actions.buyWeekly(player: Player, data, _state, itemId: unknown)
+	local week = Config.weekNumber(os.time())
+	if data.weekly.week ~= week then
+		data.weekly = { week = week, bought = {} }
+	end
+	purchase(player, data, Config.weeklyItems(week), itemId, data.weekly.bought, "diamonds")
+end
+
+function actions.buyEvent(player: Player, data, _state, itemId: unknown)
+	if not Config.halloweenActive(os.time()) then
+		notify(player, "The Halloween event has ended", "bad")
+		return
+	end
+	purchase(player, data, Config.EventShop, itemId, data.event.bought, "candy")
+end
+
+local function onAction(player: Player, name: unknown, argument: unknown)
+	local data, state = Data.get(player), states[player]
+	if not data or not state or typeof(name) ~= "string" then
+		return
+	end
+	local handler = actions[name]
+	local now = os.clock()
+	if not handler or now - state.lastAction < ACTION_COOLDOWN then
+		return
+	end
+	state.lastAction = now
+	fire("action", player, data, state, name)
+	handler(player, data, state, argument)
+	syncAll(player)
+end
+
+----------------------------------------------------------------------------------------------------
+-- Players
+----------------------------------------------------------------------------------------------------
+local function takeSlot(player: Player): number
+	for slot = 1, Layout.PLOT_COUNT do
+		if not slots[slot] then
+			slots[slot] = player
+			return slot
+		end
+	end
+	-- The server is over capacity for plots; share one rather than fail.
+	return (player.UserId % Layout.PLOT_COUNT) + 1
+end
+
+local function newLeaderstats(player: Player)
+	local folder = Instance.new("Folder")
+	folder.Name = "leaderstats"
+	local stats = {}
+	-- Cannon Power outgrows any number value the player list can show: it is written out ("1.25Qa").
+	for name, className in { Gems = "IntValue", Rebirths = "IntValue", ["Cannon Power"] = "StringValue" } do
+		local value = Instance.new(className)
+		value.Name = name
+		value.Parent = folder
+		stats[name] = value
+	end
+	folder.Parent = player
+	return stats
+end
+
+-- A new character always starts on its own plot.
+local function onCharacter(player: Player, character: Model)
+	if not states[player] then
+		return
+	end
+	character:WaitForChild("Humanoid", 10)
+	character:WaitForChild("HumanoidRootPart", 10)
+	task.wait()
+	if character.Parent and states[player] then
+		setPlace(player, "plot")
+		sync(player)
+	end
+end
+
+local function onPlayerAdded(player: Player)
+	local data, loaded = Data.load(player)
+	Passes.load(player)
+	if not player.Parent then
+		Passes.unload(player)
+		Data.release(player)
+		return
+	end
+	player.CameraMaxZoomDistance = MAX_CAMERA_ZOOM
+	data.rebirths = math.clamp(math.floor(data.rebirths), 0, #Config.Worlds)
+	data.speed = if data.speed == data.speed then math.clamp(math.floor(data.speed), 1, MAX_SPEED) else 1
+	data.bestCleared = math.max(data.bestCleared, data.cleared)
+	data.wave = math.clamp(data.wave, 1, math.min(data.cleared + 1, Config.TotalWaves))
+	cleanTowers(data)
+
+	local slot = takeSlot(player)
+	local state = {
+		player = player,
+		slot = slot,
+		plotCFrame = Layout.plotCFrame(slot),
+		lastAction = 0,
+		lastMeta = 0,
+		equipped = {},
+		place = "plot", -- "plot", "market" or "island" (see "Places")
+		island = 0, -- which island, when on one
+		inMarket = false, -- in the marketplace
+		dps = 0, -- Cannon Power, as last synced
+		failShare = 0, -- how much of the monster that last leaked had been shot off
+		gemsOwed = 0, -- the part of a gem the `gems` modifiers have dropped so far
+		dirty = true,
+		metaDirty = true,
+		leaderstats = newLeaderstats(player),
+		-- the fight (see "Levels")
+		clock = 0, -- seconds of simulation; what slowUntil and burnUntil are measured on
+		busy = 0,
+		nextId = 0,
+		phase = "break",
+		breakLeft = 0,
+		failed = false,
+		lives = Defense.lives,
+		livesMax = Defense.lives,
+		monsters = {},
+		spawned = 0,
+		spawnIn = 0,
+		petOwed = 0,
+		levelCoins = 0,
+		plan = Config.levelPlan(data.wave),
+		towers = {},
+		towerList = {},
+		towerNames = {},
+		heroBase = 0,
+		hp = 1,
+		maxHp = 1,
+	}
+	states[player] = state
+	released[slot] = nil
+	Plots.claim(slot, player)
+	Plots.setPads(slot, data.pads)
+	refreshTowers(data, state)
+	for _, tower in state.towerList do
+		Plots.setTower(slot, tower.pad, tower.kind, tower.level)
+	end
+	refreshPets(player)
+	startLevel(player, data, state)
+	Game.setMeta(player, "items", data.items)
+	fire("ready", player, data, state)
+	syncAll(player)
+	if not loaded then
+		notify(player, "Save data could not load - progress this session will not save.", "bad")
+	end
+	if data.bestCleared == 0 and data.totalKills == 0 then
+		notify(player, `Welcome to {Config.GameName}! Your cannon shoots by itself. Walk up to it and press UPGRADE to get further.`, "info")
+	end
+
+	player.CharacterAdded:Connect(function(character)
+		onCharacter(player, character)
+	end)
+	if player.Character then
+		onCharacter(player, player.Character)
+	end
+end
+
+-- power: the player's Cannon Power, for its board. The save does not hold it, and by the time a leaving
+-- player's save is written their session state is gone.
+local function saveAndRelease(player: Player, power: number?)
+	local data = Data.get(player)
+	if data and Data.release(player) then
+		Leaderboard.submit(player, data, { power = power or 0 })
+	end
+end
+
+local function onPlayerRemoving(player: Player)
+	local state = states[player]
+	local power = if state then state.dps else nil
+	if state then
+		fire("leave", player, Data.get(player), state)
+		if state.petsModel then
+			state.petsModel:Destroy()
+		end
+		if slots[state.slot] == player then
+			slots[state.slot] = nil
+			Plots.release(state.slot)
+			released[state.slot] = os.clock() + RELEASE_SECONDS
+		end
+		states[player] = nil
+	end
+	Passes.unload(player)
+	saveAndRelease(player, power)
+end
+
+----------------------------------------------------------------------------------------------------
+-- Plug-in API for features (src/server/Features). Documented in docs/ARCHITECTURE.md.
+----------------------------------------------------------------------------------------------------
+Game.random = rng
+Game.notify = notify
+Game.sync = syncAll
+
+-- Adjusts a derived number: fn(player, data, state, value) -> value. The kinds, and what `value` starts as:
+--   perClick / power   the multiplier on all tower and mini cannon damage (mini cannons x veteran x rebirths x boosts)
+--   damage             one shot's damage, from a tower or a mini cannon
+--   bossDamage         multiplier on every shot on a boss level (1)
+--   towerRate          multiplier on every tower's shots per second (1)
+--   towerRange         multiplier on every tower's range (1)
+--   coins              multiplier on the coins of every kill
+--   upgradeCost        multiplier on the price of tower upgrades (1; under 1 is a discount)
+--   heal               share of max HP every monster of the level heals per second
+--   monsterSpeed       multiplier on how fast monsters walk (1)
+--   lives              the lives a level starts with (Config.Defense.lives); read when a level starts
+--   autoShots          mini cannon shots per second, all together
+--   petShots           multiplier on that (1)
+--   petRange           multiplier on how far from the player their mini cannons shoot (1; Config.Defense.petRange)
+--   luck               luck when hatching (1, or the pass's 3)
+--   crateDrops         multiplier on crate drop chances (1). The core does not use it: Game.value(player, kind)
+--   gems               gems a defeated boss drops (0). The core pays whole gems and carries the rest over
+--   equipSlots         how many mini cannons can be equipped (the base, the weekly shop's slots, passes). A
+--                      feature that changes what it gives calls Game.refreshPets(player)
+-- label is what the STATS window calls this source (Game.breakdown): a string, or a function(player, data,
+-- state) -> string or nil, nil meaning "not active right now". Without one it is listed as "Other".
+-- A label function may also answer a list of parts, { { label = string, weight = number } }, when the one
+-- modifier stands for several sources: what it changed is then shared out by weight, one line per part.
+function Game.modify(kind: string, fn, label: any?)
+	local list = modifiers[kind]
+	assert(list, `Game.modify: there is no modifier called "{kind}"`)
+	assert(typeof(fn) == "function", "Game.modify: the modifier must be a function")
+	table.insert(list, { fn = fn, label = label })
+end
+
+-- The number of that kind for this player right now, with every modifier and the core's limits: what the game
+-- really applies. 0 until the player is ready. (`damage` has no value of its own: it is per shot.)
+function Game.value(player: Player, kind: string): number
+	assert(CORE[kind], `Game.value: there is no number called "{kind}"`)
+	local data, state = Data.get(player), states[player]
+	return if data and state then derived(kind, data, state) else 0
+end
+
+-- Where a number comes from, for the STATS window: { base, total, sources = { { label, value, mult, add } } }.
+--   base     what it starts as, before any source       total   what the game applies (Game.value)
+--   sources  one entry per source that changes it right now, in the order they apply: first the core's own
+--            (mini cannons, the Veteran level, rebirths, boosts), then every modifier, one at a time.
+--            value is the number after that source, mult what it multiplied it by (nil when it started from
+--            0) and add what it added.
+-- nil until the player is ready.
+function Game.breakdown(player: Player, kind: string)
+	local core = CORE[kind]
+	assert(core, `Game.breakdown: there is no number called "{kind}"`)
+	local data, state = Data.get(player), states[player]
+	if not data or not state then
+		return nil
+	end
+	local sources = {}
+	local value = modified(kind, data, state, core.value(player, data, state, sources), sources)
+	local base = if typeof(core.base) == "function" then core.base(state) else core.base
+	return { base = base, total = core.finish(value), sources = sources }
+end
+
+-- event: ready, leave, shot, kill, waveCleared, hatch, tick, levelStart, levelFailed, leak or rebirth.
+-- fn(player, data, state, ...).
+function Game.on(event: string, fn)
+	local list = hooks[event]
+	assert(list, `Game.on: there is no event called "{event}"`)
+	table.insert(list, fn)
+end
+
+function Game.data(player: Player)
+	return Data.get(player)
+end
+
+function Game.state(player: Player)
+	return states[player]
+end
+
+-- A toast for everyone on the server.
+function Game.announce(text: string, kind: string?)
+	notifyRemote:FireAllClients(text, kind or "info")
+end
+
+-- A feature's own client state: sent as the JSON attribute Meta_<key>, read on the client with State.feature(key).
+function Game.setMeta(player: Player, key: string, value)
+	player:SetAttribute("Meta_" .. key, HttpService:JSONEncode(value))
+end
+
+-- A message to a feature's client module: ctx.on(channel, handler) receives the arguments.
+function Game.send(player: Player, channel: string, ...)
+	featureRemote:FireClient(player, channel, ...)
+end
+
+function Game.sendAll(channel: string, ...)
+	featureRemote:FireAllClients(channel, ...)
+end
+
+-- A feature's own saved table, kept under data.features[name]. Missing keys are filled from defaults.
+function Game.feature(data, name: string, defaults)
+	local saved = data.features[name]
+	if typeof(saved) ~= "table" then
+		saved = {}
+		data.features[name] = saved
+	end
+	for key, value in defaults or {} do
+		if saved[key] == nil then
+			saved[key] = if typeof(value) == "table" then table.clone(value) else value
+		end
+	end
+	return saved
+end
+
+-- Extra damage that needs no tower (an ability, a burn from a feature): it hits the lead monster, the one
+-- furthest along the path, and what is left over after a kill carries into the next one, for at most
+-- Config.MaxChainKills kills. It stays inside the level being fought.
+function Game.damage(player: Player, amount: number)
+	local data, state = Data.get(player), states[player]
+	if not data or not state or not usable(amount) then
+		return
+	end
+	state.busy += 1
+	for _ = 1, Config.MaxChainKills do
+		local monster = leadMonster(state)
+		if not monster then
+			break
+		end
+		local health = monster.hp
+		hurt(player, data, state, monster, math.min(amount, health))
+		amount -= health
+		if amount <= 0 then
+			break
+		end
+	end
+	state.busy -= 1
+	sweep(player, data, state)
+end
+
+-- The same amount to every living monster of the level being fought, each on its own (an ability that hits
+-- the whole plot). Returns how many it hit.
+function Game.damageAll(player: Player, amount: number): number
+	local data, state = Data.get(player), states[player]
+	if not data or not state or not usable(amount) then
+		return 0
+	end
+	local hits = 0
+	state.busy += 1
+	for _, monster in state.monsters do
+		if not monster.dead then
+			hits += 1
+			hurt(player, data, state, monster, amount)
+		end
+	end
+	state.busy -= 1
+	sweep(player, data, state)
+	return hits
+end
+
+-- The living monster furthest along the path within `range` studs of the player's character, or nil: what
+-- their mini cannons would shoot at. Nothing while the player is away from their plot or has no character.
+-- range is the mini cannons' own when left out: Config.Defense.petRange times the `petRange` modifiers. The
+-- monster is the core's own table: read it, and hurt it with Game.hurt.
+function Game.leadNear(player: Player, range: number?)
+	local state = states[player]
+	if not state or state.place ~= "plot" then
+		return nil
+	end
+	local x, z = characterSpot(player, state)
+	if not x or not z then
+		return nil
+	end
+	local data = Data.get(player)
+	local reach = range or (Defense.petRange * (if data then derived("petRange", data, state) else 1))
+	return leadWithin(state, x, z, reach * reach)
+end
+
+-- Damage to one monster of the player's level (one from state.monsters, or from Game.leadNear). Nothing
+-- carries over: what is left after the kill is lost. Returns whether it was dealt.
+function Game.hurt(player: Player, monster, amount: number): boolean
+	local data, state = Data.get(player), states[player]
+	if not data or not state or typeof(monster) ~= "table" or monster.dead or not usable(amount) then
+		return false
+	end
+	if not table.find(state.monsters, monster) then
+		return false
+	end
+	state.busy += 1
+	hurt(player, data, state, monster, amount)
+	state.busy -= 1
+	sweep(player, data, state)
+	return true
+end
+
+-- One mini cannon shot (a "hero shot") at the lead monster, wherever the player is: through the `damage`
+-- modifiers and the `shot` hook, like the ones the mini cannons fire themselves. For powerups and the like.
+-- The second argument was "manual" in the clicker; nothing is manual any more and it is ignored.
+function Game.shoot(player: Player, _manual: boolean?)
+	local data, state = Data.get(player), states[player]
+	if not data or not state then
+		return
+	end
+	local target = leadMonster(state)
+	if target then
+		state.busy += 1
+		shoot(player, data, state, target, state.heroBase * powerMult(data, state), "pet", nil)
+		state.busy -= 1
+		sweep(player, data, state)
+	end
+end
+
+-- The multiplier on all the player's damage right now, with every `perClick` / `power` modifier: mini
+-- cannons, the Veteran level, rebirths, boosts, features. The client reads it as PowerMult. 0 until the player is ready.
+function Game.perClick(player: Player): number
+	local data, state = Data.get(player), states[player]
+	return if data and state then powerMult(data, state) else 0
+end
+Game.power = Game.perClick
+
+-- The damage of one mini cannon shot right now, through the `bossDamage` and `damage` modifiers. The shot hooks (a crit, an
+-- ammo type) are not run. For a feature that fires shots of its own and pays them with Game.damage.
+-- 0 until the player is ready.
+function Game.shotDamage(player: Player): number
+	local data, state = Data.get(player), states[player]
+	return if data and state then shotValue(data, state, state.heroBase * powerMult(data, state)) else 0
+end
+
+-- Stackable items (powerups, ammo, crates ...), defined in the shared Items registry and kept as data.items[id] = count.
+Game.items = {}
+
+function Game.items.count(data, id: string): number
+	return data.items[id] or 0
+end
+
+function Game.items.give(player: Player, id: string, amount: number?): boolean
+	local data = Data.get(player)
+	if not data or not Items.get(id) then
+		return false
+	end
+	data.items[id] = (data.items[id] or 0) + (amount or 1)
+	Game.setMeta(player, "items", data.items)
+	return true
+end
+
+-- Takes the items only if the player has that many. Returns whether it did.
+function Game.items.take(player: Player, id: string, amount: number?): boolean
+	local data = Data.get(player)
+	local count = amount or 1
+	if not data or (data.items[id] or 0) < count then
+		return false
+	end
+	local left = data.items[id] - count
+	data.items[id] = if left > 0 then left else nil
+	Game.setMeta(player, "items", data.items)
+	return true
+end
+
+-- What happens when an item is used from the backpack: handler(player, data, state, def) -> true to consume one.
+-- key is an item id, or a category to handle every item in it.
+local itemUses = {}
+function Game.onUse(key: string, handler)
+	itemUses[key] = handler
+end
+
+function actions.useItem(player: Player, data, state, itemId: unknown)
+	local def = if typeof(itemId) == "string" then Items.get(itemId) else nil
+	if not def or (data.items[itemId] or 0) < 1 then
+		return
+	end
+	local handler = itemUses[itemId] or itemUses[def.category]
+	if handler and handler(player, data, state, def) then
+		Game.items.take(player, itemId :: string, 1)
+	end
+end
+
+-- Mini cannons. Every change re-picks the equipped ones and rebuilds their models.
+Game.pets = {}
+
+function Game.pets.count(data, id: string): number
+	local count = 0
+	for _, other in data.pets do
+		if other == id then
+			count += 1
+		end
+	end
+	return count
+end
+
+-- force keeps it even when storage is full (it replaces the weakest). Returns whether it was kept.
+function Game.pets.add(player: Player, id: string, force: boolean?): boolean
+	local data, state = Data.get(player), states[player]
+	if not data or not state or not Config.Pets[id] then
+		return false
+	end
+	local kept = addPet(player, data, id, force)
+	refreshPets(player)
+	state.metaDirty = true
+	return kept
+end
+
+-- Removes that many only if the player owns them. Returns whether it did.
+function Game.pets.remove(player: Player, id: string, amount: number?): boolean
+	local data, state = Data.get(player), states[player]
+	local left = amount or 1
+	if not data or not state or Game.pets.count(data, id) < left then
+		return false
+	end
+	for index = #data.pets, 1, -1 do
+		if left > 0 and data.pets[index] == id then
+			table.remove(data.pets, index)
+			left -= 1
+		end
+	end
+	refreshPets(player)
+	state.metaDirty = true
+	return true
+end
+
+-- Trades the mini cannons in `give` (a list of ids; the same id may be in it more than once) for the one
+-- mini cannon `get`, in one step: a fusion, or an enchantment (one for one). Nothing happens unless the
+-- player owns every one of them and `get` exists. The new one takes the place of the first: the list never
+-- grows, so, unlike Game.pets.add, this can never push another mini cannon out of a full storage.
+-- Returns whether it was done.
+function Game.pets.swap(player: Player, give: { string }, get: string): boolean
+	local data, state = Data.get(player), states[player]
+	if not data or not state or typeof(give) ~= "table" or #give < 1 or typeof(get) ~= "string" or not Config.Pets[get] then
+		return false
+	end
+	local places, taken = {}, {}
+	for _, id in give do
+		local found = nil
+		for index, other in data.pets do
+			if other == id and not taken[index] then
+				found = index
+				break
+			end
+		end
+		if not found then
+			return false
+		end
+		taken[found] = true
+		table.insert(places, found)
+	end
+	data.pets[places[1]] = get
+	taken[places[1]] = nil
+	for index = #data.pets, 1, -1 do
+		if taken[index] then
+			table.remove(data.pets, index)
+		end
+	end
+	refreshPets(player)
+	state.metaDirty = true
+	return true
+end
+
+-- Picks the equipped mini cannons again and rebuilds their models: for a feature whose `equipSlots` modifier
+-- just changed what it gives (a new slot is filled at once).
+function Game.refreshPets(player: Player)
+	local state = states[player]
+	if state and Data.get(player) then
+		refreshPets(player)
+		state.metaDirty = true
+	end
+end
+
+-- Timed boosts, kept as data.boosts[id] = the unix time it runs out. The client reads them from State.meta.boosts.
+Game.boosts = { active = boostActive }
+
+function Game.boosts.add(player: Player, id: string, seconds: number)
+	local data, state = Data.get(player), states[player]
+	if data and state then
+		data.boosts[id] = math.max(os.time(), data.boosts[id] or 0) + seconds
+		state.dirty = true
+		state.metaDirty = true
+	end
+end
+
+function Game.boosts.remaining(data, id: string): number
+	return math.max(0, (data.boosts[id] or 0) - os.time())
+end
+
+-- Robux developer products: Game.products[productId] = function(player) -> true once the purchase is granted.
+Game.products = {}
+
+function Game.promptProduct(player: Player, productId: number)
+	MarketplaceService:PromptProductPurchase(player, productId)
+end
+
+local function processReceipt(receipt): Enum.ProductPurchaseDecision
+	local player = Players:GetPlayerByUserId(receipt.PlayerId)
+	local data = player and Data.get(player)
+	local handler = Game.products[receipt.ProductId]
+	if not player or not data or not handler then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	if table.find(data.receipts, receipt.PurchaseId) then
+		return Enum.ProductPurchaseDecision.PurchaseGranted
+	end
+	local ok, granted = pcall(handler, player)
+	if not ok or not granted then
+		if not ok then
+			warn(`[Game] product {receipt.ProductId} failed: {granted}`)
+		end
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	table.insert(data.receipts, receipt.PurchaseId)
+	if #data.receipts > MAX_RECEIPTS then
+		table.remove(data.receipts, 1)
+	end
+	syncAll(player)
+	return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+
+-- Studio-only cheat for testing: Remotes.Debug:FireServer("coins", 1e6), or ("wave", 50) to jump ahead.
+local function enableDebug()
+	newRemote("Debug").OnServerEvent:Connect(function(player: Player, field: unknown, value: unknown)
+		local data, state = Data.get(player), states[player]
+		if not data or not state or typeof(field) ~= "string" or typeof(value) ~= "number" or value ~= value then
+			return
+		end
+		if string.sub(field, 1, 5) == "pass:" then
+			-- e.g. Debug:FireServer("pass:tripleHatch", 1) gives the pass, 0 takes it away
+			Passes.setForTesting(player, string.sub(field, 6), value ~= 0)
+			return
+		end
+		if field == "wave" then
+			data.wave = math.clamp(math.floor(value), 1, Config.TotalWaves)
+			data.cleared = math.max(data.cleared, data.wave - 1)
+			data.bestCleared = math.max(data.bestCleared, data.cleared)
+			startLevel(player, data, state)
+		elseif field == "towers" then
+			-- e.g. Debug:FireServer("towers", 120) puts every tower the player has at level 120
+			for _, tower in data.towers do
+				tower.level = math.clamp(math.floor(value), 1, Config.TowerMaxLevel)
+			end
+			refreshTowers(data, state)
+			for _, tower in state.towerList do
+				Plots.setTower(state.slot, tower.pad, tower.kind, tower.level)
+			end
+		elseif string.sub(field, 1, 4) == "pet:" then
+			-- e.g. Debug:FireServer("pet:wooden", 27) gives 27 Mini Wooden Cannons: enough to fuse a Diamond one.
+			-- An enchanted id works too: "pet:wooden~sharp3"
+			local id = string.sub(field, 5)
+			if Config.Pets[id] then
+				for _ = 1, math.min(value, 100) do
+					addPet(player, data, id, true)
+				end
+				refreshPets(player)
+			end
+		elseif string.sub(field, 1, 5) == "item:" then
+			-- e.g. Debug:FireServer("item:power2x", 5) gives 5 of that backpack item
+			Game.items.give(player, string.sub(field, 6), math.clamp(math.floor(value), 1, 1000))
+		elseif typeof(data[field]) == "number" then
+			data[field] = value
+		end
+		syncAll(player)
+	end)
+end
+
+-- Connects a prompt, or every prompt in a table (as keys or as values), to handler(player).
+local function eachPrompt(prompts: any, connect: (ProximityPrompt) -> ())
+	if typeof(prompts) == "Instance" then
+		connect(prompts)
+	elseif typeof(prompts) == "table" then
+		for key, value in prompts do
+			if typeof(key) == "Instance" then
+				connect(key)
+			elseif typeof(value) == "Instance" then
+				connect(value)
+			end
+		end
+	end
+end
+
+function Game.start()
+	if RunService:IsStudio() then
+		enableDebug()
+	end
+	actionRemote.OnServerEvent:Connect(onAction)
+	MarketplaceService.ProcessReceipt = processReceipt
+
+	-- Prompts: egg stands hatch, the marketplace's gate sends the player back to their plot, and the plots'
+	-- own gate (Plots.marketPrompt, when the plot builder made one) sends them to the marketplace.
+	-- Pad prompts need nothing here: the client opens the tower window and asks through the actions above.
+	local function onPrompt(player: Player, handler)
+		local data, state = Data.get(player), states[player]
+		local now = os.clock()
+		if not data or not state or now - state.lastAction < ACTION_COOLDOWN then
+			return
+		end
+		state.lastAction = now
+		fire("action", player, data, state, "prompt")
+		handler(player, data, state)
+		syncAll(player)
+	end
+	for prompt, eggId in Marketplace.eggPrompts do
+		local egg = Config.EggById[eggId]
+		prompt.Triggered:Connect(function(player: Player)
+			onPrompt(player, function(_, data, state)
+				hatchEgg(player, data, state, egg, 1)
+			end)
+		end)
+	end
+	for prompt, eggId in Marketplace.tripleEggPrompts do
+		local egg = Config.EggById[eggId]
+		prompt.Triggered:Connect(function(player: Player)
+			onPrompt(player, function(_, data, state)
+				hatchTriple(player, data, state, egg)
+			end)
+		end)
+	end
+	eachPrompt(Marketplace.returnPrompt, function(prompt)
+		prompt.Triggered:Connect(function(player: Player)
+			onPrompt(player, function()
+				setPlace(player, "plot")
+			end)
+		end)
+	end)
+	eachPrompt(Game.homePrompts, function(prompt)
+		prompt.Triggered:Connect(function(player: Player)
+			onPrompt(player, function()
+				setPlace(player, "plot")
+			end)
+		end)
+	end)
+	eachPrompt((Plots :: any).marketPrompt, function(prompt)
+		prompt.Triggered:Connect(function(player: Player)
+			onPrompt(player, function()
+				setPlace(player, "market")
+			end)
+		end)
+	end)
+
+	-- A pass was bought (or toggled in Studio): slots and odds may have changed.
+	Passes.changed:Connect(function(player: Player)
+		if states[player] and Data.get(player) then
+			refreshPets(player)
+			syncAll(player)
+			notify(player, "Game pass unlocked!", "good")
+		end
+	end)
+	Players.PlayerAdded:Connect(onPlayerAdded)
+	Players.PlayerRemoving:Connect(onPlayerRemoving)
+	for _, player in Players:GetPlayers() do
+		task.spawn(onPlayerAdded, player)
+	end
+
+	local simOwed, sinceHook, sinceSync, sinceField = 0, 0, 0, 0
+	RunService.Heartbeat:Connect(function(dt: number)
+		-- The fight runs in fixed steps, however long a frame took. A server that falls behind does not try to
+		-- catch up more than MAX_STEPS at once: the monsters walk slower instead.
+		simOwed = math.min(simOwed + dt, STEP * MAX_STEPS)
+		while simOwed >= STEP do
+			simOwed -= STEP
+			for _, player in Players:GetPlayers() do
+				-- The player's own game speed: their plot simply takes more steps.
+				local data = Data.get(player)
+				for _ = 1, if data then math.clamp(data.speed, 1, MAX_SPEED) else 1 do
+					stepPlayer(player, STEP)
+				end
+			end
+		end
+
+		sinceHook += dt
+		if sinceHook >= HOOK_SECONDS then
+			for _, player in Players:GetPlayers() do
+				local data, state = Data.get(player), states[player]
+				if data and state then
+					fire("tick", player, data, state, sinceHook)
+					state.dirty = true -- boosts run out, features change multipliers
+				end
+			end
+			sinceHook = 0
+		end
+
+		sinceField += dt
+		if sinceField >= FIELD_SECONDS then
+			sinceField = 0
+			sendFields()
+		end
+
+		sinceSync += dt
+		if sinceSync >= SYNC_SECONDS then
+			sinceSync = 0
+			local now = os.clock()
+			for player, state in states do
+				if state.dirty then
+					sync(player)
+				end
+				if state.metaDirty and now - state.lastMeta >= META_SECONDS then
+					syncMeta(player)
+				end
+			end
+		end
+	end)
+
+	task.spawn(function()
+		while true do
+			task.wait(AUTOSAVE_SECONDS)
+			for _, player in Players:GetPlayers() do
+				local data, state = Data.get(player), states[player]
+				if data and Data.save(player) then
+					Leaderboard.submit(player, data, { power = if state then state.dps else 0 })
+				end
+			end
+		end
+	end)
+
+	-- Release (not just save) so PlayerRemoving does not write the same key a second time.
+	game:BindToClose(function()
+		for _, player in Players:GetPlayers() do
+			local state = states[player]
+			saveAndRelease(player, if state then state.dps else nil)
+		end
+	end)
+end
+
+return Game

@@ -1,0 +1,14 @@
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+.DS_Store
+.remember/
+sourcemap.json
+
+# Local backups and build output
+backups/
+out.rbxl
+__pycache__/
+*.pyc
+.claude/
