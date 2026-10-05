@@ -4,7 +4,7 @@ Visuals, UX and Blender models for launch. Small jobs, ticked off as they land. 
 git. **[S]** marks a job that needs Roblox Studio (import, test or publish): d1v or Yaani in the group's place.
 Written 5 Oct 2026. Background: `docs/VISUAL_AUDIT.md`, `docs/UI_VISION.md`, `docs/MINI_CANNON_REVAMP.md`.
 
-Order of work: A, B, C, D per world (Earth, Moon, Mars, Neptune, The Sun), then E to I.
+Order of work: A, B, C, D per world (Earth, Moon, Mars, Neptune, The Sun), then E, F, G and I.
 
 ## Time estimates
 
@@ -20,10 +20,9 @@ needs a second pass doubles its job.
 | E. Eggs and mini cannons | 5 h 55 |
 | F. Marketplace | 1 h 55 |
 | G. Sky, light and sound | 2 h 55 |
-| H. Fight and HUD (if time) | 7 h 45 |
 | I. Launch | 2 h 30 |
 | **Must ship (A to G and I, without E6)** | **28 h 20** |
-| **Everything** | **39 h 05** |
+| **Everything** | **31 h 20** |
 
 ## A. Pipeline (do once, makes everything after it fast)
 
@@ -133,17 +132,6 @@ needs a second pass doubles its job.
 - [ ] G5. One music loop for the base, one for the marketplace · **30 min**
 - [ ] G6. Switch off Roblox's default health bar and backpack · **5 min**
 
-## H. The fight and the HUD (if time is left)
-
-- [ ] H1. Shot trails and muzzle flash · **45 min**
-- [ ] H2. Hit burst and monster death pop · **45 min**
-- [ ] H3. Coins fly to the coin counter · **30 min**
-- [ ] H4. Tower models: the 8 kinds as Blender models · **2 h 00**
-- [ ] H5. Pad model with its three states · **30 min**
-- [ ] H6. Emoji swapped for the 32 atlas icons · **45 min**
-- [ ] H7. MINI CANNONS window as picture cards · **1 h 30**
-- [ ] H8. STORE window to its mockup · **1 h 00**
-
 ## I. Launch
 
 - [ ] I1. Game icon (512 px) from `docs/ui-vision/game-icon.png` · **20 min**
@@ -155,5 +143,6 @@ needs a second pass doubles its job.
 
 ## After launch
 
-Worlds 6 to 12 (monsters, islands, bases), the remaining feature windows, Auto Hatch and Fast Hatch passes,
+Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
+6 Oct), worlds 6 to 12 (monsters, islands, bases), the remaining feature windows, Auto Hatch and Fast Hatch passes,
 Huge models, mini cannons for worlds 2 to 12.
