@@ -1267,8 +1267,8 @@ Config.Passes = {
 -- for one, so nothing here may ever be tied to rating the game.
 ----------------------------------------------------------------------------------------------------
 Config.Fan = {
-	groupId = 0, -- the Roblox group's id (the number in its page's address). 0 = no group yet: nothing can be claimed
-	groupName = "our Roblox group", -- how the welcome card names it: put the group's real name here with its id
+	groupId = 230235107, -- the Roblox group's id (the number in its page's address). 0 = no group yet: nothing can be claimed
+	groupName = "Astral Crafts", -- how the welcome card names it: put the group's real name here with its id
 	gems = 250, -- paid once
 	coins = 0.10, -- +10% coins from every monster, for good. STATS lists it as "Fan bonus"
 }
