@@ -13,3 +13,6 @@ store:SetAsync("u_3", {
 	towers = { ["1"] = { kind = "cannon", level = 20 }, ["2"] = { kind = "cannon", level = 20 } },
 	features = { story = { chapter = 2, quest = 1, count = 0, claimed = {} } },
 })
+
+-- The test starts from "no group yet" and sets its own id later, whatever the real Config.Fan.groupId is.
+require(game:GetService("ReplicatedStorage").Shared.Config).Fan.groupId = 0
