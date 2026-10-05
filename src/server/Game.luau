@@ -2093,7 +2093,7 @@ function Game.data(player: Player)
 	return Data.get(player)
 end
 
--- The game speed the player's plot runs at right now: 1 without the 2x and 3x Speed pass (1 until ready).
+-- The game speed the player's plot runs at right now: 2 at most without the 3x Speed pass (1 until ready).
 function Game.speed(player: Player): number
 	local data = Data.get(player)
 	return if data then gameSpeed(player, data) else 1

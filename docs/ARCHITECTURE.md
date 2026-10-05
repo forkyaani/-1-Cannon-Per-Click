@@ -141,7 +141,7 @@ Game.on("kill", function(player, data, state, info) ... end)
 | `Game.shoot(player)` | One extra mini cannon shot at the lead monster (as hard as `Game.shotDamage` before the modifiers), through the `damage` modifiers and the `shot` hook |
 | `Game.perClick(player)` (also `Game.power`) | The multiplier on all the player's tower damage right now, with every `perClick` modifier (0 until ready). The client reads it as `PowerMult` |
 | `Game.shotDamage(player)` | The damage of one mini cannon shot right now: what the player's average mini cannon deals in a second (`petDps` over how many are equipped; fire rate bonuses left out), through the `bossDamage` and `damage` modifiers. The `shot` hooks are not run (0 until ready, and with none equipped). A Huge Shot is worth five |
-| `Game.speed(player)` | The game speed the player's plot runs at: what they picked with the 2x and 3x Speed pass, 1 without it |
+| `Game.speed(player)` | The game speed the player's plot runs at: what they picked, 2 at most without the 3x Speed pass |
 | `Game.luck(player, data, state)` | The player's luck when hatching (pass times the `luck` modifiers). The client reads it as the `Luck` attribute |
 | `Game.random` | A shared `Random` |
 
