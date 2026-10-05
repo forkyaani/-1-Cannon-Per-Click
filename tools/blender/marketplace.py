@@ -15,8 +15,9 @@ plaza at (-44, -52), the Huge at (24, 32), the crates at (-24, 32), the forge at
 Writes market_hero.png, market_ground.png and the same two in Halloween dress, marketplace.blend,
 market_manifest.json and marketplace.fbx with three kinds of mesh, colours on the vertices as earth_island.py:
   scenery, shown as it is, all with the middle of the square (on the ground) as origin:
-      Market_Ground  Market_HousesNorth/East/South/West  Market_Towers  Market_Fountain  Market_Trees
-      Market_Dressing  Market_Backdrop  Market_Glow (for Neon)  Market_Water (for Glass)
+      Market_Ground  Market_HousesNorth/East/South/West  Market_RoofsNorth/East/South/West  Market_Towers
+      Market_Fountain  Market_Trees (trunks)  Market_Dressing (lamps, what stands on the stalls)
+      Market_Backdrop (hills and balloons, far off)  Market_Glow (for Neon)  Market_Water (for Glass)
   seasonal, same origin, for the game to show or hide:
       Market_Leaves / Market_LeavesAutumn (the same shapes)  Market_Bunting (everyday)  Market_Halloween
   landmark shells, each with the middle of its own base as origin and its front towards -Y:
@@ -25,7 +26,8 @@ market_manifest.json and marketplace.fbx with three kinds of mesh, colours on th
       GuidePlinth
 In the photos every shell stands on its spots as a copy, with stand-ins for what stays the game's own (eggs,
 lamp bulbs, crates, the Huge, the guide, the words on the boards). None of that is exported, nor the clouds.
-`draft` makes the photos at half size, for a quick look.
+`draft` makes the photos at half size, for a quick look. `only=ground` or `only=hero` makes just those;
+`view=name,x,y,z,tx,ty,tz,lens` adds a photo check_name.png from a point towards a point, to look closer.
 
 The floor is kept clean on purpose: a few big calm shapes (plaza, paths, lawn) and nothing scattered on it.
 Character comes from the houses, roofs, towers, fountain, stalls, boards, lamps, trees and bunting overhead.
@@ -53,7 +55,7 @@ rng = random.Random(11)  # the same "random" town every run
 
 GRASS, GRASS_LIGHT, GRASS_DEEP, GRASS_RIM = "6FD046", "92E35A", "58BE3E", "389A45"
 STONE, STONE_DARK, STONE_PALE = "DCD6CC", "B9B2A8", "F4EFE6"
-PAVE, PATH, PLAZA, BAND, WALK = "D9C5A1", "F1DDAE", "F7E2AA", "E3BE7A", "C8B492"
+PAVE, PATH, PLAZA, BAND, WALK = "E1CFAE", "F5E4BC", "FAE8B8", "E6C383", "CDBA98"
 WOOD, WOOD_LIGHT, WOOD_DARK = "B9783F", "E3B06B", "8A5A2B"
 WATER, WATER_LIGHT = "3FBDF5", "A8E8FF"
 WHITE, INK, GOLD, GOLD_DARK, GOLD_LIGHT = "FFFFFF", "2B1240", "FFC61A", "E09A12", "FFE27A"
@@ -396,7 +398,7 @@ def show(name, build, at, face=None, when="both", note=None, **options):
         frame = place(build, at, face, **options)
     if name:
         degrees = facing(at[0], at[1], face)
-        entry = {"x": round(at[0], 3), "z": round(-at[1], 3), "faces": round(degrees, 2), "yaw": round((-degrees + 180) % 360 - 180, 2),
+        entry = {"x": round(at[0], 3), "z": round(-at[1], 3), "facing": round(degrees, 2), "yaw": round(180 - (degrees + 180) % 360, 2),
                  "when": {"both": "always", "day": "everyday", "halloween": "halloween"}[when]}
         if note:
             entry["note"] = note
@@ -405,8 +407,9 @@ def show(name, build, at, face=None, when="both", note=None, **options):
     return frame
 
 
-def words(text, frame, at, height, colour=WHITE, when="both", align="CENTER"):
-    """For the photos only: what the game writes on a board. `at` is a point in the board's own space, on its face."""
+def words(text, frame, at, height, colour=WHITE, when="both", align="CENTER", fit=None):
+    """For the photos only: what the game writes on a board. `at` is a point in the board's own space, on its
+    face; `fit` the width the words may take (the game scales its text to the board too)."""
     curve = bpy.data.curves.new("Words", "FONT")
     curve.body = text
     curve.size = height
@@ -419,13 +422,17 @@ def words(text, frame, at, height, colour=WHITE, when="both", align="CENTER"):
     obj.matrix_basis = frame @ Matrix.Translation(at) @ Matrix.Rotation(math.pi / 2, 4, "X")
     scene.collection.objects.link(obj)
     labels[when].append(obj)
+    if fit:
+        bpy.context.view_layer.update()
+        if obj.dimensions.x > fit:
+            obj.matrix_basis = obj.matrix_basis @ Matrix.Scale(fit / obj.dimensions.x, 4)
 
 
 def collider(name, at, size, face=0.0, when="always"):
     """A box the game should add (invisible, CanCollide) for something solid that is new. `at` is the middle of
     its foot in this file's space, `size` is (across, deep, tall) before it is turned to `face`."""
     colliders.append({"name": name, "centre": {"x": round(at[0], 2), "y": round(size[2] / 2, 2), "z": round(-at[1], 2)},
-                      "size": {"x": size[0], "y": size[2], "z": size[1]}, "yaw": round((-face + 180) % 360 - 180, 2), "when": when})
+                      "size": {"x": round(size[0], 2), "y": round(size[2], 2), "z": round(size[1], 2)}, "yaw": round(180 - (face + 180) % 360, 2), "when": when})
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -459,10 +466,7 @@ def bud(radius, location, colour):
 
 def flower_box(x, y, z, width, petal, fine=True):
     """A box of flowers under a window: on the house, never on the floor."""
-    if fine:
-        box((width, 1.1, 0.9), (x, y, z), WOOD, bevel=0.2, segments=1)
-    else:
-        slab((width, 1.1, 0.9), (x, y, z), WOOD)
+    slab((width, 1.1, 0.9), (x, y, z), WOOD)
     ball(0.5, (x, y, z + 0.5), LEAVES[1], scale=(width * 0.9, 0.9, 0.9), segments=6)
     other = PETALS[2] if petal != PETALS[2] else PETALS[1]
     for index in range(3) if fine else (0, 2):
@@ -496,24 +500,26 @@ def bulb(colour, radius=0.9, height=11.6):
     ball(radius, (0, 0, height), colour, emission=1.6)
 
 
-def bunting(a, b, sag=2.0):
+def bunting(a, b, sag=2.0, knobs=True):
     """A string of flags between two points, overhead: party colours in the mesh Bunting, orange and purple
     with a lantern now and then in Halloween."""
     a, b = Vector(a), Vector(b)
-    count = max(4, round((b - a).length / 2.1))
+    count = max(4, round((b - a).length / 4.2) * 2)
     points = [a.lerp(b, index / count) - Vector((0, 0, sag * 4 * (index / count) * (1 - index / count))) for index in range(count + 1)]
     turn = math.atan2(b.y - a.y, b.x - a.x)
     for name, colours in (("Bunting", PARTY), ("Halloween", SPOOKY)):
         with into(name):
             for index in range(count):
-                p, q = points[index], points[index + 1]
-                tube(0.07, (q - p).length, p, q - p, "5B4A7E", vertices=3)
-                middle = (p + q) / 2
+                start = index - index % 2
+                p, q = points[start], points[start + 2]
+                if index % 2 == 0:
+                    tube(0.07, (q - p).length, p, q - p, "5B4A7E", vertices=3)
+                middle = p.lerp(q, 0.25 + 0.5 * (index % 2))
                 if name == "Halloween" and index % 7 == 3:
                     paper_lantern(middle)
                 else:
                     prism([(-0.86, 0.05), (0.86, 0.05), (0, -2.0)], 0.1, colours[index % len(colours)], location=middle, rotation=(0, 0, turn))
-            for end in (a, b):
+            for end in (a, b) if knobs else ():
                 bud(0.3, end, GOLD)
 
 
@@ -526,33 +532,32 @@ def paper_lantern(at):
     tube(0.32, 0.2, at - Vector((0, 0, 0.36)), UP, INK, vertices=4)
 
 
-def pumpkin(size=2.0, smile=True):
+def pumpkin(size=2.0):
     """A big friendly jack-o'-lantern, its face to the front."""
     glow = "FFE65A"
+
     def ribs(degrees):
         return 1 + 0.07 * math.cos(math.radians(degrees) * 6)
 
     lathe([(0, 1.5 * size)] + [(radius * size, z * size) for radius, z in ((0.55, 1.52), (1.0, 1.15), (1.08, 0.66), (0.8, 0.14))] + [(0, 0.0)],
           PUMPKIN, segments=18, shape=ribs, roughness=0.4)
     tube(size * 0.16, size * 0.5, (0, 0, size * 1.5), (0.25, 0, 1), "5C8A3A", tip=size * 0.1, vertices=6)
-    if smile:
-        for side in (-1, 1):
-            prism([(-0.2 * size, 0), (0.2 * size, 0), (0, 0.32 * size)], 0.3 * size, glow, location=(side * 0.36 * size, -0.98 * size, size * 0.92), emission=1.0)
-        prism([(-0.5 * size, 0.16 * size), (-0.25 * size, 0), (0.25 * size, 0), (0.5 * size, 0.16 * size), (0.22 * size, 0.1 * size), (-0.22 * size, 0.1 * size)],
-              0.3 * size, glow, location=(0, -0.99 * size, size * 0.5), emission=1.0)
+    for side in (-1, 1):
+        prism([(-0.2 * size, 0), (0.2 * size, 0), (0, 0.32 * size)], 0.3 * size, glow, location=(side * 0.36 * size, -0.98 * size, size * 0.92), emission=1.0)
+    prism([(-0.5 * size, 0.16 * size), (-0.25 * size, 0), (0.25 * size, 0), (0.5 * size, 0.16 * size), (0.22 * size, 0.1 * size), (-0.22 * size, 0.1 * size)],
+          0.3 * size, glow, location=(0, -0.99 * size, size * 0.5), emission=1.0)
 
 
-def ghost(size=1.0):
+def ghost():
     """A friendly ghost: a rounded sheet with a wavy hem, big eyes, a smile and rosy cheeks."""
     white = "F6F8FF"
     lathe([(0, 3.4), (0.75, 3.25), (1.3, 2.7), (1.55, 1.8), (1.6, 0.5), (1.45, 0.2), (0, 0.5)], white, segments=10)
-    for index in range(6):
-        x, y = ring(index * 60, 1.15)
-        ball(0.52, (x, y, 0.32), white, segments=6)
+    for index in range(5):
+        x, y = ring(index * 72, 1.12)
+        ball(0.56, (x, y, 0.32), white, segments=6)
     for side in (-1, 1):
         ball(0.5, (side * 1.55, -0.35, 1.9), white, scale=(1.25, 0.8, 0.7), rotation=(0, side * -0.5, 0), segments=6)
-        ball(0.3, (side * 0.52, -1.3, 2.45), INK, scale=(0.8, 0.4, 1.15), segments=8)
-        ball(0.1, (side * 0.52 - 0.08, -1.44, 2.6), WHITE, segments=6)
+        ball(0.3, (side * 0.52, -1.3, 2.45), INK, scale=(0.8, 0.4, 1.15), segments=6)
         ball(0.22, (side * 0.95, -1.22, 2.0), "FFB3CF", scale=(1, 0.3, 0.7), segments=6)
     ball(0.22, (0, -1.5, 1.95), INK, scale=(1.2, 0.4, 0.8), segments=6)
 
@@ -562,10 +567,9 @@ def bat():
     ball(0.75, (0, 0, 0), WITCH, scale=(1, 0.85, 1), segments=8)
     for side in (-1, 1):
         prism([(0, 0.35), (1.0, 0.75), (2.1, 0.3), (1.75, -0.1), (1.3, 0.12), (0.85, -0.2), (0.4, 0.05), (0, -0.35)], 0.12, shade(WITCH, -0.25), location=(side * 0.55, 0.05, 0.1),
-              rotation=(0, side * -0.2 if side > 0 else math.pi - 0.2, 0))
+              rotation=(0, -0.2 if side > 0 else math.pi + 0.2, 0))
         tube(0.2, 0.5, (side * 0.38, 0, 0.55), (side * 0.25, 0, 1), WITCH, tip=0.0, vertices=4)
         ball(0.17, (side * 0.27, -0.62, 0.12), WHITE, segments=6)
-        ball(0.08, (side * 0.27, -0.76, 0.12), INK, segments=4)
 
 
 def cobweb(size=4.0):
@@ -582,7 +586,7 @@ def cobweb(size=4.0):
             slab((step.length, 0.07, 0.1), (p + q) / 2, white, rotation=(0, math.atan2(-step.z, step.x), 0))
 
 
-def witch_hat(size=1.0):
+def witch_hat():
     brim, cone = "3B1F6E", WITCH
     lathe([(0, 0.5), (2.6, 0.3), (3.3, 0.0), (2.6, -0.1), (0, -0.1)], brim, segments=14, location=(0, 0, 0))
     lathe([(0, 5.6), (0.5, 4.3), (1.15, 2.6), (1.75, 0.9), (1.9, 0.3), (0, 0.3)], cone, segments=12, location=(0, 0, 0), rotation=(0.12, 0.1, 0))
@@ -647,10 +651,7 @@ def window(x, z, w=3.4, h=4.4, y=-8.0, trim=TRIM, shutters=None, flowers=None, r
         slab((0.24, 0.14, h - 0.06), (x, y - 0.42, z), trim)
     if bars > 1:
         slab((w - 0.06, 0.14, 0.24), (x, y - 0.42, z - h * 0.06), trim)
-    if fine:
-        box((w + 1.7, 0.9, 0.42), (x, y - 0.35, z - h / 2 - 0.56), trim, bevel=0.12, segments=1)
-    else:
-        slab((w + 1.7, 0.9, 0.42), (x, y - 0.35, z - h / 2 - 0.56), trim)
+    slab((w + 1.7, 0.9, 0.42), (x, y - 0.35, z - h / 2 - 0.56), trim)
     if shutters:
         for side in (-1, 1):
             slab((1.15, 0.28, h + 0.5), (x + side * (w / 2 + 1.2), y - 0.3, z), shutters)
@@ -680,7 +681,7 @@ def door(x, colour, w=4.4, h=7.6, y=-8.0, trim=TRIM, flat_top=False, double=Fals
     else:
         bud(0.32, (x + w * 0.3, y - 0.62, h * 0.42), GOLD)
         tube(w * 0.2, 0.16, (x, y - 0.46, h - w * 0.42), (0, -1, 0), GLASS, vertices=10, roughness=0.25)
-    box((w + 2.2, 1.3, 0.36), (x, y - 0.55, 0.16), STONE, bevel=0.14, segments=1)  # low enough to walk over
+    slab((w + 2.2, 1.3, 0.34), (x, y - 0.55, 0.16), STONE)  # low enough to walk over
 
 
 def canopy(x, z, width, colours, y=-8.0, reach=3.0, drop=1.2):
@@ -763,23 +764,26 @@ def _hip(width, depth, z, rise, colour, x, y, over, thick):
     tube(0.45, 2 * r + 0.8, (x - r - 0.4, y, base + rise - 0.1), (1, 0, 0), shade(colour, -0.18), vertices=6)
 
 
-def dormer(x, height, wall, roof):
-    """A little window house on the front slope of a roof."""
+def dormer(x, height, wall, roof, back=False):
+    """A little window house on the front slope of a roof (or on the back one)."""
+    way = 1 if back else -1
     with roofing():
-        box((3.8, 4.4, 4.6), (x, -3.8, height + 2.9), wall, bevel=0.2, segments=1)
-        prism([(-2.6, 0), (0, 1.8), (2.6, 0), (2.6, 0.55), (0, 2.4), (-2.6, 0.55)], 5.2, roof, location=(x, -3.9, height + 4.9))
-        slab((2.6, 0.5, 2.5), (x, -6.0, height + 3.8), TRIM)
-        slab((1.9, 0.2, 1.8), (x, -6.22, height + 3.8), GLASS, roughness=0.25)
+        box((3.8, 4.4, 4.6), (x, way * 3.8, height + 2.9), wall, bevel=0.2, segments=1)
+        prism([(-2.6, 0), (0, 1.8), (2.6, 0), (2.6, 0.55), (0, 2.4), (-2.6, 0.55)], 5.2, roof, location=(x, way * 3.9, height + 4.9))
+        slab((2.6, 0.5, 2.5), (x, way * 6.0, height + 3.8), TRIM)
+        slab((1.9, 0.2, 1.8), (x, way * 6.22, height + 3.8), GLASS, roughness=0.25)
 
 
-def back_windows(height, xs=(-9.2, 0.0, 9.2)):
-    """Plain windows on the wall nobody walks past: the south row shows its back in the photo from above."""
-    z = 13.6
+def back_windows(height, shutters, xs=(-9.2, 0.0, 9.2)):
+    """Windows on the wall nobody walks past: the south row shows its back in the photo from above."""
+    z = 6.4
     while z + 3.6 < height:
         for x in xs:
             slab((4.2, 0.4, 5.2), (x, 8.0, z), TRIM)
             slab((3.3, 0.3, 4.3), (x, 8.12, z), GLASS, roughness=0.25)
-        z += 7
+            for side in (-1, 1):
+                slab((1.1, 0.28, 5.4), (x + side * 2.8, 8.1, z), shutters)
+        z += 7.2
 
 
 def flag(x, y, z, colour, height=5.0):
@@ -807,7 +811,8 @@ def cottage(height, wall, roof, m=1, accent=None, petal=PETALS[0], back=False):
         z, row = z + 7, row + 1
     chimney(m * 10.0, 3.6, height + 2.2, 7.8)
     if back:
-        back_windows(height)
+        back_windows(height, accent)
+        dormer(-m * 5.0, height, wall, roof, back=True)
 
 
 def shop(height, wall, roof, m=1, awning=(RED, TRIM), accent=None, sign=GOLD, rise=8.5, petal=PETALS[3], back=False):
@@ -833,7 +838,10 @@ def shop(height, wall, roof, m=1, awning=(RED, TRIM), accent=None, sign=GOLD, ri
             window(x, z, round_top=True, flowers=petal if row == 0 and x != 0 else None, bars=2 if row == 0 else 1)
         z, row = z + 7, row + 1
     if back:
-        back_windows(height)
+        back_windows(height, accent)
+        with roofing():
+            tube(2.1, 0.7, (0, 7.4, height + rise * 0.36), (0, 1, 0), TRIM, vertices=14)
+            tube(1.6, 0.2, (0, 8.0, height + rise * 0.36), (0, 1, 0), GLASS, vertices=14, roughness=0.25)
 
 
 def twin(height, wall=(SKY, BUTTER), roof=(ROOF_ORANGE, ROOF_TEAL), m=1, drop=4.0, petal=PETALS[2], awning=(ROOF_BLUE, TRIM), back=False):
@@ -856,7 +864,7 @@ def twin(height, wall=(SKY, BUTTER), roof=(ROOF_ORANGE, ROOF_TEAL), m=1, drop=4.
                 window(cx + side * 3.3, z, w=2.8, h=4.0, round_top=(row + index) % 2 == 1, flowers=PETALS[3] if row == 0 and index == 1 and side == towards else None, bars=2 if row == 0 else 1)
             z, row = z + 6.8, row + 1
         if back:
-            back_windows(tall, xs=(cx,))
+            back_windows(tall, shade(roof[index], -0.1), xs=(cx - 3.3, cx + 3.3))
     chimney(-7.25 * m + 3.5, 4.5, height + 0.5, 8.2)
 
 
@@ -889,7 +897,7 @@ def turret(height, wall, roof, m=1, cone=None, accent=None, petal=PETALS[0], pen
         window(tx, z, w=1.9, h=3.6, y=ty - radius + 0.12, round_top=True, bars=False)
         z += 8.2
     if back:
-        back_windows(height, xs=(cx - 6.4, cx + 6.4))
+        back_windows(height, accent, xs=(cx - 6.4, cx + 6.4))
 
 
 def inn(height, wall, roof, m=1, petal=PETALS[3], sign=ROOF_BLUE, back=False):
@@ -915,9 +923,9 @@ def inn(height, wall, roof, m=1, petal=PETALS[3], sign=ROOF_BLUE, back=False):
         z, row = z + 6.8, row + 1
     hip(29, 16.6, height, 7.2, roof, y=-0.3)
     chimney(m * 8.5, 2.2, height + 1.4, 8.6)
-    hanging_sign(-m * 12.2, 11.6, sign, y=front)
+    hanging_sign(-m * 13.6, 12.6, sign, y=front)
     if back:
-        back_windows(height)
+        back_windows(height, WOOD)
 
 
 def giant_gem(radius, location):
@@ -964,7 +972,7 @@ def hall(height, wall, roof, icon="egg", accent=None, pennant=RED, petal=PETALS[
 
 def tower(roof, pennant):
     """A corner tower: the game's is a pillar 11 across and 40 high under a ball. Its door looks at the square."""
-    sides = 20
+    sides = 16
     tube(11.6, 3.0, (0, 0, 0), UP, STONE, vertices=sides)
     tube(11.0, 40.0, (0, 0, 0), UP, STONE_PALE, tip=10.4, vertices=sides)
     tube(10.95, 1.2, (0, 0, 19.4), UP, STONE, vertices=sides)
@@ -990,12 +998,12 @@ def fountain():
     the game's too: a base 7 x 9, wheels 7.4 across at x = +-4.2, a barrel 17 long aimed 25 degrees up and north."""
     lathe([(12.4, 1.1), (12.4, 1.75), (12.8, 2.0), (13.7, 2.0), (14.1, 1.75), (14.1, 0.75), (14.7, 0.5), (14.7, 0.0)], STONE_PALE, segments=40)
     lathe([(14.16, 1.5), (14.16, 1.0)], BLUE, segments=40)  # a band of tiles round the wall
-    for index in range(16):
-        x, y = ring(index * 22.5, 14.22)
+    for index in range(8):
+        x, y = ring(index * 45, 14.22)
         ball(0.34, (x, y, 1.25), GOLD, scale=(1, 1, 1), segments=6, roughness=0.3)
     lathe([(0, 6.0), (4.6, 6.0), (5.2, 5.7), (5.2, 5.2), (4.4, 4.9), (4.2, 2.6), (5.0, 2.2), (5.7, 1.9), (5.7, 1.2), (0, 1.2)], STONE_PALE, segments=24)
-    hoop(5.22, 0.2, (0, 0, 5.45), GOLD, segments=24, roughness=0.3)
-    hoop(5.72, 0.16, (0, 0, 1.95), GOLD, segments=24, roughness=0.3)
+    hoop(5.22, 0.2, (0, 0, 5.45), GOLD, segments=24, around=4, roughness=0.3)
+    hoop(5.72, 0.16, (0, 0, 1.95), GOLD, segments=24, around=4, roughness=0.3)
     with into("Water"):
         tube(12.45, 0.4, (0, 0, 1.15), UP, WATER, vertices=40, roughness=0.15)
         lathe([(0, 1.58), (8.6, 1.58), (9.0, 1.54)], shade(WATER, 0.25), segments=32, roughness=0.15)
@@ -1003,10 +1011,10 @@ def fountain():
         dx, dy = ring(index * 90 + 45, 1.0)
         tube(0.5, 1.3, (dx * 3.9, dy * 3.9, 4.0), (dx, dy, 0.2), GOLD, tip=0.6, vertices=8, roughness=0.3)
         with into("Water"):
-            path = [Vector((dx * reach, dy * reach, 4.25 + 0.9 * step - 0.62 * step * step)) for step, reach in ((0.0, 5.1), (0.7, 6.2), (1.4, 7.3), (2.0, 8.2), (2.6, 9.0))]
+            path = [Vector((dx * (5.0 + step * 1.55), dy * (5.0 + step * 1.55), 4.25 + 0.95 * step - 0.75 * step * step)) for step in (0.0, 0.5, 1.0, 1.5, 2.0, 2.5)]
             for a, b in zip(path, path[1:]):
-                tube(0.3, (b - a).length + 0.1, a, b - a, WATER_LIGHT, vertices=5, roughness=0.15)
-            ball(0.7, (dx * 9.1, dy * 9.1, 1.6), WHITE, scale=(1, 1, 0.5), segments=6)
+                tube(0.36, (b - a).length + 0.16, a, b - a, WATER_LIGHT, vertices=6, roughness=0.15)
+            ball(0.8, (dx * 8.9, dy * 8.9, 1.6), WHITE, scale=(1, 1, 0.5), segments=6)
     # The cannon.
     box((7.0, 9.0, 2.0), (0, 0, 7.0), WOOD, bevel=0.5)
     for side in (-1, 1):
@@ -1048,6 +1056,19 @@ def arrival_pad():
     for index in range(8):
         x, y = ring(index * 45 + 22.5, 5.3)
         ball(0.42, (x, y, 0.38), GOLD, segments=8, roughness=0.3)
+
+
+def balloon(colours=(RED, TRIM)):
+    """A hot-air balloon, far over the roofs: bands of two colours, a basket under it."""
+    rings = [(0, 30), (6.5, 28.6), (11.2, 25.0), (13.6, 19.6), (13.0, 13.6), (9.6, 8.2), (5.2, 4.0), (3.0, 2.2)]
+    for index, (upper, lower) in enumerate(zip(rings, rings[1:])):
+        lathe([upper, lower], colours[index % 2], segments=14, roughness=0.5)
+    lathe([(3.0, 2.2), (2.6, 1.4), (0, 1.4)], shade(colours[0], -0.2), segments=14)
+    box((3.4, 3.4, 2.6), (0, 0, -3.2), WOOD, bevel=0.4, segments=1)
+    slab((3.7, 3.7, 0.5), (0, 0, -2.0), WOOD_DARK)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            tube(0.08, 4.0, (sx * 1.6, sy * 1.6, -2.0), (sx * 0.2, sy * 0.2, 1), WOOD_DARK, vertices=3)
 
 
 def cloud():
@@ -1150,15 +1171,17 @@ NOTICE_FACE = {"x": 0, "z": 6.0, "y": -0.25, "width": 8.4, "height": 5.0}
 
 
 def notice_board():
-    """A notice board under a little roof: the game's board is 8.4 x 5, its middle 6 up."""
+    """A notice board under a little roof: the game's board is 8.4 x 5, its middle 6 up, on posts 3.6 either
+    side. The posts stand behind the board, so its face stays clear."""
     for side in (-1, 1):
-        tube(0.48, 9.6, (side * 4.75, 0, 0), UP, WOOD, vertices=8)
-        tube(0.75, 0.6, (side * 4.75, 0, 0), UP, STONE, vertices=8)
+        tube(0.45, 9.7, (side * 3.6, 0.6, 0), UP, WOOD, vertices=8)
+        tube(0.75, 0.6, (side * 3.6, 0.6, 0), UP, STONE, vertices=8)
+        box((0.7, 0.75, 5.0), (side * 4.55, -0.1, 6.0), WOOD_LIGHT, bevel=0.16, segments=1)
     box((9.2, 0.4, 5.8), (0, 0.15, 6.0), WOOD_DARK, bevel=0.12, segments=1)
     slab((8.4, 0.3, 5.0), (0, -0.05, 6.0), BOARD_BLUE, roughness=0.8)
     for z in (3.15, 8.85):
         box((9.9, 0.75, 0.7), (0, -0.1, z), WOOD_LIGHT, bevel=0.16, segments=1)
-    prism([(-5.9, 9.4), (0, 10.9), (5.9, 9.4), (5.9, 10.0), (0, 11.55), (-5.9, 10.0)], 2.2, ROOF_RED, bevel=0.14)
+    prism([(-5.9, 9.4), (0, 10.9), (5.9, 9.4), (5.9, 10.0), (0, 11.55), (-5.9, 10.0)], 2.6, ROOF_RED, location=(0, 0.3, 0), bevel=0.14)
     bud(0.36, (0, -1.0, 11.2), GOLD)
 
 
@@ -1181,16 +1204,16 @@ def chest():
 
 
 def portal():
-    """The way back to the base (the island's): a chunky stone arch on two steps. The glowing sheet in it is a
-    mesh of its own (PortalSheet) with the same origin, so the game can make it Neon. Built a size too big
-    and stood at 0.88: its pillars then stand where the game's do."""
+    """The way back to the base, the same arch as the island's: chunky stone on two steps. The glowing sheet in
+    it is a mesh of its own (PortalSheet) with the same origin, so the game can make it Neon. Built a size too
+    big and stood at 0.88 like the island's, so the game's sign (16.9 up) clears its top."""
     glow, pale = "8E6BFF", "C7B5FF"
-    box((15.5, 6.4, 0.7), (0, 0, 0.35), STONE_DARK, bevel=0.25)
-    box((13.4, 4.6, 0.7), (0, 0, 1.0), STONE, bevel=0.25)
+    box((15.5, 6.4, 0.7), (0, 0, 0.35), STONE_DARK, bevel=0.25, segments=1)
+    box((13.4, 4.6, 0.7), (0, 0, 1.0), STONE, bevel=0.25, segments=1)
     for side in (-1, 1):
         for index in range(3):
             box((2.9, 2.9, 3.0), (side * 5.2, 0, 2.85 + index * 3.0), STONE if index % 2 == 0 else STONE_DARK, bevel=0.4, rotation=(0, 0, rng.uniform(-0.09, 0.09)))
-        box((3.4, 3.4, 0.9), (side * 5.2, 0, 10.75), STONE_DARK, bevel=0.3)
+        box((3.4, 3.4, 0.9), (side * 5.2, 0, 10.75), STONE_DARK, bevel=0.3, segments=1)
         for y in (-1.5, 1.5):
             box((0.5, 0.3, 1.3), (side * 5.2, y, 5.85), pale, bevel=0.1, segments=1, emission=1.2)
     for index in range(7):
@@ -1219,12 +1242,12 @@ def hatchery_sign():
         tube(1.8, 1.0, (x, 0.2, 0), UP, STONE, vertices=12)
         tube(1.35, 0.6, (x, 0.2, 1.0), UP, STONE_PALE, vertices=12)
         tube(0.9, 12.4, (x, 0.2, 1.6), UP, "FFF3D6", vertices=10)
-        for z in (4.2, 8.8, 13.2):
+        for z in (5.0, 12.6):
             tube(1.02, 0.5, (x, 0.2, z), UP, GOLD, vertices=10, roughness=0.3)
         egg(1.35, (side * 22.6, -0.1, 22.7 + 1.35 * 1.36 - 0.25), ("45B4FF", "7BE36A")[side > 0], ("FFE23A", "FFFFFF")[side > 0], spots=EGG_SPOTS[:8], detail=0)
     framed(44, 7, 18.0, -0.5, BOARD_PLUM, GOLD, depth=1.3, thick=1.2, back="5A35B0", lift=0.4)
-    for index in range(12):  # lights, like a fairground's
-        x = (index - 5.5) * 3.9
+    for index in range(10):  # lights, like a fairground's
+        x = (index - 4.5) * 4.7
         for z in (22.1, 13.9):
             ball(0.4, (x, -1.0, z), "FFF6C4", segments=6, emission=1.2)
     hoop(1.9, 0.6, (0, -0.1, 22.9), GOLD_DARK, segments=12, roughness=0.3)
@@ -1292,9 +1315,9 @@ def crate_stand():
     lathe([(0, 0.2), (5.7, 0.2), (6.0, 0.0)], "7A4BC2", segments=32, roughness=0.9)
     band(4.7, 5.15, 0, 360, 0.25, GOLD, steps=32)
     for side in (-1, 1):
-        tube(0.75, 0.7, (side * 4.9, 2.6, 0), UP, STONE, vertices=8)
-        tube(0.42, 12.8, (side * 4.9, 2.6, 0), UP, WOOD, vertices=8)
-        bud(0.5, (side * 4.9, 2.6, 13.0), GOLD)
+        tube(0.75, 0.7, (side * 4.77, 2.6, 0), UP, STONE, vertices=8)
+        tube(0.42, 12.8, (side * 4.77, 2.6, 0), UP, WOOD, vertices=8)
+        bud(0.5, (side * 4.77, 2.6, 13.0), GOLD)
     box((9.5, 0.4, 7.4), (0, 2.85, 8.65), WOOD_DARK, bevel=0.12, segments=1)
     slab((8.7, 0.3, 1.9), (0, 2.6, 11.0), BOARD_PLUM, roughness=0.8)
     slab((8.7, 0.3, 4.6), (0, 2.6, 7.6), BOARD_PLUM, roughness=0.8)
@@ -1422,8 +1445,8 @@ LAMP_RING = 36
 group = "Ground"
 frame_square(80.6, 140.0, -0.08, GRASS)
 flat([(-80.7, -80.7), (80.7, -80.7), (80.7, 80.7), (-80.7, 80.7)], 0.0, PAVE)
-frame_square(80.0, 81.5, 0.04, STONE)  # a kerb between cobbles and lawn
-frame_square(70.0, 80.0, 0.03, WALK)  # the pavement the houses stand on
+frame_square(80.0, 81.5, 0.06, STONE)  # a kerb between cobbles and lawn
+frame_square(70.0, 80.0, 0.05, WALK)  # the pavement the houses stand on
 band(46.0, 58.0, -80, 80, 0.05, PATH, steps=32)  # the egg walk
 for side in (-1, 1):
     x, y = ring(side * 80, EGG_RING)
@@ -1479,7 +1502,7 @@ for row, (face, where) in ROWS.items():
     for along, kind, options in TOWN[row]:
         x, y = where(along)
         place(kind, (x, y), face=face, **options)
-        houses.append({"x": x, "z": -y, "faces": face, "kind": kind.__name__, "height": options["height"]})
+        houses.append({"x": x, "z": -y, "facing": face, "kind": kind.__name__, "height": options["height"]})
 group = "Towers"
 for (sx, sy), roof, pennant in (((1, -1), ROOF_BLUE, GOLD), ((1, 1), ROOF_ORANGE, ROOF_BLUE), ((-1, 1), ROOF_TEAL, RED), ((-1, -1), ROOF_RED, GOLD)):  # buildTown: ROOF_COLORS[side % 4 + 1]
     place(tower, (sx * 84, sy * 84), roof=roof, pennant=pennant)
@@ -1488,7 +1511,7 @@ for (sx, sy), roof, pennant in (((1, -1), ROOF_BLUE, GOLD), ((1, 1), ROOF_ORANGE
 group = "Dressing"
 for index, degrees in enumerate(LAMPS):
     at = ring(degrees, LAMP_RING)
-    place(lamp, at, face=degrees + 180)  # its basket hangs on the side away from the fountain... see `lamp`: +X of the prop
+    place(lamp, at, face=degrees + 180)  # its arm and basket point along the ring
     with into("PlaceholdersDay"):
         place(bulb, at, colour="FFD68C")
     with into("PlaceholdersHalloween"):
@@ -1496,10 +1519,11 @@ for index, degrees in enumerate(LAMPS):
 group = "Trees"
 for index, (x, y) in enumerate(((66, -66), (-66, -66), (66, 66), (-66, 66), (66, 22), (-66, 22))):  # buildDecor's trees
     place(tree, (x, y), face=rng.uniform(0, 360), scale=1.3 if abs(y) > 30 else 1.15, leaf=index % 3, kind="round" if index % 2 == 0 else "tall")
-# Bunting: between the lamps either side of each diagonal (never across a path), and across each corner of
-# the square from house to house, high over everything.
+# Bunting: from lamp top to lamp top either side of each diagonal (never across a path, and as high as the
+# lamps allow, so it hangs over the signs behind it rather than in front of them), and across each corner
+# of the square from house to house, high over everything.
 for degrees in (45, 135, 225, 315):
-    bunting((*ring(degrees - 22.5, LAMP_RING), 10.2), (*ring(degrees + 22.5, LAMP_RING), 10.2), sag=1.5)
+    bunting((*ring(degrees - 22.5, LAMP_RING), 12.75), (*ring(degrees + 22.5, LAMP_RING), 12.75), sag=1.1, knobs=False)
 for sx, sy in ((1, 1), (1, -1), (-1, -1), (-1, 1)):
     bunting((sx * 36, sy * 75.6, 18.5), (sx * 75.6, sy * 36, 18.5), sag=3.2)
 
@@ -1510,6 +1534,8 @@ HILLS = ((8, 182, 60, 40, GRASS_DEEP), (42, 196, 70, 52, GRASS), (76, 180, 58, 3
          (25, 330, 120, 120, "8AD79C"), (72, 340, 130, 100, "9BDDAE"), (118, 330, 110, 84, "8AD79C"), (246, 330, 110, 88, "9BDDAE"), (292, 340, 130, 104, "8AD79C"), (338, 330, 120, 124, "9BDDAE"))  # the far ones pale with distance
 for degrees, distance, radius, height, colour in HILLS:
     lathe([(0, height), (radius * 0.42, height * 0.9), (radius * 0.78, height * 0.52), (radius, 0)], colour, segments=14, location=(*ring(degrees, distance), -3.0), roughness=0.9)
+for x, y, z, size, colours in ((-118, 150, 92, 1.0, (RED, TRIM)), (128, 196, 96, 1.1, (ROOF_BLUE, GOLD)), (40, 215, 140, 1.4, ("B58CFF", TRIM))):
+    place(balloon, (x, y, z), face=180, scale=size, colours=colours)
 group = "Trees"
 FAR_TREES = ((15, 108, 3.0), (38, 126, 2.7), (64, 118, 2.9), (90, 108, 3.2), (116, 118, 2.6), (144, 128, 1.8), (216, 128, 1.8), (244, 118, 2.6), (270, 108, 3.2), (296, 118, 2.9), (322, 126, 2.7), (345, 108, 3.1))
 for index, (degrees, distance, size) in enumerate(FAR_TREES):  # big ones: their heads show over the roofs
@@ -1529,31 +1555,31 @@ for when, names in (("day", ("gem",)), ("halloween", ("gem", "pumpkin", "haunted
         with into(WHEN[when]):
             place(stand_in_egg, ring(degrees, EGG_RING), shell_colour=EGGS[name][0], spot_colour=EGGS[name][1])
 
-shell("Stall", stall, also=("StallStripesA", "StallStripesB"), faces={"sign": STALL_FACE},
+shell("Stall", stall, also=("StallStripesA", "StallStripesB"), boards={"sign": STALL_FACE},
       note="StallStripesA takes the first colour of buildStall's list (3 stripes), StallStripesB the second (4 stripes). The counter is clear between x = -3.7 and 3.7 for what the game stands on it.")
 for (x, y), when, stripes, title, wares in (((58, -8), "both", ("4696FF", "F0F5FF"), "WEEKLY SHOP", "gem"), ((58, -28), "halloween", ("FF821E", "6E3CA0"), "HALLOWEEN SHOP", "pumpkins"),
                                             ((58, -48), "both", ("FFC828", "F0F5FF"), "GAME PASSES", "star")):
     frame = show("Stall", stall, (x, y), face=WEST, when=when, note=title, stripes=stripes)
-    words(title, frame, (0, -2.4, 11.8), 1.25, when=when)
+    words(title, frame, (0, -2.4, 11.8), 1.3, when=when, fit=9.2)
     with into("Halloween" if wares == "pumpkins" else "Dressing"):
         place(stall_wares, (x, y), face=WEST, kind=wares)
 
-shell("Leaderboard", leaderboard, also=("LeaderboardTrim",), faces={"board": LEADERBOARD_FACE},
+shell("Leaderboard", leaderboard, also=("LeaderboardTrim",), boards={"board": LEADERBOARD_FACE},
       note="LeaderboardTrim (the rim and the crown's jewel) is white: colour it per board. Also for Features/Event.luau's boards, in the event's colour in place of EventBoardRim.")
 BOARDS = (((-58, 10), "both", "MOST GEMS", "3FE0FF", "Gems"), ((-58, -10), "both", "MOST REBIRTHS", "5FE03A", "Rebirths"), ((-58, -30), "both", "MOST CANNON POWER", "FFE23A", "Power"),
           ((-58, 30), "halloween", "MOST CANDY EARNED", "FF821E", "Event board 1 (Features/Event.luau); a second event's stands at x -58, z -50"))
 for (x, y), when, title, trim, note in BOARDS:
     frame = show("Leaderboard", leaderboard, (x, y), face=EAST, when=when, note=note, trim=trim)
-    words(title, frame, (0, -0.42, 16.15), 0.95, GOLD if when == "both" else "FF9A3C", when=when)
+    words(title, frame, (0, -0.42, 16.15), 1.05, GOLD if when == "both" else "FF9A3C", when=when, fit=13.6)
     words("\n".join(f"{rank}. {name}  -  {score}" for rank, (name, score) in enumerate((("ashura", "18.3K"), ("Yaani", "12.1K"), ("CannonKid", "9.40K"), ("PumpkinPie", "7.75K"), ("xXBoomXx", "5.02K")), 1)),
-          frame, (-6.9, -0.42, 12.2), 0.8, when=when, align="LEFT")
+          frame, (-6.9, -0.42, 12.0), 0.85, when=when, align="LEFT", fit=13.2)
 
-shell("NoticeBoard", notice_board, faces={"board": NOTICE_FACE})
+shell("NoticeBoard", notice_board, boards={"board": NOTICE_FACE})
 frame = show("NoticeBoard", notice_board, (-14, -42), face=SOUTH, note="Missions")
-words("MISSIONS", frame, (0, -0.27, 6.9), 1.45)
-words("Earn gems every day", frame, (0, -0.27, 5.0), 0.7)
+words("MISSIONS", frame, (0, -0.27, 6.9), 1.45, fit=7.6)
+words("Earn gems every day", frame, (0, -0.27, 5.0), 0.72, fit=7.6)
 frame = show("NoticeBoard", notice_board, (-44, -62), face=NORTH, note="How to trade (the trading plaza's)")
-words("HOW TO TRADE\n1. Ask a player here\n2. Both add what to swap\n3. Both press READY", frame, (0, -0.27, 6.0), 0.62)
+words("HOW TO TRADE\n1. Ask a player here\n2. Both add what to swap\n3. Both press READY", frame, (0, -0.27, 6.0), 0.62, fit=7.6)
 
 shell("Chest", chest, note="The daily chest. 5.4 x 3.6 at its foot, 4.5 high.")
 show("Chest", chest, (14, -42), face=SOUTH)
@@ -1561,23 +1587,23 @@ show("Chest", chest, (14, -42), face=SOUTH)
 shell("Portal", lambda: place(portal, (0, 0), face=SOUTH, scale=0.88), also=("PortalSheet",), note="PortalSheet is the glowing sheet (Neon), same origin. 13.6 x 5.6 at its foot, 15 high.")
 show("Portal", portal, (0, -70), face=NORTH, scale=0.88)
 
-shell("HatcherySign", hatchery_sign, faces={"board": HATCHERY_FACE})
+shell("HatcherySign", hatchery_sign, boards={"board": HATCHERY_FACE})
 frame = show("HatcherySign", hatchery_sign, (0, 70), face=SOUTH)
-words("EGG HATCHERY", frame, (0, -0.52, 18.0), 4.7, GOLD)
+words("EGG HATCHERY", frame, (0, -0.52, 18.0), 4.9, GOLD, fit=40.5)
 
 shell("TradePlaza", trade_plaza, note="The whole plaza but its lantern bulbs and the orb over the table (TradingLantern, TradingOrb stay the game's). Table top 2.8 up; traders' spots 4.2 either side.")
 frame = show("TradePlaza", trade_plaza, (-44, -52), face=NORTH)
 place(stand_in_trade_lights, (-44, -52), face=NORTH)
 
-shell("HugePedestal", huge_pedestal, top=HUGE_TOP, faces={"plate": HUGE_FACE}, note="Features/Huge.luau's showcase: the Huge stands on its top.")
+shell("HugePedestal", huge_pedestal, top=HUGE_TOP, boards={"plate": HUGE_FACE}, note="Features/Huge.luau's showcase: the Huge stands on its top.")
 frame = show("HugePedestal", huge_pedestal, (24, 32))
 place(stand_in_huge, (24, 32))
 words("799 R$", frame, (0, -3.22, 1.65), 0.8, "FFCD3C")
 
-shell("CrateStand", crate_stand, faces={"sign": CRATE_SIGN_FACE, "list": CRATE_LIST_FACE}, note="Features/Crates.luau's stand: the crates themselves stay the game's (their middles are 0.4 behind its middle).")
+shell("CrateStand", crate_stand, boards={"sign": CRATE_SIGN_FACE, "list": CRATE_LIST_FACE}, note="Features/Crates.luau's stand: the crates themselves stay the game's (their middles are 0.4 behind its middle).")
 frame = show("CrateStand", crate_stand, (-24, 32))
-words("CRATES", frame, (0, 2.38, 11.0), 1.25)
-words("Wood Crate  -  drops from monsters\nDaily Crate  -  one free a day\nBoss Chest  -  beat a boss\nGem Crate  -  40 gems\nRoyal Crate  -  99 R$", frame, (0, 2.38, 7.6), 0.52)
+words("CRATES", frame, (0, 2.38, 11.0), 1.25, fit=8.0)
+words("Wood Crate  -  drops from monsters\nDaily Crate  -  one free a day\nBoss Chest  -  beat a boss\nGem Crate  -  40 gems\nRoyal Crate  -  99 R$", frame, (0, 2.38, 7.6), 0.52, fit=8.0)
 CRATES = ("B07C4C", "46BE78", "C83C3C", "50DCFF", "FAC332")
 with into("PlaceholdersDay"):
     place(stand_in_crates, (-24, 32), colours=CRATES)
@@ -1601,20 +1627,17 @@ BIG_PUMPKINS = (((24.2, 70.4), 2.3, 180), ((-24.2, 70.4), 2.0, 180),  # either s
 for (x, y), size, face in BIG_PUMPKINS:
     place(pumpkin, (x, y), face=face + rng.uniform(-14, 14), size=size)
     collider("Pumpkin", (x, y), (size * 2, size * 2, size * 1.6), when="halloween")
-for sx, sy in ((1, 1), (1, -1), (-1, -1), (-1, 1)):  # one at each tower's door
-    place(pumpkin, (sx * 72.8, sy * 72.8), size=2.6)
-    collider("Pumpkin", (sx * 72.8, sy * 72.8), (5.2, 5.2, 4.2), when="halloween")
 place(ghost, (13.5, 71.6, 22.4), face=180, scale=1.5)  # peeking over the hatchery sign
 place(ghost, (63.5, -21.0, 14.5), face=250, scale=1.3)  # over the Halloween stall
 place(ghost, (-63.0, 34.0, 20.5), face=110, scale=1.3)  # over the event board
-for x, y, z, face in ((70, 70, 50, 220), (-66, 74, 47, 150), (-74, -62, 49, 40), (10, 60, 34, 190), (-28, 64, 30, 170), (40, -6, 27, 260)):
+for x, y, z, face in ((70, 70, 50, 220), (-66, 74, 47, 150), (-74, -62, 49, 40), (10, 60, 34, 190), (-28, 64, 30, 170)):
     place(bat, (x, y, z), face=face, scale=rng.uniform(1.6, 2.2))
 for side in (-1, 1):  # webs in the corners under the hatchery sign, and on the two houses beside the hall
     place(cobweb, (side * 19.0, 69.2, 13.2), face=180 if side < 0 else 0, size=4.2)
     place(cobweb, (side * 44.6, 75.4, 29.0 if side < 0 else 30.0), face=180 if side < 0 else 0, size=5.0)
 place(cobweb, (75.4, 14.6, 29.0), face=270, size=5.0)
 place(cobweb, (-75.4, -14.6, 29.0), face=90, size=5.0)
-place(witch_hat, (0, 84.5, 34 + 7.2 + 4.0 * 1.36 * 2 - 1.6), face=180, scale=1.15)  # on the giant egg over the hatchery
+place(witch_hat, (0, 84.5, 34 + 7.2 + 4.0 * 1.36 * 2 - 1.6), face=180, scale=1.15)  # on the giant egg over the hatchery (that hall is 34 high)
 
 # ---------------------------------------------------------------------------------------------------
 # Counting
@@ -1732,14 +1755,14 @@ def photo(name, eye, target, lens):
     bpy.ops.render.render(write_still=True)
 
 
-HERO_TARGET = Vector((0, 2, 2))
+HERO_TARGET = Vector((0, -5, 2))
 ONLY = [word.split("=")[1] for word in ARGS if word.startswith("only=")]
 for suffix in ("_halloween", ""):  # everyday last, so the saved file opens in everyday dress
     dress(suffix)
     if not ONLY or "ground" in ONLY:
         photo("market_ground" + suffix, (0, -66.4, 6.3), (0, 30, 11.5), 20)  # what a player sees on arriving: from just behind the arrival pad, looking north
     if not ONLY or "hero" in ONLY:
-        photo("market_hero" + suffix, HERO_TARGET + from_sky(190, 46, 330), HERO_TARGET, 35)  # three-quarters from above, from the south
+        photo("market_hero" + suffix, HERO_TARGET + from_sky(190, 46, 340), HERO_TARGET, 36.5)  # three-quarters from above, from the south
     for word in ARGS:  # extra looks while working: view=name,x,y,z,tx,ty,tz,lens
         if word.startswith("view="):
             bits = word[5:].split(",")
@@ -1806,13 +1829,16 @@ manifest = {
     "units": "1 unit = 1 stud",
     "meshes": report,
     "totals": {kind: sum(entry["triangles"] for entry in report if entry["kind"] == kind) for kind in ("scenery", "seasonal", "shell")},
-    "spots": "A shell's spot is in the game's marketplace space (x east, z SOUTH). `faces` is the compass direction its front looks (0 north, 90 east, 180 south, 270 west); "
+    "origin": "Market_Ground is 280 x 280 and its middle is the origin (its lowest point is 0.08 under the ground's top). Every mesh's `bounds` are its box in the file: "
+              "centre and size as [x, y, z], from the origin for scenery and seasonal meshes, from its own base for a shell.",
+    "spots": "A shell's spot is in the game's marketplace space (x east, z SOUTH). `facing` is the compass direction its front looks (0 north, 90 east, 180 south, 270 west); "
              "`yaw` is the same as the angle of Marketplace.frame(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0), whose -Z is the front.",
-    "faces": "A board's face is flat and empty: x and z are its middle in the shell's space, width x height its size, y the plane of the GAME's own board face "
-             "(where its SurfaceGui draws). The mesh's face lies 0.05 behind that plane, so the words stay in front of it.",
+    "boards": "A board's face is flat and empty: x and z are its middle in the shell's space, width x height its size, y the plane of the GAME's own board face "
+              "(where its SurfaceGui draws). The mesh's face lies 0.05 behind that plane, so the words stay in front of it.",
     "seasons": {
         "everyday": {"show": ["Market_Leaves", "Market_Bunting"], "hide": ["Market_LeavesAutumn", "Market_Halloween"]},
         "halloween": {"show": ["Market_LeavesAutumn", "Market_Halloween"], "hide": ["Market_Leaves", "Market_Bunting"]},
+        "note": "Market_Halloween brings its own bunting (orange and purple, on the same strings as Market_Bunting), six big pumpkins, the Halloween stall's two pumpkins, ghosts, bats, webs and a witch's hat.",
     },
     "materials": {"Market_Glow": "Neon", "Market_Water": "Glass or SmoothPlastic at 0.2 transparency", "PortalSheet": "Neon, 0.35 transparency like the game's gate"},
     "gameParts": {

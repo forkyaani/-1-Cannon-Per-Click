@@ -39,7 +39,7 @@
   {
    "name": "Market_Fountain",
    "kind": "scenery",
-   "triangles": 3600,
+   "triangles": 3312,
    "bounds": {
     "centre": [
      0.0,
@@ -56,24 +56,24 @@
   {
    "name": "Market_Water",
    "kind": "scenery",
-   "triangles": 604,
+   "triangles": 748,
    "bounds": {
     "centre": [
      0.0,
      0.0,
-     3.02
+     3.04
     ],
     "size": [
      24.9,
      24.9,
-     3.74
+     3.78
     ]
    }
   },
   {
    "name": "Market_HousesNorth",
    "kind": "scenery",
-   "triangles": 9176,
+   "triangles": 8600,
    "bounds": {
     "centre": [
      0.0,
@@ -83,7 +83,7 @@
     "size": [
      149.5,
      20.15,
-     39.17
+     39.16
     ]
    }
   },
@@ -107,7 +107,7 @@
   {
    "name": "Market_HousesEast",
    "kind": "scenery",
-   "triangles": 8608,
+   "triangles": 8032,
    "bounds": {
     "centre": [
      82.58,
@@ -117,7 +117,7 @@
     "size": [
      19.55,
      149.7,
-     40.02
+     40.01
     ]
    }
   },
@@ -141,24 +141,24 @@
   {
    "name": "Market_HousesSouth",
    "kind": "scenery",
-   "triangles": 8004,
+   "triangles": 8532,
    "bounds": {
     "centre": [
      0.05,
      -82.28,
-     14.06
+     14.07
     ],
     "size": [
      149.6,
      20.15,
-     28.17
+     28.16
     ]
    }
   },
   {
    "name": "Market_RoofsSouth",
    "kind": "scenery",
-   "triangles": 1472,
+   "triangles": 1752,
    "bounds": {
     "centre": [
      0.15,
@@ -175,7 +175,7 @@
   {
    "name": "Market_HousesWest",
    "kind": "scenery",
-   "triangles": 8664,
+   "triangles": 8056,
    "bounds": {
     "centre": [
      -82.28,
@@ -185,7 +185,7 @@
     "size": [
      20.15,
      149.5,
-     38.17
+     38.16
     ]
    }
   },
@@ -209,7 +209,7 @@
   {
    "name": "Market_Towers",
    "kind": "scenery",
-   "triangles": 4624,
+   "triangles": 4048,
    "bounds": {
     "centre": [
      -0.0,
@@ -217,8 +217,8 @@
      33.64
     ],
     "size": [
-     195.36,
-     195.36,
+     195.7,
+     195.7,
      67.28
     ]
    }
@@ -294,24 +294,24 @@
   {
    "name": "Market_Bunting",
    "kind": "seasonal",
-   "triangles": 2944,
+   "triangles": 2112,
    "bounds": {
     "centre": [
+     0.0,
      -0.0,
-     -0.0,
-     12.75
+     14.24
     ],
     "size": [
      151.65,
      151.72,
-     12.09
+     9.13
     ]
    }
   },
   {
    "name": "Market_Halloween",
    "kind": "seasonal",
-   "triangles": 9704,
+   "triangles": 7356,
    "bounds": {
     "centre": [
      -0.95,
@@ -328,17 +328,17 @@
   {
    "name": "Market_Backdrop",
    "kind": "scenery",
-   "triangles": 1190,
+   "triangles": 2126,
    "bounds": {
     "centre": [
      4.06,
      80.52,
-     59.0
+     89.5
     ],
     "size": [
      892.08,
      690.9,
-     124.0
+     185.0
     ]
    }
   },
@@ -668,16 +668,16 @@
   {
    "name": "NoticeBoard",
    "kind": "shell",
-   "triangles": 348,
+   "triangles": 436,
    "bounds": {
     "centre": [
      -0.0,
-     -0.11,
+     0.14,
      5.78
     ],
     "size": [
      11.8,
-     2.41,
+     2.91,
      11.56
     ]
    },
@@ -739,7 +739,7 @@
   {
    "name": "Portal",
    "kind": "shell",
-   "triangles": 2204,
+   "triangles": 1948,
    "bounds": {
     "centre": [
      0.09,
@@ -793,7 +793,7 @@
   {
    "name": "HatcherySign",
    "kind": "shell",
-   "triangles": 2798,
+   "triangles": 2630,
    "bounds": {
     "centre": [
      -0.01,
@@ -989,9 +989,9 @@
   }
  ],
  "totals": {
-  "scenery": 58034,
-  "seasonal": 22408,
-  "shell": 13722
+  "scenery": 57298,
+  "seasonal": 19228,
+  "shell": 13386
  },
  "spots": "A shell's spot is in the game's marketplace space (x east, z SOUTH). `faces` is the compass direction its front looks (0 north, 90 east, 180 south, 270 west); `yaw` is the same as the angle of Marketplace.frame(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0), whose -Z is the front.",
  "faces": "A board's face is flat and empty: x and z are its middle in the shell's space, width x height its size, y the plane of the GAME's own board face (where its SurfaceGui draws). The mesh's face lies 0.05 behind that plane, so the words stay in front of it.",
@@ -1343,66 +1343,6 @@
      "x": 2.6,
      "y": 2.08,
      "z": 2.6
-    },
-    "yaw": 0.0,
-    "when": "halloween"
-   },
-   {
-    "name": "Pumpkin",
-    "centre": {
-     "x": 72.8,
-     "y": 2.1,
-     "z": -72.8
-    },
-    "size": {
-     "x": 5.2,
-     "y": 4.2,
-     "z": 5.2
-    },
-    "yaw": 0.0,
-    "when": "halloween"
-   },
-   {
-    "name": "Pumpkin",
-    "centre": {
-     "x": 72.8,
-     "y": 2.1,
-     "z": 72.8
-    },
-    "size": {
-     "x": 5.2,
-     "y": 4.2,
-     "z": 5.2
-    },
-    "yaw": 0.0,
-    "when": "halloween"
-   },
-   {
-    "name": "Pumpkin",
-    "centre": {
-     "x": -72.8,
-     "y": 2.1,
-     "z": 72.8
-    },
-    "size": {
-     "x": 5.2,
-     "y": 4.2,
-     "z": 5.2
-    },
-    "yaw": 0.0,
-    "when": "halloween"
-   },
-   {
-    "name": "Pumpkin",
-    "centre": {
-     "x": -72.8,
-     "y": 2.1,
-     "z": -72.8
-    },
-    "size": {
-     "x": 5.2,
-     "y": 4.2,
-     "z": 5.2
     },
     "yaw": 0.0,
     "when": "halloween"
