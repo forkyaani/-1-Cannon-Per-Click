@@ -1,9 +1,10 @@
 # Release plan: public on Saturday 10 October 2026
 
 Written Monday 5 October 2026. Five days. This is the one list for the release: everything that has to
-happen, in code, in Blender, in Studio and on Roblox. `docs/BUILD_QUEUE.md` stays the record of what was
-decided and built, and `docs/VISUAL_AUDIT.md` the full inventory of what looks placeholder (the M, D, U and E
-numbers below are its).
+happen, in code, in Blender, in Studio and on Roblox. `README.md` is how to set up and the working rules,
+`docs/BUILD_QUEUE.md` the record of what Yaani decided and what was built, `docs/VISUAL_AUDIT.md` the full
+inventory of what looks placeholder (the M, D, U and E numbers below are its), and `docs/PLAN.md` the money,
+the ad budget and the human checklist.
 
 ## 0. The three things that decide the date
 
@@ -17,9 +18,12 @@ numbers below are its).
    model falls back to the part-built one by itself (`Models.mini`, `Models.monster`, `Islands.dressFor`), so
    no missing model can break the game. The plan models what a player sees on the first day and ships the
    rest in order, world by world, after the release.
-3. **The models are not in the repository.** The four folders the game reads (`ReplicatedStorage.MiniCannons`,
-   `EggModels`, `IslandModels`, `Creatures`) exist only in the published place. A place built from `src` with
-   Rojo has none of them, and publishing one over the live place deletes them. Task R2.
+3. **There are two experiences, and only one can be the release.** Yaani's "Project Egg WIP" holds the
+   models as first imported (meshes owned by the account `OhYaani`; `place/ProjectEgg.rbxl` is its copy). On
+   5 October Victor published a second one, `+1 Cannon Per Click`, under the group Astral Crafts, built from
+   `src` and with Earth's models imported again from the FBX files (meshes owned by the group). Passes,
+   products, saves, leaderboards and the page all belong to one experience. Decision 1 in section 4, on
+   Tuesday morning, before anything is created on Roblox. The plan below assumes the group's.
 
 ## 1. How the two of us work on this
 
@@ -31,12 +35,15 @@ numbers below are its).
   you start, every time. Never force-push `main`.
 - **Before every push:** `for t in tools/emu/tests/*.luau; do case $t in *.pre.luau|*_prelude*) ;; *) python3
   tools/emu/run.py --all-features $t || break;; esac; done` and `python3 tools/luau_check.py` on what changed.
-- **One place file.** The live game is the Roblox place `80923792816716` (experience `10769534537`, owned by
-  the group Astral Crafts, `230235107`). Open it from Studio's Experiences list, never from an `.rbxl` on
-  disk. Until R2 is done, code reaches it with `rojo serve` and the Rojo plugin, which syncs `src` and
-  leaves the models alone; `rojo build` plus publish would delete them.
-- **One publisher at a time.** Say "publishing" in the chat first. Every publish gets a note with the task ids
-  (File, Publish to Roblox with Notes).
+- **One place.** Assuming decision 1: the Roblox place `80923792816716` (experience `10769534537`, owned by
+  the group Astral Crafts, `230235107`). Open it from Studio's Experiences list. Code reaches it with
+  `rojo serve` and the Rojo plugin, which syncs `src` and leaves the models alone. The models and the lighting
+  live only in the place: a place made with `rojo build` has neither, and publishing one over the live place
+  deletes them. `place/ProjectEgg.rbxl` is the copy kept in git (File, Download a Copy, after every import).
+- **Publishing.** `README.md` says publishing is Yaani's call and "Save to Roblox" is always fine. Victor
+  published the group's place twice on 5 October before reading that. From now: save freely, say "publishing"
+  in the chat before a publish, and give every publish a note with the task ids (File, Publish to Roblox with
+  Notes). After Saturday a publish changes the live game for players.
 - **Team Create is on**, so both can be in the place at once. Scripts come from the repository only: never
   edit a script in Studio, the next sync overwrites it.
 - **Where things are:** code in `src`, Blender scripts in `tools/blender`, their output in `assets/models`,
@@ -84,12 +91,15 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 | B9 | P0 | Paid random items: the odds are shown for every egg, crate and enchant roll, and `PolicyService` is asked before each paid roll (it is in Crates and Enchant; check the x3 Luck pass and the eggs) | a restricted test account cannot buy a random item | | open |
 | B10 | P0 | Halloween event end to end: candy drops, the four eggs, the candy shop, the event leaderboard, the top five's rewards paid once on the next join, everything gone after `Config.Halloween.endsAt` (1 November 2026, 00:00 UTC) | played with a test end time five minutes away | | open |
 | B11 | P0 | The first save of the real game. The live experience already holds test saves from 5 October in `PlayerData_v4`. Decide: wipe them or rename the store | no tester starts the release at level 28 | | open |
-| B12 | P0 | Marketplace wear code for D5: the model over the part-built square, the way `Islands.wear` does it | every prompt and sign of `Marketplace.luau` stands where the model shows it | | open |
-| B13 | P0 | `Models.tower` and the base (`Plots.luau`) using the models of D6 and D7, with the part-built ones as the fall back | `tools/emu/tests/defense_client.luau` passes; aiming and the muzzle unchanged | | open |
+| B12 | P0 | Marketplace wear code for D5: the model over the part-built square, the way `Islands.wear` does it; the Halloween dress shown and hidden with the event | every prompt and sign of `Marketplace.luau` stands where the model shows it | | open |
+| B13 | P0 | Base wear code for D7 in `Plots.luau` (shells placed as `earth_base.py`'s header says, the `...Trim` meshes tinted by the game), and `Models.tower` using D6's models; the part-built ones stay as the fall back | `tools/emu/tests/defense_client.luau` passes; aiming and the muzzle unchanged | | open |
 | B14 | P1 | Loot viewer and the Huge showcase using `Models.mini` (M7, M8) | one mini cannon builder, not three | | open |
 | B15 | P0 | The group promises codes ("Exclusive codes" in its description) and the game has no way to redeem one. Build a small code box, or take the line out of the group | the promise and the game agree | | open |
 | B16 | P1 | Analytics: the funnel of the first ten minutes (joined, welcome done, first tower, level 5, first hatch, level 10, marketplace) and every purchase | visible in Creator Hub | | open |
-| B17 | P2 | STATS: the missing sources. Badges. Own run and idle animations (D6). Chat colours (D7) | | | open |
+| B17 | P0 | The Mastery "Slots" track is shown but not sold (`README.md`, section 7) | sold, or not shown | | open |
+| B18 | P0 | Two stale emulator tests: `mastery.luau` and `defense_client.luau` | both pass, or are rewritten for today's game | | open |
+| B19 | P1 | Dead clicker pieces still hidden in `Hud.luau` | removed | | open |
+| B20 | P2 | STATS: the missing sources. Badges. Own run and idle animations (D6). Chat colours (D7) | | | open |
 
 ### C. Robux: passes and products
 
@@ -133,8 +143,8 @@ What is left, in all:
 | Bosses (a mid boss and a final boss a world) | 1 shared `Boss` | 24 | `boss_king.py` as the recipe |
 | World islands | 1 (Earth) | 11 | `earth_island.py` as the template |
 | Island machines: Mastery Shrine, Enchanting Table, Fusion Machine (M32, M33) | 0 | 3 | new |
-| Marketplace town (M34 to M47) | 0 | 1 set | `marketplace.py` is written; its FBX was never exported |
-| Base kit (M11 to M22), tinted for 12 worlds | 0 | 1 kit | new |
+| Marketplace town (M34 to M47) | 0 | 1 set | `marketplace.py`; `assets/models/marketplace/marketplace.fbx` is exported (Yaani, 5 Oct), not imported, and no code wears it |
+| Base (M11 to M22) | 0 | Earth's exported, 11 worlds' tints left | `earth_base.py`; `assets/models/bases/earth_base.fbx` (Yaani, 5 Oct, in progress), not imported, and no code wears it |
 | Towers: 8 kinds (M1, M2) | 0 | 8 | new |
 | Shots, crates, daily chest, Ammo Forge, Captain Kaboom, Huge pedestal (M9, M10, M41, M44 to M47) | 0 | 6 sets | new |
 
@@ -146,10 +156,10 @@ This week's tasks:
 | D2 | P0 | Monsters as one mesh each with vertex colours, the way `minis.py` joins a mini cannon. Earth's six are 189 MeshParts (about 30 a monster, 10 to 20 monsters on screen), and their colours are material colours, which the importer drops | `wave.py` and `boss_king.py` export one mesh a monster; `COLOURS` is gone from `organize_imports.luau` | | open |
 | D3 | P0 | Earth's coin eggs: Basic Egg and Forest Egg and their 10 mini cannons. The first thing every player hatches, and parts today | in the place; the hatch reveal checked | | open |
 | D4 | P0 | Earth's own bosses: Ogre Chief and Earth Titan (both are the shared `Boss` today); giants use their monster's model (M4) | both fought | | open |
-| D5 | P0 | Marketplace: export `marketplace.fbx` (with B12) | in the place | | open |
+| D5 | P0 | Marketplace: finish `marketplace.py`, import its FBX (with B12) | in the place | Yaani | doing |
 | D6 | P0 | Towers: the 8 kinds as models with tint zones, so the 60 tiers stay recolours (with B13) | in a fight | | open |
-| D7 | P0 | Base kit, Earth's look: gatehouse and gate, monster portal, pad in three states, FOR SALE sign, path tiles, fence, lamp, teleporter (M13 to M18, M20, M21; with B13) | a new player's first screen has no bare slab in it | | open |
-| D8 | P1 | Base ground, skyline and Earth's props (M11, M12, M19, M22) | the same, seen from the gate | | open |
+| D7 | P0 | Earth's base: finish `earth_base.py` (ground, cliff, road, backdrop, trees, and the shells: pad, gate, portal, teleporter, lamp), import its FBX (with B13) | a new player's first screen has no bare slab in it | Yaani | doing |
+| D8 | P1 | What `earth_base.py` leaves as parts: FOR SALE sign, fence, skyline (M14, M18, M19) | the same, seen from the gate | | open |
 | D9 | P1 | Marketplace set pieces: crates, daily chest, Ammo Forge, Huge pedestal, Captain Kaboom (M41, M44 to M47) | in the place | | open |
 | D10 | P0 | The Moon: island, 5 monsters, 2 bosses, Moon Egg and Comet Egg, 10 mini cannons, the base's tint and props | island visited, a boss fought | | open |
 | D11 | P0 | Mars: the same, and the Mastery Shrine (M32) | the same | | open |
@@ -191,6 +201,8 @@ The game is silent today.
 | G6 | P0 | Asset ownership. The UI atlases (`75982409729652`, `89091306681120`) were uploaded by a personal account: check they load in the group's experience for an account that is not the uploader, or upload them again under the group | the HUD's icons show for a stranger | | open |
 | G7 | P1 | A second place or a copy of the experience for testing, so nothing is tried on the live one after Saturday | exists, and is where Rojo points by default | | open |
 | G8 | P1 | The launch post in the group and wherever else (Victor and Yaani decide where); a trailer or a 20-second clip | posted on Saturday | | open |
+| G9 | P1 | Ads: `docs/PLAN.md`'s human checklist (the Ads Manager account, the card, campaign 1 drafted and not submitted until the first day's numbers are in) | campaign 1 is a draft | | open |
+| G10 | P0 | Mesh and image ownership for the release experience. If it is the group's: every model is imported again from its FBX under Astral Crafts (Earth's were, 5 Oct), and `place/ProjectEgg.rbxl` is replaced by a copy of the group's place. If it is Yaani's: nothing to do | no blank model for a stranger | | open |
 
 ### H. Testing
 
@@ -213,10 +225,10 @@ Found in play tests (H3):
 | # | P | Task | Done when | Owner | Status |
 |---|---|---|---|---|---|
 | R1 | P0 | This plan on `main`; both of us can push | merged | Victor | done 5 Oct |
-| R2 | P0 | Models into the repository: the four folders saved from Studio as `.rbxm` under `assets/roblox` and mapped in `default.project.json` | `rojo build` gives a place with the models; a play test of that file shows them | | open |
+| R2 | P0 | The kept place file is the release experience's: `place/ProjectEgg.rbxl` refreshed from it (File, Download a Copy) after every import, as `place/README.md` says. Better, if there is time: the four folders saved as `.rbxm` and mapped in `default.project.json`, so `rojo build` gives the whole game | the committed file, opened and played, shows every model that is live | | open |
 | R3 | P0 | `tools/studio/organize_imports.luau` for every world: monsters and bosses by a name table instead of Earth's six; worlds with two-word names (`The Sun`, `Crystal Belt`, `Robot Factory`, `Alien Jungle`, `Black Hole`, `The Big Bang`) | the Moon's files import with no edit to the script | | open |
 | R4 | P0 | Rojo for both: `rokit install` works on both machines (`rokit.toml` pins Rojo 7.7.1), the Rojo plugin is in both Studios | both have synced a change | | open |
-| R5 | P1 | A `README.md`: what the game is, how to run the tests, how to sync, how to import a model (section 7) | exists | | open |
+| R5 | P1 | `README.md` (Yaani, 5 Oct): add how to import a model (section 7 here) and name the release experience | both in | Yaani | done 5 Oct, two lines to add |
 | R6 | P1 | A check on every pull request that runs the tests (GitHub Actions; the tests need only Python 3) | a red cross on a broken pull request | | open |
 
 ## 4. Decisions only Victor and Yaani can make
@@ -225,7 +237,8 @@ Each blocks a task above. Write the answer here.
 
 | # | Question | Blocks | Answer |
 |---|---|---|---|
-| 1 | Is it acceptable that worlds 4 to 12 are part-built on Saturday? The plan assumes yes | everything | |
+| 1 | Which experience is released: the group's `+1 Cannon Per Click` (the plan), or Yaani's "Project Egg WIP"? And who presses Publish? | C, G, R2, G10 | |
+| 1b | Is it acceptable that worlds 4 to 12 are part-built on Saturday? The plan assumes yes | everything | |
 | 2 | Mastery Rapid and Silver's Rapid Fire: remove and refund, or a new meaning? | A3 | |
 | 3 | Gems for Robux at launch: no (the plan), or yes? | A7 | |
 | 4 | Test saves in the live experience: wipe? | B11 | |
@@ -233,18 +246,22 @@ Each blocks a task above. Write the answer here.
 | 6 | Revenue split of the group | C14 | |
 | 7 | Private servers: free, paid or off? | G4 | |
 | 8 | Who owns which section this week? | every Owner cell | |
+| 9 | Should fusing stay locked until island 5? It slows worlds 1 to 4 (`README.md`) | A1 | |
+| 10 | Should "Lucky" be rollable from the Shiny key, which is sold for Robux? (`README.md`) | B9, C7 | |
+| 11 | Does candy won from candy-bought crates count for the Halloween leaderboard? (`README.md`) | B10 | |
 
 ## 5. Day by day
 
 ### Tuesday 6 October: the blockers and the pipeline
 
-A1, A2, A3 (balance). G1 (can it go public at all). D1, D2, R2, R3, R4 (the pipeline). B1 (conflict
-files). D3 (Earth's eggs and mini cannons). Section 4's decisions, all eight.
+Decision 1 first: which experience. Then A1, A2, A3 (balance). G1 (can it go public at all). D1, D2, R2,
+R3, R4, G10 (the pipeline). B1 (conflict files), B18 (stale tests). D3 (Earth's eggs and mini cannons). The
+rest of section 4's decisions.
 
 ### Wednesday 7 October: Earth and the base, finished; money in
 
-D4 (Earth's bosses), D6 with B13 (towers), D7 (base kit), D5 with B12 (marketplace), D8 and D9 if there is
-time. C1 to C12 with E4 (create every pass and product), A4, A5, A7, B2, B9, B11, B15. F1 and F2 chosen.
+D4 (Earth's bosses), D6 and D7 with B13 (towers and the base), D5 with B12 (marketplace), D8 and D9 if there
+is time. B17. C1 to C12 with E4 (create every pass and product), A4, A5, A7, B2, B9, B11, B15. F1 and F2 chosen.
 
 ### Thursday 8 October: the Moon and Mars; sound and loading in; art freeze
 
@@ -270,8 +287,8 @@ H2, H4, H5, H6 (the play tests). **18:00 code freeze.** Evening: H3 only.
 
 - [ ] `sim.py`: the Moon under 2 hours, the whole game between 40 and 60 hours (A1)
 - [ ] Every test in `tools/emu/tests` passes on `main` (H1)
-- [ ] `rojo build` from `main` gives the place that is published, models included (R2)
 - [ ] No `.conflict` file in the repository (B1)
+- [ ] One experience, named in section 0, and `place/ProjectEgg.rbxl` is its copy (decision 1, R2)
 - [ ] A new account plays the first ten minutes on a phone with no error, with sound, and with no bare
       placeholder on screen (H2)
 - [ ] All 6 passes and 6 products are on sale and each was bought once (C13)
@@ -297,7 +314,7 @@ H2, H4, H5, H6 (the play tests). **18:00 code freeze.** Evening: H3 only.
 4. Run `tools/studio/organize_imports.luau` in the command bar. It prints what it found, for example
    `mini cannons 25/25, eggs 5/5, island pieces 13/13, creatures 6/6`.
 5. Delete the raw import from the Workspace. Play test: which way it faces, where it stands, its size.
-6. Save the changed folder to `assets/roblox` (R2), commit, publish.
+6. File, Download a Copy over `place/ProjectEgg.rbxl` (R2), commit, publish.
 
 Known traps, all met on 5 October: the importer keeps a mesh's origin but not which way it looks (the script
 turns every pivot; Blender's front, -Y, arrives as -Z); it drops material colours (hence D2); and
