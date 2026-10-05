@@ -87,7 +87,13 @@ The kill-based "Cannon Mastery" in the core is renamed "Veteran" so there is one
 Needs from the core: modifier kinds for tower rate, range, lives, monster speed and upgrade cost
 (`Game.modify`), added when this is built. Numbers are tuned with `tools/balance`.
 
-## 4. Enchanting (Yaani's spec; unlocked at island 5, The Sun)
+## 4. Enchanting (Yaani's spec; unlocked at island 5, The Sun): BUILT (5 Oct, staging tree)
+
+As built: `Features/Enchant.luau` x3, "Enchanting" in `docs/ARCHITECTURE.md`, numbers in `docs/BALANCE.md`
+section 5d. Differences from the draft below: Scholar speeds up Veteran progress only (mastery is bought with
+gems, there is no progress to speed up); the shot enchantments (Frostbite, Ember, Chain) are a chance per shot,
+so stacking makes them trigger more often; Gem Finder has a limit of 30 gems a day; missions do not pay keys
+yet (a mission pays gems only); the plain key is sold on the island shops from The Sun's on.
 
 An enchanting table on The Sun's island opens the ENCHANT window.
 
@@ -115,7 +121,10 @@ An enchanting table on The Sun's island opens the ENCHANT window.
 - Needs the same extra modifier kinds as Mastery (tower rate, range, lives, monster speed), so build it after
   Mastery. Enchant odds are shown in the window (random paid items need their odds disclosed).
 
-## 5. Fusing revamp (Yaani's spec; unlocked at island 5, with the enchanting table)
+## 5. Fusing revamp (Yaani's spec; unlocked at island 5, with the enchanting table): BUILT (5 Oct, staging tree)
+
+As built: `Features/Fuse.luau` x3, "Fusing" in `docs/ARCHITECTURE.md`. The story's fuse quests: none in the
+tutorial any more; chapters 5, 7, 9 and 11 ask for Silver, Gold, Diamond and two Diamonds (`Story.FuseTask`).
 
 - Fusing leaves the MINI CANNONS window (no more FUSE and FUSE ALL buttons there) and becomes its own FUSE
   window, opened at the Fusion Machine, which moves from the marketplace to The Sun's island.
@@ -151,6 +160,32 @@ Status 4 Oct evening: step 0 done (rebuilt game merged into src and running in S
 Decided 5 Oct: the enchanting table stands on the player's own plot (the open ground in front of the base wall, to the right of the gate as seen from the plot: see Yaani's screenshot), not on The Sun's island. It appears on a plot once its owner has reached The Sun (world 5) and stays after a rebirth. Its prompt opens ENCHANT for the owner only. The Fusion Machine stays on The Sun's island unless Yaani says otherwise. Do this after the queue workflow, before the merge into src.
 
 Decided 5 Oct (later, replaces the note above about the plot): walks on islands are too long. Every island gets a compact centre: the player arrives in the middle, and the two egg stands, the shop stall, the return portal and (where the island has them) the Mastery shrine, the Enchanting table and the Fusion Machine stand in a tight ring around the arrival pad, each a few steps away (about 15 studs). The statues and scenery go to the rim. The enchanting table stays on The Sun's island in that ring, not on the plot. Do this after the queue workflow, before the merge into src.
+
+Status 4 Oct night, in the staging tree: 0c (rebirth, the three leaderboards, Veteran) and 1 (Huge nerf) are built
+in the core, with the groundwork for 2, 3, 4 and 6: `goIsland` / `state.place` / `Game.places.island`, the
+modifier kinds mastery and enchanting need, and `Game.modify(kind, fn, label)` / `Game.breakdown`. As built:
+`docs/DEFENSE_SPEC.md`, section 8.
+Status 4 Oct late night, in the staging tree: 2 (islands) is built: `src/server/Islands.luau`, the WORLDS
+window's ISLAND buttons, the street's islands portal, the island shop (`Features/IslandShop.luau` x3). The coin
+eggs left the marketplace. As built: `docs/DEFENSE_SPEC.md`, section 8, and "The world islands" in
+`docs/ARCHITECTURE.md`. Island shop numbers: `docs/BALANCE.md`.
+Status 5 Oct, in the staging tree: 3 (mastery, all twelve tracks on sale: the core has the `equipSlots`
+modifier) and 6 (the STATS window, `Features/Stats.luau`) are built, with the game speed button and the hidden
+Huge badge brought over from the live tree, and the client following `TowerRate` / `TowerRange`. 4 (enchanting)
+and 5 (fusing) are not built yet; STATS lists their sources by itself once their modifiers are labelled. As
+built: `docs/DEFENSE_SPEC.md`, section 8; mastery's numbers: `docs/BALANCE.md`, section 5c.
+Status 5 Oct, later, in the staging tree: the islands have a compact centre. Players arrive in the middle
+(`Layout.islandSpawn`); the two eggs, the stall, the portal home and the two reserved spots stand in a ring 15
+to 16 studs around the arrival pad, facing it; the boss and the two monster statues, the lamps and the props
+stand at the rim. For 4 and 5: the enchanting table and the fusion machine share the `enchant` spot, at x = -5
+and x = 5 of `Islands.spot(5, "enchant")` (`tools/emu2/islands.py` checks those two places).
+Status 5 Oct, later still, in the staging tree: 4 (enchanting) and 5 (the fusing revamp) are built:
+`Features/Enchant.luau` and `Features/Fuse.luau` (shared, server, client each), enchanted mini cannon ids
+(`Config.Pets` resolves `wooden_gold~greed1.sharp3`), the table and the Fusion Machine on The Sun's island, the
+keys in the crates and the island shops, the story's fuse quests from chapter 5 on. New in the core: the
+`petRange` modifier, `shot.target`, `Game.pets.swap`, and labels that list several sources. The Shiny key's
+Robux product has id 0. Not done: keys from missions; the balance pass with enchantments (`tools/balance` does
+not model them, and its player now fuses only from The Sun on).
 
 ## Event leaderboard (decided 5 Oct)
 

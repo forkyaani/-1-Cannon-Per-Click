@@ -127,7 +127,7 @@ are reached on the first day.
 - [ ] `sim.py`: the Moon under 2 hours, the whole game between 40 and 60 hours (2.1)
 - [ ] Every test in `tools/emu/tests` passes
 - [ ] `rojo build` from `main` gives the same place that is published, models included (2.3)
-- [ ] No `.conflict` file in the repository (2.7)
+- [x] No `.conflict` file in the repository (2.7)
 - [ ] A new account plays the first ten minutes on a phone with no error and no bare placeholder on screen
 - [ ] The 6 game passes are on sale and each gives what it says (3.7)
 - [ ] The group reward pays once: 250 gems and +10% coins (`Config.Fan.groupId = 230235107`)

@@ -401,6 +401,44 @@ player must have reached The Sun, stand on its island and own every pick. The an
 channel (`{ pet }`). The MINI CANNONS window no longer fuses, and the story asks for no fusing before
 chapter 5 (`Story.FuseTask`).
 
+### Events and their leaderboard (`Features/Event.luau` x3)
+
+An event is one entry of `Event.List` in `src/shared/Features/Event.luau`: `{ id, name, icon, color, currency
+(the save field: "candy"), currencyName, startsAt, endsAt, rewards = { { from, to, kind = "pet", pet } |
+{ from, to, kind = "gems", amount } } }`. Halloween (`halloween2026`, its end from `Config.Halloween.endsAt`)
+is the first; Christmas is there as a comment. A new event is that entry, its currency in the save, and the
+Huge its winners get (`defineHuge` in `Config.luau`, a feature in `Features/Huge.luau`). Never reuse an id.
+
+- **Earned, not owned.** `data.features.event = { earned = { [event id] = n }, paid = { [event id] = rank } }`.
+  Nothing reports candy to the feature: it watches the balance, and whatever it has grown by since the last
+  look was earned (while the event is live). It looks twice a second and in the `action` hook, just before
+  anything is bought, so spending never lowers the count and never hides what was earned before it. Code that
+  takes an event's currency away outside an action or a core prompt calls `Event.settle(player)` first
+  (`require(script.Parent.Event)` from a server feature). Candy a crate pays out counts as earned too.
+- **The board.** One OrderedDataStore per event (`LB_Event_<id>_v1`), added to `Leaderboard.luau` as the board
+  `Event_<id>`: submitted on every autosave and on leaving, like the others. It stands in the marketplace on
+  the west wall north of the Gems board (built by the feature) and is the fourth column of TOP PLAYERS, with
+  the time left, the prizes and the player's own earnings and rank under its heading; the event shop's heading
+  shows the same. The rank comes from the board's own refresh (it reads the best 100 every 90 s), so it costs no
+  request of its own; a player further down is "not in the top 100 yet". The board stays up for 14 days after
+  the end (`Event.SHOW_SECONDS`).
+- **The end.** Nothing is earned from `endsAt` on. For 4 minutes (`SUBMIT_GRACE`) the board still takes the
+  scores of players who were online at the end (each server sends them at once, and again with the next
+  autosave). After 5 minutes (`FREEZE_DELAY`) the ranking is frozen: every server looks for the record
+  `EventWinners_v1[event id]`; the first one that finds none reads the best five from the board once and stores
+  `{ frozen = true, at, list = { { userId, score } } }` with `UpdateAsync`, which keeps whatever was stored
+  first. A board or a store that cannot be read freezes nothing: the next check (every 20 s) tries again.
+- **The prizes** (Halloween: ranks 1 to 3 the Huge Spectre Cannon, rank 4 2,500 gems, rank 5 1,500 gems). A
+  winner is paid when their save loads on a server that knows the ranking, or at once if they are online when
+  it is frozen, and only if `paid[event id]` is not set: the save is locked to one server, so it happens once.
+  The server announces it, and the client plays the Huge reveal (`Effects.hatch` with a gift) or, for gems, a
+  full-screen card. A session whose save did not load is not paid; the prize waits.
+- **Client state**: `State.feature("event") = { list = { [event id] = { earned, rank?, place?, final } },
+  reward? = { n, event, rank, kind, pet?, amount? } }`. `reward` is the prize just paid (never saved).
+- **The Huge Spectre Cannon** (`hugespectre`): in no egg and no shop, tradable, x`Config.HugePower` like every
+  Huge. Its feature is Haunt: monsters walk 20% slower (a `monsterSpeed` modifier, so it stacks with a Frost
+  tower's slow and STATS lists it).
+
 ### STATS (`Features/Stats.luau`, server and client)
 
 The STATS menu button opens one window that shows every number and where it comes from. The server builds the
@@ -592,6 +630,8 @@ The game is a third-person idle defence (`docs/IDLE_DEFENSE.md`, contract in `do
 | `ctx.UI` | `UI.window(title, w, h)`, `UI.scroll`, `UI.row`, `UI.header`, `UI.text`, `UI.button`, `UI.panel`, `UI.make`, `UI.Colors`. Candy Arcade kit (docs/UI_VISION.md): `UI.Variants`, `UI.shade`, `UI.sticker`, `UI.slot` (a container placed in design px), `UI.label`, `UI.pill`, `UI.bar`, `UI.toggle`, `UI.badge`, `UI.chip`, `UI.disc`, `UI.scale()`, `UI.W()`, `UI.T()`, `UI.onLayout(fn)` |
 | `ctx.Hud.onLayout(fn)` | `fn(layout)` runs now and when the screen changes. `layout`: `s` (screen scale), `W`, `T` (top bar), `top` (y of the travel button at the top centre), `stack` (left stack y), `toast` (toast line y), in design px. Use it to place a HUD piece of your own. The level HUD sits under the travel button, from `top + 100` to `top + 240` on the plot and one 40 px line in the marketplace |
 | `ctx.Windows.register(name, window, refresh)` | Make your window open by name and refresh with the rest |
+| `ctx.Windows.boardNotes[boardId] = function() return text end` | A few lines under that board's heading in TOP PLAYERS (the event board's time left, prizes and own rank) |
+| `ctx.Windows.shopNote = function(currency) return text end` | Text added to the heading of the event shop that sells for that currency |
 | `ctx.Hud.addMenuButton(name, color, order, onClick, view)` | Menu button. Orders 10+ are free. view: both (default) or market. A `cannon` button is never shown: the HUD is in its marketplace layout everywhere |
 | `ctx.flag(buttonName, fn)` | Show "!" on that menu button while `fn()` is true |
 | `ctx.Hud.toast(text, kind)`, `ctx.Hud.popup(position, text, color)` | Messages and floating numbers |
@@ -661,7 +701,7 @@ enchanting with each key, the Shiny key's guarantee over many rolls, fusing and 
 and offline earnings (the same player leaving and coming back after a faked 30 seconds, 2 hours and 20 hours),
 pause (a level stops and resumes) and a visit with two players (invitation, expiry, JOIN, what a guest
 cannot do, BASE, SEND HOME, the host leaving).
-`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/mastery.luau` is the mastery feature's own test. `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
+`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
 against the real server and the real `Plots.luau` and checks the battlefield, the TOWER window, the level HUD
 and travel. `cd tools/emu2 && GAME_ROOT=<tree> python3 boot.py` boots the server with the real `Plots` and
 `Marketplace`, `play.py` there lets a player join, build, upgrade, sell, travel and leave, then plays a visit between two
