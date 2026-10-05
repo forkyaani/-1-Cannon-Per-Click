@@ -53,7 +53,7 @@ rng = random.Random(11)  # the same "random" town every run
 
 GRASS, GRASS_LIGHT, GRASS_DEEP, GRASS_RIM = "6FD046", "92E35A", "58BE3E", "389A45"
 STONE, STONE_DARK, STONE_PALE = "DCD6CC", "B9B2A8", "F4EFE6"
-PAVE, PATH, PLAZA, BAND, WALK = "E7DAC2", "FBF0D6", "FCEBC0", "EFCD92", "D8CBB6"
+PAVE, PATH, PLAZA, BAND, WALK = "D9C5A1", "F1DDAE", "F7E2AA", "E3BE7A", "C8B492"
 WOOD, WOOD_LIGHT, WOOD_DARK = "B9783F", "E3B06B", "8A5A2B"
 WATER, WATER_LIGHT = "3FBDF5", "A8E8FF"
 WHITE, INK, GOLD, GOLD_DARK, GOLD_LIGHT = "FFFFFF", "2B1240", "FFC61A", "E09A12", "FFE27A"
@@ -107,7 +107,8 @@ def mat(hex_code, roughness=0.6, emission=0.0):
 # becomes one mesh. In the scenery anything that glows goes to the group "Glow" and the water to "Water",
 # so that in Roblox those two meshes can be given Neon and Glass. A shell keeps its own glowing bits.
 # ---------------------------------------------------------------------------------------------------
-SCENERY = ("Ground", "HousesNorth", "HousesEast", "HousesSouth", "HousesWest", "Towers", "Fountain", "Trees", "Dressing", "Backdrop", "Water", "Glow")
+SIDES = ("North", "East", "South", "West")
+SCENERY = ("Ground", *("Houses" + side for side in SIDES), *("Roofs" + side for side in SIDES), "Towers", "Fountain", "Trees", "Dressing", "Backdrop", "Water", "Glow")
 SEASONAL = ("Leaves", "LeavesAutumn", "Bunting", "Halloween")
 RENDER_ONLY = ("Placeholders", "PlaceholdersDay", "PlaceholdersHalloween", "Clouds")  # in the photos, not in the export
 groups = {}  # name -> pieces
@@ -126,6 +127,15 @@ def into(name):
         yield
     finally:
         group = home
+
+
+row = "North"  # the row of houses being built
+
+
+def roofing():
+    """A row's roofs (with their dormers, chimneys, flags and ornaments) are a mesh of their own: a row of
+    houses with its roofs is over the 10,000 triangles one mesh may have."""
+    return into("Roofs" + row if group.startswith("Houses") else group)
 
 
 def part(name):
@@ -186,11 +196,15 @@ def tube(radius, depth, start, direction, colour, tip=None, vertices=12, **look)
     return finish(work, colour, Vector(start) + direction * depth / 2, direction.to_track_quat("Z", "Y").to_euler(), **look)
 
 
-def mesh(vertices, faces, colour, location=(0, 0, 0), rotation=(0, 0, 0), bevel=0.0, **look):
+def mesh(vertices, faces, colour, location=(0, 0, 0), rotation=(0, 0, 0), bevel=0.0, up=False, **look):
     work = bmesh.new()
     corners = [work.verts.new(vertex) for vertex in vertices]
     for face in faces:
-        work.faces.new([corners[index] for index in face])
+        made_face = work.faces.new([corners[index] for index in face])
+        if up:  # ground: seen from above only, and Roblox draws one side of a face
+            made_face.normal_update()
+            if made_face.normal.z < 0:
+                made_face.normal_flip()
     if bevel:
         bmesh.ops.recalc_face_normals(work, faces=work.faces)
         bmesh.ops.bevel(work, geom=work.edges[:], offset=bevel, offset_type="OFFSET", segments=1, profile=0.5, affect="EDGES", clamp_overlap=True)
@@ -292,7 +306,7 @@ def flat(points, z, colour, **look):
     area = sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(points, points[1:] + points[:1]))
     if area < 0:
         points = points[::-1]
-    return mesh([(x, y, z) for x, y in points], [tuple(range(len(points)))], colour, smooth=False, roughness=0.9, **look)
+    return mesh([(x, y, z) for x, y in points], [tuple(range(len(points)))], colour, up=True, smooth=False, roughness=0.9, **look)
 
 
 def band(inner, outer, start, end, z, colour, steps=48):
@@ -304,21 +318,21 @@ def band(inner, outer, start, end, z, colour, steps=48):
         if step:
             a = (step - 1) * 2
             faces.append((a, a + 1, a + 3, a + 2))
-    return mesh(vertices, faces, colour, smooth=False, roughness=0.9)
+    return mesh(vertices, faces, colour, up=True, smooth=False, roughness=0.9)
 
 
 def frame_square(inner, outer, z, colour):
     """A flat square ring on the ground, around the middle."""
     vertices = [(sx * reach, sy * reach, z) for reach in (inner, outer) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
     faces = [(index, (index + 1) % 4, 4 + (index + 1) % 4, 4 + index) for index in range(4)]
-    return mesh(vertices, faces, colour, smooth=False, roughness=0.9)
+    return mesh(vertices, faces, colour, up=True, smooth=False, roughness=0.9)
 
 
 def rect(x0, y0, x1, y1, z, colour):
     return flat([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], z, colour)
 
 
-def arch(width, height, steps=6):
+def arch(width, height, steps=5):
     """The outline of a shape with a round top, from the middle of its foot."""
     r = width / 2
     return [(r, 0.0)] + [(r * math.cos(index * math.pi / steps), height - r + r * math.sin(index * math.pi / steps)) for index in range(steps + 1)] + [(-r, 0.0)]
@@ -426,7 +440,7 @@ def foliage(radius, location, tone, amount=0.0, scale=(1, 1, 1), segments=12):
 
 def tree(leaf=0, kind="round", fine=True):
     """A fat trunk and a few balls of leaves in three tones of one colour. About 16 tall."""
-    big, small = (16, 10) if fine else (12, 8)
+    big, small = (14, 10) if fine else (12, 8)
     tube(1.25, 7.5, (0, 0, -0.6), (0.04, 0, 1), WOOD, tip=0.8, vertices=8)
     if kind == "round":
         foliage(5.3, (0, 0, 10.2), leaf, scale=(1, 1, 0.9), segments=big)
@@ -443,12 +457,16 @@ def bud(radius, location, colour):
     ball(radius, location, colour, segments=6)
 
 
-def flower_box(x, y, z, width, petal):
+def flower_box(x, y, z, width, petal, fine=True):
     """A box of flowers under a window: on the house, never on the floor."""
-    box((width, 1.1, 0.9), (x, y, z), WOOD, bevel=0.2, segments=1)
+    if fine:
+        box((width, 1.1, 0.9), (x, y, z), WOOD, bevel=0.2, segments=1)
+    else:
+        slab((width, 1.1, 0.9), (x, y, z), WOOD)
     ball(0.5, (x, y, z + 0.5), LEAVES[1], scale=(width * 0.9, 0.9, 0.9), segments=6)
-    for index in range(3):
-        bud(0.44, (x + (index - 1) * width * 0.31, y - 0.12, z + 0.88 + 0.12 * (index % 2)), petal if index != 1 else PETALS[2] if petal != PETALS[2] else PETALS[1])
+    other = PETALS[2] if petal != PETALS[2] else PETALS[1]
+    for index in range(3) if fine else (0, 2):
+        bud(0.46, (x + (index - 1) * width * 0.31, y - 0.12, z + 0.88 + 0.12 * (index % 2)), other if index == 1 else petal)
 
 
 def lamp():
@@ -461,16 +479,16 @@ def lamp():
     tube(0.75, 0.4, (0, 0, 10.0), UP, IRON, tip=1.15, vertices=8)
     for index in range(4):
         x, y = ring(index * 90 + 45, 1.08)
-        tube(0.07, 2.3, (x, y, 10.38), UP, IRON, vertices=4)
+        tube(0.08, 2.3, (x, y, 10.38), UP, IRON, vertices=3)
     tube(1.5, 1.0, (0, 0, 12.6), UP, IRON, tip=0.2, vertices=8)
     bud(0.24, (0, 0, 13.7), GOLD)
     tube(0.12, 2.3, (0, 0, 8.5), (1, 0, 0.12), IRON, vertices=4)
     tube(0.05, 0.9, (2.2, 0, 7.85), UP, IRON, vertices=3)
-    ball(0.8, (2.2, 0, 7.35), WOOD_DARK, scale=(1, 1, 0.62), segments=8)
-    ball(0.9, (2.2, 0, 7.75), LEAVES[1], scale=(1, 1, 0.5), segments=8)
+    ball(0.8, (2.2, 0, 7.35), WOOD_DARK, scale=(1, 1, 0.62), segments=6)
+    ball(0.95, (2.2, 0, 7.75), LEAVES[1], scale=(1, 1, 0.5), segments=6)
     for index, petal in enumerate((PETALS[0], PETALS[2], PETALS[3])):
         x, y = ring(index * 120 + 30, 0.5)
-        bud(0.36, (2.2 + x, y, 8.1), petal)
+        bud(0.4, (2.2 + x, y, 8.1), petal)
 
 
 def bulb(colour, radius=0.9, height=11.6):
@@ -482,7 +500,7 @@ def bunting(a, b, sag=2.0):
     """A string of flags between two points, overhead: party colours in the mesh Bunting, orange and purple
     with a lantern now and then in Halloween."""
     a, b = Vector(a), Vector(b)
-    count = max(4, round((b - a).length / 1.8))
+    count = max(4, round((b - a).length / 2.1))
     points = [a.lerp(b, index / count) - Vector((0, 0, sag * 4 * (index / count) * (1 - index / count))) for index in range(count + 1)]
     turn = math.atan2(b.y - a.y, b.x - a.x)
     for name, colours in (("Bunting", PARTY), ("Halloween", SPOOKY)):
@@ -491,10 +509,10 @@ def bunting(a, b, sag=2.0):
                 p, q = points[index], points[index + 1]
                 tube(0.07, (q - p).length, p, q - p, "5B4A7E", vertices=3)
                 middle = (p + q) / 2
-                if name == "Halloween" and index % 6 == 3:
+                if name == "Halloween" and index % 7 == 3:
                     paper_lantern(middle)
                 else:
-                    prism([(-0.76, 0.05), (0.76, 0.05), (0, -1.8)], 0.1, colours[index % len(colours)], location=middle, rotation=(0, 0, turn))
+                    prism([(-0.86, 0.05), (0.86, 0.05), (0, -2.0)], 0.1, colours[index % len(colours)], location=middle, rotation=(0, 0, turn))
             for end in (a, b):
                 bud(0.3, end, GOLD)
 
@@ -504,30 +522,30 @@ def bunting(a, b, sag=2.0):
 # ---------------------------------------------------------------------------------------------------
 def paper_lantern(at):
     at = Vector(at)
-    ball(0.62, at - Vector((0, 0, 0.85)), PUMPKIN, scale=(1, 1, 0.9), segments=8, emission=0.5)
-    tube(0.3, 0.16, at - Vector((0, 0, 0.32)), UP, INK, vertices=6)
-    tube(0.3, 0.16, at - Vector((0, 0, 1.55)), UP, INK, vertices=6)
+    ball(0.7, at - Vector((0, 0, 0.9)), PUMPKIN, scale=(1, 1, 0.9), segments=6, emission=0.5)
+    tube(0.32, 0.2, at - Vector((0, 0, 0.36)), UP, INK, vertices=4)
 
 
 def pumpkin(size=2.0, smile=True):
     """A big friendly jack-o'-lantern, its face to the front."""
     glow = "FFE65A"
-    ball(size, (0, 0, size * 0.8), PUMPKIN, scale=(1, 1, 0.8), segments=12, roughness=0.4)
-    for index in range(6):  # its ribs
-        x, y = ring(index * 60 + 30, size * 0.52)
-        ball(size * 0.56, (x, y, size * 0.8), shade(PUMPKIN, 0.1 if index % 2 else -0.06), scale=(1, 1, 1.32), segments=8, roughness=0.4)
+    def ribs(degrees):
+        return 1 + 0.07 * math.cos(math.radians(degrees) * 6)
+
+    lathe([(0, 1.5 * size)] + [(radius * size, z * size) for radius, z in ((0.55, 1.52), (1.0, 1.15), (1.08, 0.66), (0.8, 0.14))] + [(0, 0.0)],
+          PUMPKIN, segments=18, shape=ribs, roughness=0.4)
     tube(size * 0.16, size * 0.5, (0, 0, size * 1.5), (0.25, 0, 1), "5C8A3A", tip=size * 0.1, vertices=6)
     if smile:
         for side in (-1, 1):
-            prism([(-0.2 * size, 0), (0.2 * size, 0), (0, 0.32 * size)], 0.3 * size, glow, location=(side * 0.36 * size, -0.9 * size, size * 0.92), emission=1.0)
+            prism([(-0.2 * size, 0), (0.2 * size, 0), (0, 0.32 * size)], 0.3 * size, glow, location=(side * 0.36 * size, -0.98 * size, size * 0.92), emission=1.0)
         prism([(-0.5 * size, 0.16 * size), (-0.25 * size, 0), (0.25 * size, 0), (0.5 * size, 0.16 * size), (0.22 * size, 0.1 * size), (-0.22 * size, 0.1 * size)],
-              0.3 * size, glow, location=(0, -0.92 * size, size * 0.5), emission=1.0)
+              0.3 * size, glow, location=(0, -0.99 * size, size * 0.5), emission=1.0)
 
 
 def ghost(size=1.0):
     """A friendly ghost: a rounded sheet with a wavy hem, big eyes, a smile and rosy cheeks."""
     white = "F6F8FF"
-    lathe([(0, 3.4), (0.75, 3.25), (1.3, 2.7), (1.55, 1.8), (1.6, 0.5), (1.45, 0.2), (0, 0.5)], white, segments=12)
+    lathe([(0, 3.4), (0.75, 3.25), (1.3, 2.7), (1.55, 1.8), (1.6, 0.5), (1.45, 0.2), (0, 0.5)], white, segments=10)
     for index in range(6):
         x, y = ring(index * 60, 1.15)
         ball(0.52, (x, y, 0.32), white, segments=6)
@@ -555,15 +573,13 @@ def cobweb(size=4.0):
     white = "F1EEFA"
     spokes = [math.radians(angle) for angle in (0, 30, 60, 90)]
     for angle in spokes:
-        slab((size, 0.06, 0.1), (math.cos(angle) * size / 2, 0, -math.sin(angle) * size / 2), white, rotation=(0, angle, 0))
-    for share in (0.4, 0.7, 0.96):
+        slab((size, 0.07, 0.11), (math.cos(angle) * size / 2, 0, -math.sin(angle) * size / 2), white, rotation=(0, angle, 0))
+    for share in (0.45, 0.9):
         for a, b in zip(spokes, spokes[1:]):
             p = Vector((math.cos(a), 0, -math.sin(a))) * size * share
-            q = Vector((math.cos(b), 0, -math.sin(b))) * size * share * 0.97
-            middle = (p + q) / 2 * 0.93  # the threads sag towards the corner
-            for start, end in ((p, middle), (middle, q)):
-                step = end - start
-                slab((step.length, 0.06, 0.08), (start + end) / 2, white, rotation=(0, math.atan2(-step.z, step.x), 0))
+            q = Vector((math.cos(b), 0, -math.sin(b))) * size * share
+            step = q - p
+            slab((step.length, 0.07, 0.1), (p + q) / 2, white, rotation=(0, math.atan2(-step.z, step.x), 0))
 
 
 def witch_hat(size=1.0):
@@ -581,11 +597,12 @@ EGG_SPOTS = ((0, 5, 0.35), (48, 38, 0.24), (-55, 30, 0.28), (-30, -32, 0.24), (4
 CUSHION_TOP = 3.0  # where the game's egg stands on EggPedestal
 
 
-def egg(radius, location, colour, spot_colour, spots=EGG_SPOTS, fine=True):
+def egg(radius, location, colour, spot_colour, spots=EGG_SPOTS, detail=2):
     """A big egg: a ball stretched tall and narrowed towards its top, with round spots all over its shell."""
     tall = 1.36
+    around, rows, dots = ((14, 8, 9), (18, 10, 12), (24, 12, 18))[detail]
     work = bmesh.new()
-    bmesh.ops.create_uvsphere(work, u_segments=24 if fine else 14, v_segments=12 if fine else 8, radius=radius)
+    bmesh.ops.create_uvsphere(work, u_segments=around, v_segments=rows, radius=radius)
     for vertex in work.verts:
         narrow = 1 - 0.16 * vertex.co.z / radius
         vertex.co = (vertex.co.x * narrow, vertex.co.y * narrow, vertex.co.z * tall)
@@ -595,7 +612,7 @@ def egg(radius, location, colour, spot_colour, spots=EGG_SPOTS, fine=True):
         narrow = 1 - 0.16 * math.sin(b)
         point = Vector((math.sin(a) * math.cos(b) * radius * narrow, -math.cos(a) * math.cos(b) * radius * narrow, math.sin(b) * radius * tall))
         normal = Vector((point.x, point.y, point.z / tall ** 2)).normalized()
-        dome(size, size * 0.16, Vector(location) + point, spot_colour, rotation=normal.to_track_quat("Z", "Y").to_euler(), segments=18 if fine else 9, roughness=0.3)
+        dome(size, size * 0.16, Vector(location) + point, spot_colour, rotation=normal.to_track_quat("Z", "Y").to_euler(), segments=dots, roughness=0.3)
     high = Vector((-0.42, -0.62, 0.66)).normalized()
     dome(radius * 0.24, radius * 0.03, Vector(location) + Vector((high.x * radius * 0.88, high.y * radius * 0.88, high.z * radius * tall * 0.94)), WHITE, rotation=high.to_track_quat("Z", "Y").to_euler(), stretch=0.6, segments=10, roughness=0.2)
 
@@ -611,26 +628,34 @@ def stand_in_egg(shell_colour="FFF3D6", spot_colour="FF6A3D"):
 def walls(width, depth, height, colour, x=0.0, y=0.0):
     box((width, depth, height), (x, y, height / 2), colour, bevel=0.45)
     box((width + 0.5, depth + 0.5, 1.5), (x, y, 0.75), STONE_PALE, bevel=0.2, segments=1)
-    box((width + 0.7, depth + 0.7, 0.8), (x, y, height - 0.4), TRIM, bevel=0.2, segments=1)
+    slab((width + 0.7, depth + 0.7, 0.8), (x, y, height - 0.4), TRIM)
 
 
-def window(x, z, w=3.4, h=4.4, y=-8.0, trim=TRIM, shutters=None, flowers=None, round_top=False, bars=True):
-    """A window on a wall that looks towards -Y: (x, z) is its middle, y the wall."""
+def window(x, z, w=3.4, h=4.4, y=-8.0, trim=TRIM, shutters=None, flowers=None, round_top=False, bars=2, fine=False):
+    """A window on a wall that looks towards -Y: (x, z) is its middle, y the wall. `fine` is for the ground
+    floor, which players stand in front of: rounded edges cost triangles."""
     if round_top:
-        prism(arch(w + 1.0, h + 1.0), 0.6, trim, location=(x, y, z - h / 2 - 0.5), bevel=0.12)
-        prism(arch(w, h), 0.3, GLASS, location=(x, y - 0.25, z - h / 2), roughness=0.25)
-    else:
+        prism(arch(w + 1.0, h + 1.0, 5 if fine else 4), 0.6, trim, location=(x, y, z - h / 2 - 0.5), bevel=0.12 if fine else 0.0)
+        prism(arch(w, h, 5 if fine else 4), 0.3, GLASS, location=(x, y - 0.25, z - h / 2), roughness=0.25)
+    elif fine:
         box((w + 1.0, 0.6, h + 1.0), (x, y, z), trim, bevel=0.2, segments=1)
+        slab((w, 0.3, h), (x, y - 0.25, z), GLASS, roughness=0.25)
+    else:
+        slab((w + 1.0, 0.6, h + 1.0), (x, y, z), trim)
         slab((w, 0.3, h), (x, y - 0.25, z), GLASS, roughness=0.25)
     if bars:
         slab((0.24, 0.14, h - 0.06), (x, y - 0.42, z), trim)
+    if bars > 1:
         slab((w - 0.06, 0.14, 0.24), (x, y - 0.42, z - h * 0.06), trim)
-    box((w + 1.7, 0.9, 0.42), (x, y - 0.35, z - h / 2 - 0.56), trim, bevel=0.12, segments=1)
+    if fine:
+        box((w + 1.7, 0.9, 0.42), (x, y - 0.35, z - h / 2 - 0.56), trim, bevel=0.12, segments=1)
+    else:
+        slab((w + 1.7, 0.9, 0.42), (x, y - 0.35, z - h / 2 - 0.56), trim)
     if shutters:
         for side in (-1, 1):
             slab((1.15, 0.28, h + 0.5), (x + side * (w / 2 + 1.2), y - 0.3, z), shutters)
     if flowers:
-        flower_box(x, y - 0.95, z - h / 2 - 0.85, w + 1.2, flowers)
+        flower_box(x, y - 0.95, z - h / 2 - 0.85, w + 1.2, flowers, fine)
 
 
 def round_window(x, z, radius, y=-8.0, trim=TRIM, emblem=None):
@@ -647,7 +672,7 @@ def door(x, colour, w=4.4, h=7.6, y=-8.0, trim=TRIM, flat_top=False, double=Fals
     """A door in a wall that looks towards -Y, with a low step in front of it."""
     outline = (lambda width, height: [(width / 2, 0), (width / 2, height), (-width / 2, height), (-width / 2, 0)]) if flat_top else arch
     prism(outline(w + 1.3, h + 0.65), 0.7, trim, location=(x, y, 0), bevel=0.12)
-    prism(outline(w, h), 0.34, colour, location=(x, y - 0.33, 0), bevel=0.08)
+    prism(outline(w, h), 0.34, colour, location=(x, y - 0.33, 0))
     if double:
         slab((0.2, 0.14, h - 0.3), (x, y - 0.53, h / 2 - 0.1), shade(colour, -0.3))
         for side in (-1, 1):
@@ -655,7 +680,7 @@ def door(x, colour, w=4.4, h=7.6, y=-8.0, trim=TRIM, flat_top=False, double=Fals
     else:
         bud(0.32, (x + w * 0.3, y - 0.62, h * 0.42), GOLD)
         tube(w * 0.2, 0.16, (x, y - 0.46, h - w * 0.42), (0, -1, 0), GLASS, vertices=10, roughness=0.25)
-    box((w + 2.2, 1.3, 0.36), (x, y - 0.55, 0.16), STONE, bevel=0.14, segments=1)
+    box((w + 2.2, 1.3, 0.36), (x, y - 0.55, 0.16), STONE, bevel=0.14, segments=1)  # low enough to walk over
 
 
 def canopy(x, z, width, colours, y=-8.0, reach=3.0, drop=1.2):
@@ -666,14 +691,15 @@ def canopy(x, z, width, colours, y=-8.0, reach=3.0, drop=1.2):
     for index in range(count):
         cx = x - width / 2 + each * (index + 0.5)
         colour = colours[index % 2]
-        box((each, length + 0.2, 0.32), (cx, y - reach / 2, z - drop / 2), colour, bevel=0.1, segments=1, rotation=(angle, 0, 0))
+        slab((each, length + 0.2, 0.32), (cx, y - reach / 2, z - drop / 2), colour, rotation=(angle, 0, 0))
         slab((each, 0.26, 0.85), (cx, y - reach - 0.02, z - drop - 0.3), colour)
 
 
 def chimney(x, y, z, height):
-    box((2.4, 2.4, height), (x, y, z + height / 2), "EADFC8", bevel=0.2, segments=1)
-    box((3.0, 3.0, 0.7), (x, y, z + height), STONE_DARK, bevel=0.2, segments=1)
-    tube(0.7, 0.9, (x, y, z + height + 0.3), UP, "C96A4A", vertices=8)
+    with roofing():
+        box((2.4, 2.4, height), (x, y, z + height / 2), "EADFC8", bevel=0.2, segments=1)
+        slab((3.0, 3.0, 0.7), (x, y, z + height), STONE_DARK)
+        tube(0.7, 0.9, (x, y, z + height + 0.3), UP, "C96A4A", vertices=6)
 
 
 def hanging_sign(x, z, colour, y=-8.0, icon=GOLD):
@@ -681,8 +707,8 @@ def hanging_sign(x, z, colour, y=-8.0, icon=GOLD):
     slab((0.3, 3.2, 0.3), (x, y - 1.6, z + 1.9), IRON)
     for dy in (-1.0, -2.4):
         slab((0.1, 0.1, 0.6), (x, y + dy, z + 1.55), IRON)
-    tube(1.5, 0.4, (x - 0.2, y - 1.7, z), (1, 0, 0), WOOD_DARK, vertices=14)
-    tube(1.2, 0.5, (x - 0.25, y - 1.7, z), (1, 0, 0), colour, vertices=14)
+    tube(1.5, 0.4, (x - 0.2, y - 1.7, z), (1, 0, 0), WOOD_DARK, vertices=12)
+    tube(1.2, 0.5, (x - 0.25, y - 1.7, z), (1, 0, 0), colour, vertices=12)
     for side in (-1, 1):
         star(0.75, (x + side * 0.3, y - 1.7, z), icon, depth=0.12, rotation=(0, 0, side * math.pi / 2), roughness=0.3)
 
@@ -696,6 +722,11 @@ def wall_lantern(x, z, y=-8.0):
 def gable(width, depth, z, rise, colour, x=0.0, y=0.0, ridge="x", over=1.3, ends=0.45, thick=0.9, wall=None):
     """A pitched roof on a block whose walls end at z. ridge "x": the ridge runs along the front and the eaves
     hang over the front and the back. ridge "y": the gable end looks at the square."""
+    with roofing():
+        return _gable(width, depth, z, rise, colour, x, y, ridge, over, ends, thick, wall)
+
+
+def _gable(width, depth, z, rise, colour, x, y, ridge, over, ends, thick, wall):
     span, length = (depth, width) if ridge == "x" else (width, depth)
     slope = rise / (span / 2)
     reach, eave, run = span / 2 + over, z - over * slope, length + 2 * ends
@@ -717,6 +748,11 @@ def gable(width, depth, z, rise, colour, x=0.0, y=0.0, ridge="x", over=1.3, ends
 
 def hip(width, depth, z, rise, colour, x=0.0, y=0.0, over=1.2, thick=0.8):
     """A roof that slopes to all four sides."""
+    with roofing():
+        _hip(width, depth, z, rise, colour, x, y, over, thick)
+
+
+def _hip(width, depth, z, rise, colour, x, y, over, thick):
     w, d = width / 2 + over, depth / 2 + over
     r = max(w - d, 0.0)
     if over:
@@ -729,10 +765,11 @@ def hip(width, depth, z, rise, colour, x=0.0, y=0.0, over=1.2, thick=0.8):
 
 def dormer(x, height, wall, roof):
     """A little window house on the front slope of a roof."""
-    box((3.8, 4.4, 4.6), (x, -3.8, height + 2.9), wall, bevel=0.2, segments=1)
-    prism([(-2.6, 0), (0, 1.8), (2.6, 0), (2.6, 0.55), (0, 2.4), (-2.6, 0.55)], 5.2, roof, location=(x, -3.9, height + 4.9), bevel=0.14)
-    box((2.6, 0.5, 2.5), (x, -6.0, height + 3.8), TRIM, bevel=0.15, segments=1)
-    slab((1.9, 0.2, 1.8), (x, -6.22, height + 3.8), GLASS, roughness=0.25)
+    with roofing():
+        box((3.8, 4.4, 4.6), (x, -3.8, height + 2.9), wall, bevel=0.2, segments=1)
+        prism([(-2.6, 0), (0, 1.8), (2.6, 0), (2.6, 0.55), (0, 2.4), (-2.6, 0.55)], 5.2, roof, location=(x, -3.9, height + 4.9))
+        slab((2.6, 0.5, 2.5), (x, -6.0, height + 3.8), TRIM)
+        slab((1.9, 0.2, 1.8), (x, -6.22, height + 3.8), GLASS, roughness=0.25)
 
 
 def back_windows(height, xs=(-9.2, 0.0, 9.2)):
@@ -746,9 +783,10 @@ def back_windows(height, xs=(-9.2, 0.0, 9.2)):
 
 
 def flag(x, y, z, colour, height=5.0):
-    tube(0.14, height, (x, y, z), UP, GOLD_DARK, vertices=5)
-    prism([(0, 0), (3.2, -0.9), (0, -1.9)], 0.12, colour, location=(x + 0.1, y, z + height - 0.1))
-    bud(0.28, (x, y, z + height + 0.1), GOLD)
+    with roofing():
+        tube(0.14, height, (x, y, z), UP, GOLD_DARK, vertices=4)
+        prism([(0, 0), (3.2, -0.9), (0, -1.9)], 0.12, colour, location=(x + 0.1, y, z + height - 0.1))
+        bud(0.28, (x, y, z + height + 0.1), GOLD)
 
 
 def cottage(height, wall, roof, m=1, accent=None, petal=PETALS[0], back=False):
@@ -760,12 +798,12 @@ def cottage(height, wall, roof, m=1, accent=None, petal=PETALS[0], back=False):
     prism([(-3.5, 0), (3.5, 0), (3.5, 0.5), (0, 2.3), (-3.5, 0.5)], 2.6, roof, location=(0, -9.1, 8.8), bevel=0.15)
     for side in (-1, 1):
         slab((0.3, 2.0, 0.3), (side * 3.0, -9.0, 8.6), WOOD_DARK)
-        window(side * 9.2, 5.6, shutters=accent, flowers=petal)
+        window(side * 9.2, 5.6, shutters=accent, flowers=petal, fine=True)
         dormer(side * 6.6, height, wall, roof)
     z, row = 13.6, 0
     while z + 3.6 < height:
         for x in (-9.2, 0.0, 9.2):
-            window(x, z, shutters=accent, round_top=row % 2 == 1, flowers=petal if row == 0 and x == 0 else None)
+            window(x, z, shutters=accent, round_top=row % 2 == 1, flowers=petal if row == 0 and x == 0 else None, bars=2 if row == 0 else 1)
         z, row = z + 7, row + 1
     chimney(m * 10.0, 3.6, height + 2.2, 7.8)
     if back:
@@ -792,7 +830,7 @@ def shop(height, wall, roof, m=1, awning=(RED, TRIM), accent=None, sign=GOLD, ri
     z, row = 15.0, 0
     while z + 3.6 < height:
         for x in (-9.2, 0.0, 9.2):
-            window(x, z, round_top=True, flowers=petal if row == 0 and x != 0 else None)
+            window(x, z, round_top=True, flowers=petal if row == 0 and x != 0 else None, bars=2 if row == 0 else 1)
         z, row = z + 7, row + 1
     if back:
         back_windows(height)
@@ -807,7 +845,7 @@ def twin(height, wall=(SKY, BUTTER), roof=(ROOF_ORANGE, ROOF_TEAL), m=1, drop=4.
         round_window(cx, tall + 2.5, 1.15, y=-7.75)
         towards = (1 if index == 0 else -1) * m  # the doors stand by the outer walls
         door(cx - towards * 3.3, shade(roof[index], -0.1), w=3.5, h=7.0)
-        window(cx + towards * 3.2, 5.4, w=3.0, h=4.0, flowers=petal if index == 0 else None)
+        window(cx + towards * 3.2, 5.4, w=3.0, h=4.0, flowers=petal if index == 0 else None, fine=True)
         if index == 1:
             canopy(cx - towards * 3.3, 9.6, 5.4, awning, reach=2.0, drop=0.8)
         else:
@@ -815,11 +853,11 @@ def twin(height, wall=(SKY, BUTTER), roof=(ROOF_ORANGE, ROOF_TEAL), m=1, drop=4.
         z, row = 13.4, 0
         while z + 3.4 < tall:
             for side in (-1, 1):
-                window(cx + side * 3.3, z, w=2.8, h=4.0, round_top=(row + index) % 2 == 1, flowers=PETALS[3] if row == 0 and index == 1 and side == towards else None)
+                window(cx + side * 3.3, z, w=2.8, h=4.0, round_top=(row + index) % 2 == 1, flowers=PETALS[3] if row == 0 and index == 1 and side == towards else None, bars=2 if row == 0 else 1)
             z, row = z + 6.8, row + 1
         if back:
             back_windows(tall, xs=(cx,))
-    chimney(-7.25 * m + 3.5, 4.5, height + 0.5, 6.5)
+    chimney(-7.25 * m + 3.5, 4.5, height + 0.5, 8.2)
 
 
 def turret(height, wall, roof, m=1, cone=None, accent=None, petal=PETALS[0], pennant=RED, back=False):
@@ -830,11 +868,11 @@ def turret(height, wall, roof, m=1, cone=None, accent=None, petal=PETALS[0], pen
     gable(20.6, 16, height, 6.6, roof, x=cx, ridge="x", wall=wall)
     door(cx, accent)
     for side in (-1, 1):
-        window(cx + side * 6.4, 5.6, w=3.0, flowers=petal if side * m < 0 else None)
+        window(cx + side * 6.4, 5.6, w=3.0, flowers=petal if side * m < 0 else None, fine=True)
     z = 13.6
     while z + 3.6 < height:
         for x in (cx - 6.4, cx, cx + 6.4):
-            window(x, z, w=3.0, shutters=accent if x == cx else None)
+            window(x, z, w=3.0, shutters=accent if x == cx else None, bars=2 if z < 14 else 1)
         z += 7
     dormer(cx, height, wall, roof)
     chimney(cx - 6.5 * m, 3.6, height + 2.0, 7.4)
@@ -843,7 +881,8 @@ def turret(height, wall, roof, m=1, cone=None, accent=None, petal=PETALS[0], pen
     tube(radius + 0.35, 1.5, (tx, ty, 0), UP, STONE_PALE, vertices=16)
     tube(radius + 0.3, 0.8, (tx, ty, top - 0.8), UP, TRIM, vertices=16)
     tube(radius + 0.15, 0.6, (tx, ty, 9.8), UP, TRIM, vertices=16)
-    lathe([(0, 11.5), (1.0, 9.0), (3.0, 5.0), (5.6, 1.2), (6.2, 0.0), (5.6, -0.4), (0, -0.4)], cone, segments=16, location=(tx, ty, top))
+    with roofing():
+        lathe([(0, 11.5), (1.0, 9.0), (3.0, 5.0), (5.6, 1.2), (6.2, 0.0), (5.6, -0.4), (0, -0.4)], cone, segments=16, location=(tx, ty, top))
     flag(tx, ty, top + 11.2, pennant, height=3.4)
     z = 6.4
     while z + 3 < top - 1:
@@ -865,7 +904,7 @@ def inn(height, wall, roof, m=1, petal=PETALS[3], sign=ROOF_BLUE, back=False):
         slab((0.8, 0.4, upper), (x, front - 0.1, 9.6 + upper / 2), WOOD_DARK)
     for side in (-1, 1):
         slab((0.6, 0.38, 6.2), (side * 10.65, front - 0.08, 12.6), WOOD_DARK, rotation=(0, side * 0.86, 0))
-        window(side * 9.4, 5.4, w=3.8, h=4.2, trim=WOOD_LIGHT, flowers=petal)
+        window(side * 9.4, 5.4, w=3.8, h=4.2, trim=WOOD_LIGHT, flowers=petal, fine=True)
         wall_lantern(side * 4.4, 7.6)
     door(0, WOOD, w=5.4, h=7.9, trim=WOOD_DARK, double=True)
     z, row = 14.4 if upper < 15 else 15.6, 0
@@ -893,48 +932,50 @@ def hall(height, wall, roof, icon="egg", accent=None, pennant=RED, petal=PETALS[
     walls(29, 16, height, wall)
     for x in (-13.3, -5.5, 5.5, 13.3):
         box((1.9, 0.9, height - 2.4), (x, -8.15, 1.4 + (height - 2.4) / 2), TRIM, bevel=0.2, segments=1)
-        box((2.5, 1.2, 0.9), (x, -8.2, height - 1.3), TRIM, bevel=0.2, segments=1)
+        slab((2.5, 1.2, 0.9), (x, -8.2, height - 1.3), TRIM)
     door(0, accent, w=6.2, h=9.6, double=True)
     round_window(0, min(height - 6.0, 15.4), 1.9, emblem=GOLD)
     for side in (-1, 1):
-        window(side * 9.4, 6.4, w=3.2, h=6.4, round_top=True)
+        window(side * 9.4, 6.4, w=3.2, h=6.4, round_top=True, fine=True)
         wall_lantern(side * 4.9, 8.0)
         z = 16.6
         while z + 3.8 < height - 1.5:
             window(side * 9.4, z, w=3.2, h=4.6, round_top=True, flowers=petal if z < 17 else None)
             z += 7.2
         flag(side * 13.6, -7.3, height + 1.3, pennant)
-    box((30.0, 17.0, 1.7), (0, 0, height + 0.55), TRIM, bevel=0.3, segments=1)
-    prism([(-7.6, 0), (7.6, 0), (7.6, 1.2), (0, 4.8), (-7.6, 1.2)], 1.4, TRIM, location=(0, -7.7, height + 1.3), bevel=0.2)
-    prism([(-5.6, 0.55), (5.6, 0.55), (0, 3.7)], 0.4, roof, location=(0, -8.35, height + 1.4))
     hip(27, 14, height + 1.2, 5.0, roof, over=0.0)
     top = height + 7.2
-    tube(4.3, top - height - 4.4, (0, 0.5, height + 4.4), UP, TRIM, vertices=16)
-    if icon == "egg":
-        hoop(3.3, 0.85, (0, 0.5, top + 0.3), GOLD, segments=16, roughness=0.3)
-        egg(4.0, (0, 0.5, top + 4.0 * 1.36 - 0.5), "FFF3D6", "FF6FB5")
-    elif icon == "gem":
-        hoop(2.2, 0.7, (0, 0.5, top + 0.3), GOLD, segments=12, roughness=0.3)
-        giant_gem(4.2, (0, 0.5, top + 0.2))
-    else:
-        tube(0.5, 2.4, (0, 0.5, top), UP, GOLD_DARK, vertices=8)
-        star(4.6, (0, 0.5, top + 5.6), GOLD, depth=1.3, roughness=0.3)
-        star(2.9, (0, -0.6, top + 5.6), GOLD_LIGHT, depth=0.5, roughness=0.3)
+    with roofing():
+        box((30.0, 17.0, 1.7), (0, 0, height + 0.55), TRIM, bevel=0.3, segments=1)
+        prism([(-7.6, 0), (7.6, 0), (7.6, 1.2), (0, 4.8), (-7.6, 1.2)], 1.4, TRIM, location=(0, -7.7, height + 1.3), bevel=0.2)
+        prism([(-5.6, 0.55), (5.6, 0.55), (0, 3.7)], 0.4, roof, location=(0, -8.35, height + 1.4))
+        tube(4.3, top - height - 4.4, (0, 0.5, height + 4.4), UP, TRIM, vertices=16)
+        if icon == "egg":
+            hoop(3.3, 0.85, (0, 0.5, top + 0.3), GOLD, segments=16, around=4, roughness=0.3)
+            egg(4.0, (0, 0.5, top + 4.0 * 1.36 - 0.5), "FFF3D6", "FF6FB5", detail=1)
+        elif icon == "gem":
+            hoop(2.2, 0.7, (0, 0.5, top + 0.3), GOLD, segments=12, around=4, roughness=0.3)
+            giant_gem(4.2, (0, 0.5, top + 0.2))
+        else:
+            tube(0.5, 2.4, (0, 0.5, top), UP, GOLD_DARK, vertices=8)
+            star(4.6, (0, 0.5, top + 5.6), GOLD, depth=1.3, roughness=0.3)
+            star(2.9, (0, -0.6, top + 5.6), GOLD_LIGHT, depth=0.5, roughness=0.3)
 
 
 def tower(roof, pennant):
     """A corner tower: the game's is a pillar 11 across and 40 high under a ball. Its door looks at the square."""
-    tube(11.6, 3.0, (0, 0, 0), UP, STONE, vertices=24)
-    tube(11.0, 40.0, (0, 0, 0), UP, STONE_PALE, tip=10.4, vertices=24)
-    tube(10.95, 1.2, (0, 0, 19.4), UP, STONE, vertices=24)
-    tube(10.6, 2.8, (0, 0, 37.4), UP, STONE, tip=12.6, vertices=24)
-    lathe([(0, 62.5), (1.5, 58.0), (4.4, 52.0), (8.4, 46.2), (12.4, 41.8), (13.7, 40.2), (12.7, 39.6), (0, 39.6)], roof, segments=24)
-    lathe([(12.6, 41.75), (13.85, 40.2), (12.8, 39.5)], shade(roof, -0.18), segments=24)
+    sides = 20
+    tube(11.6, 3.0, (0, 0, 0), UP, STONE, vertices=sides)
+    tube(11.0, 40.0, (0, 0, 0), UP, STONE_PALE, tip=10.4, vertices=sides)
+    tube(10.95, 1.2, (0, 0, 19.4), UP, STONE, vertices=sides)
+    tube(10.6, 2.8, (0, 0, 37.4), UP, STONE, tip=12.6, vertices=sides)
+    lathe([(0, 62.5), (1.5, 58.0), (4.4, 52.0), (8.4, 46.2), (12.4, 41.8), (13.7, 40.2), (12.7, 39.6), (0, 39.6)], roof, segments=sides)
+    lathe([(12.6, 41.75), (13.85, 40.2), (12.8, 39.5)], shade(roof, -0.18), segments=sides)
     for upper, lower in (((5.1, 50.9), (6.5, 48.95)), ((9.2, 45.4), (10.5, 43.95))):  # lighter rows round the hat
-        lathe([(upper[0] + 0.12, upper[1]), (lower[0] + 0.12, lower[1])], shade(roof, 0.14), segments=24)
+        lathe([(upper[0] + 0.12, upper[1]), (lower[0] + 0.12, lower[1])], shade(roof, 0.14), segments=sides)
     flag(0, 0, 62.3, pennant, height=4.6)
     prism(arch(5.6, 8.6), 1.4, STONE_DARK, location=(0, -11.2, 0), bevel=0.15)
-    prism(arch(4.2, 7.6), 0.4, WOOD, location=(0, -11.85, 0), bevel=0.08)
+    prism(arch(4.2, 7.6), 0.4, WOOD, location=(0, -11.85, 0))
     slab((0.2, 0.14, 7.0), (0, -12.07, 3.6), WOOD_DARK)
     bud(0.3, (0.7, -12.15, 3.4), GOLD)
     for z in (14.0, 24.5, 33.0):
@@ -989,7 +1030,8 @@ def fountain():
     tube(2.75, 1.5, start + aim * 15.6, aim, GOLD_LIGHT, tip=2.9, vertices=20, roughness=0.3)
     tube(1.9, 0.12, start + aim * 17.02, aim, INK, vertices=16)
     side_up = Vector((-0.5, -aim.z * 0.82, aim.y * 0.82)).normalized()
-    ball(1.0, centre + side_up * 2.28 + aim * 1.5, WHITE, scale=(0.3, 3.4, 0.12), rotation=(math.radians(25), 0.35, 0), segments=8, roughness=0.2)  # a wet highlight along the barrel
+    turn = Matrix((aim.cross(side_up), aim, side_up)).transposed().to_euler()
+    ball(1.0, centre + side_up * 2.3 + aim * 1.5, WHITE, scale=(0.3, 3.4, 0.12), rotation=turn, segments=8, roughness=0.2)  # a wet highlight along the barrel
     fuse = start + Vector((0, -0.2, 2.35))
     tube(0.16, 1.5, fuse, (0.2, -0.3, 1), "C4AA78", vertices=5)
     ball(0.5, fuse + Vector((0.3, -0.45, 1.7)), "FF8A1F", segments=8, emission=1.6)
@@ -1179,14 +1221,14 @@ def hatchery_sign():
         tube(0.9, 12.4, (x, 0.2, 1.6), UP, "FFF3D6", vertices=10)
         for z in (4.2, 8.8, 13.2):
             tube(1.02, 0.5, (x, 0.2, z), UP, GOLD, vertices=10, roughness=0.3)
-        egg(1.35, (side * 22.6, -0.1, 22.7 + 1.35 * 1.36 - 0.25), ("45B4FF", "7BE36A")[side > 0], ("FFE23A", "FFFFFF")[side > 0], spots=EGG_SPOTS[:8], fine=False)
+        egg(1.35, (side * 22.6, -0.1, 22.7 + 1.35 * 1.36 - 0.25), ("45B4FF", "7BE36A")[side > 0], ("FFE23A", "FFFFFF")[side > 0], spots=EGG_SPOTS[:8], detail=0)
     framed(44, 7, 18.0, -0.5, BOARD_PLUM, GOLD, depth=1.3, thick=1.2, back="5A35B0", lift=0.4)
     for index in range(12):  # lights, like a fairground's
         x = (index - 5.5) * 3.9
         for z in (22.1, 13.9):
             ball(0.4, (x, -1.0, z), "FFF6C4", segments=6, emission=1.2)
     hoop(1.9, 0.6, (0, -0.1, 22.9), GOLD_DARK, segments=12, roughness=0.3)
-    egg(2.4, (0, -0.1, 22.7 + 2.4 * 1.36 - 0.1), "FFF3D6", "FF6FB5", spots=EGG_SPOTS[:8], fine=False)
+    egg(2.4, (0, -0.1, 22.7 + 2.4 * 1.36 - 0.1), "FFF3D6", "FF6FB5", spots=EGG_SPOTS[:8], detail=0)
     for side in (-1, 1):
         star(1.1, (side * 4.6, -0.3, 23.9), GOLD, depth=0.35, roughness=0.3)
         star(0.7, (side * 7.4, -0.3, 23.4), GOLD_LIGHT, depth=0.25, roughness=0.3)
@@ -1378,9 +1420,7 @@ LAMPS = [157.5 - 45 * index for index in range(8)]  # buildDecor's lamps 1 to 8,
 LAMP_RING = 36
 
 group = "Ground"
-mesh([(sx * reach, sy * reach, z) for reach, z in ((80.6, -0.08), (140, -0.08), (140, -6.0)) for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))],
-     [(index, (index + 1) % 4, 4 + (index + 1) % 4, 4 + index) for index in range(4)] + [(4 + index, 4 + (index + 1) % 4, 8 + (index + 1) % 4, 8 + index) for index in range(4)],
-     GRASS, smooth=False, roughness=0.9)
+frame_square(80.6, 140.0, -0.08, GRASS)
 flat([(-80.7, -80.7), (80.7, -80.7), (80.7, 80.7), (-80.7, 80.7)], 0.0, PAVE)
 frame_square(80.0, 81.5, 0.04, STONE)  # a kerb between cobbles and lawn
 frame_square(70.0, 80.0, 0.03, WALK)  # the pavement the houses stand on
@@ -1465,14 +1505,15 @@ for sx, sy in ((1, 1), (1, -1), (-1, -1), (-1, 1)):
 
 # ---- Far away: hills and big trees beyond the houses, where nobody gets. Clouds are for the photos. ----
 group = "Backdrop"
-for degrees, distance, radius, height, colour in ((8, 178, 62, 46, GRASS_DEEP), (40, 190, 70, 60, GRASS), (74, 176, 58, 40, GRASS_DEEP), (104, 186, 66, 52, GRASS), (138, 180, 60, 34, GRASS_DEEP),
-                                                  (172, 190, 64, 30, GRASS), (206, 182, 60, 34, GRASS_DEEP), (238, 188, 68, 50, GRASS), (270, 176, 58, 42, GRASS_DEEP), (300, 190, 70, 58, GRASS),
-                                                  (332, 180, 62, 48, GRASS_DEEP)):
-    lathe([(0, height), (radius * 0.45, height * 0.88), (radius * 0.8, height * 0.5), (radius, 0)], colour, segments=14, location=(*ring(degrees, distance), -3.0), roughness=0.9)
-    lathe([(0, height * 1.005), (radius * 0.3, height * 0.955)], GRASS_LIGHT, segments=14, location=(*ring(degrees, distance), -2.9), roughness=0.9)
+HILLS = ((8, 182, 60, 40, GRASS_DEEP), (42, 196, 70, 52, GRASS), (76, 180, 58, 36, GRASS_DEEP), (106, 190, 66, 46, GRASS), (140, 184, 60, 30, GRASS_DEEP), (172, 196, 64, 24, GRASS),
+         (206, 186, 60, 28, GRASS_DEEP), (238, 192, 68, 44, GRASS), (270, 180, 58, 38, GRASS_DEEP), (300, 196, 70, 52, GRASS), (332, 184, 62, 42, GRASS_DEEP),
+         (25, 330, 120, 120, "8AD79C"), (72, 340, 130, 100, "9BDDAE"), (118, 330, 110, 84, "8AD79C"), (246, 330, 110, 88, "9BDDAE"), (292, 340, 130, 104, "8AD79C"), (338, 330, 120, 124, "9BDDAE"))  # the far ones pale with distance
+for degrees, distance, radius, height, colour in HILLS:
+    lathe([(0, height), (radius * 0.42, height * 0.9), (radius * 0.78, height * 0.52), (radius, 0)], colour, segments=14, location=(*ring(degrees, distance), -3.0), roughness=0.9)
 group = "Trees"
-for index, (degrees, distance) in enumerate(((16, 112), (34, 126), (58, 124), (77, 110), (104, 112), (123, 126), (146, 124), (196, 118), (214, 126), (237, 124), (257, 110), (284, 112), (303, 126), (326, 124), (345, 112), (166, 118))):
-    place(tree, ring(degrees, distance), face=rng.uniform(0, 360), scale=rng.uniform(1.5, 2.0), leaf=index % 3, kind="tall" if index % 3 == 0 else "round", fine=False)
+FAR_TREES = ((15, 108, 3.0), (38, 126, 2.7), (64, 118, 2.9), (90, 108, 3.2), (116, 118, 2.6), (144, 128, 1.8), (216, 128, 1.8), (244, 118, 2.6), (270, 108, 3.2), (296, 118, 2.9), (322, 126, 2.7), (345, 108, 3.1))
+for index, (degrees, distance, size) in enumerate(FAR_TREES):  # big ones: their heads show over the roofs
+    place(tree, ring(degrees, distance), face=rng.uniform(0, 360), scale=size, leaf=index % 3, kind="tall" if index % 3 == 0 else "round", fine=False)
 group = "Clouds"
 for x, y, z, size in ((-150, 300, 120, 16), (120, 320, 150, 18), (-20, 380, 190, 20), (230, 260, 90, 13), (-250, 250, 85, 13), (-320, 60, 70, 12), (320, 40, 80, 12), (60, 420, 110, 15), (-110, 420, 100, 14)):
     place(cloud, (x, y, z), face=180 + rng.uniform(-25, 25), scale=size)
@@ -1509,7 +1550,8 @@ for (x, y), when, title, trim, note in BOARDS:
 
 shell("NoticeBoard", notice_board, faces={"board": NOTICE_FACE})
 frame = show("NoticeBoard", notice_board, (-14, -42), face=SOUTH, note="Missions")
-words("MISSIONS\nEarn gems every day", frame, (0, -0.27, 6.0), 0.95)
+words("MISSIONS", frame, (0, -0.27, 6.9), 1.45)
+words("Earn gems every day", frame, (0, -0.27, 5.0), 0.7)
 frame = show("NoticeBoard", notice_board, (-44, -62), face=NORTH, note="How to trade (the trading plaza's)")
 words("HOW TO TRADE\n1. Ask a player here\n2. Both add what to swap\n3. Both press READY", frame, (0, -0.27, 6.0), 0.62)
 
@@ -1521,7 +1563,7 @@ show("Portal", portal, (0, -70), face=NORTH, scale=0.88)
 
 shell("HatcherySign", hatchery_sign, faces={"board": HATCHERY_FACE})
 frame = show("HatcherySign", hatchery_sign, (0, 70), face=SOUTH)
-words("EGG HATCHERY", frame, (0, -0.52, 18.0), 4.2, GOLD)
+words("EGG HATCHERY", frame, (0, -0.52, 18.0), 4.7, GOLD)
 
 shell("TradePlaza", trade_plaza, note="The whole plaza but its lantern bulbs and the orb over the table (TradingLantern, TradingOrb stay the game's). Table top 2.8 up; traders' spots 4.2 either side.")
 frame = show("TradePlaza", trade_plaza, (-44, -52), face=NORTH)
@@ -1565,8 +1607,7 @@ for sx, sy in ((1, 1), (1, -1), (-1, -1), (-1, 1)):  # one at each tower's door
 place(ghost, (13.5, 71.6, 22.4), face=180, scale=1.5)  # peeking over the hatchery sign
 place(ghost, (63.5, -21.0, 14.5), face=250, scale=1.3)  # over the Halloween stall
 place(ghost, (-63.0, 34.0, 20.5), face=110, scale=1.3)  # over the event board
-place(ghost, (-9.0, -73.0, 17.5), face=10, scale=1.1)  # by the portal's arch
-for x, y, z, face in ((70, 70, 50, 220), (-66, 74, 47, 150), (-74, -62, 49, 40), (62, -74, 46, 320), (10, 60, 34, 190), (-28, 64, 30, 170), (40, -6, 27, 260), (-38, 6, 25, 100)):
+for x, y, z, face in ((70, 70, 50, 220), (-66, 74, 47, 150), (-74, -62, 49, 40), (10, 60, 34, 190), (-28, 64, 30, 170), (40, -6, 27, 260)):
     place(bat, (x, y, z), face=face, scale=rng.uniform(1.6, 2.2))
 for side in (-1, 1):  # webs in the corners under the hatchery sign, and on the two houses beside the hall
     place(cobweb, (side * 19.0, 69.2, 13.2), face=180 if side < 0 else 0, size=4.2)
@@ -1691,14 +1732,14 @@ def photo(name, eye, target, lens):
     bpy.ops.render.render(write_still=True)
 
 
-HERO_TARGET = Vector((0, 4, 4))
+HERO_TARGET = Vector((0, 2, 2))
 ONLY = [word.split("=")[1] for word in ARGS if word.startswith("only=")]
 for suffix in ("_halloween", ""):  # everyday last, so the saved file opens in everyday dress
     dress(suffix)
     if not ONLY or "ground" in ONLY:
-        photo("market_ground" + suffix, (0, -61.0, 5.3), (0, 30, 10.5), 20)  # a player's eyes at the arrival pad, looking north
+        photo("market_ground" + suffix, (0, -66.4, 6.3), (0, 30, 11.5), 20)  # what a player sees on arriving: from just behind the arrival pad, looking north
     if not ONLY or "hero" in ONLY:
-        photo("market_hero" + suffix, HERO_TARGET + from_sky(192, 47, 262), HERO_TARGET, 33)  # three-quarters from above, from the south
+        photo("market_hero" + suffix, HERO_TARGET + from_sky(190, 46, 330), HERO_TARGET, 35)  # three-quarters from above, from the south
     for word in ARGS:  # extra looks while working: view=name,x,y,z,tx,ty,tz,lens
         if word.startswith("view="):
             bits = word[5:].split(",")
