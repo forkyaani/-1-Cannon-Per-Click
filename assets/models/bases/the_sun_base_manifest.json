@@ -1,6 +1,6 @@
 {
- "what": "The Earth base: scenery and shells for src/server/Plots.luau to wear over the base it builds from parts, as Islands.wear does for the island. Made by tools/blender/base.py \"Earth\".",
- "world": "Earth",
+ "what": "The The Sun base: scenery and shells for src/server/Plots.luau to wear over the base it builds from parts, as Islands.wear does for the island. Made by tools/blender/base.py \"The Sun\".",
+ "world": "The Sun",
  "units": "1 Blender unit = 1 stud",
  "mapping": {
   "plot_space": "Layout.luau: the origin is the middle of the base's edge of the ground, x across the plot, +z up the plot to the portal, y up, the ground's top at y = 0, the yard behind the origin (-z)",
@@ -13,21 +13,21 @@
   "colliders": "centre is (x, y, z) in plot space; a box's size is (x, y, z) in its own frame, turned by CFrame.Angles(0, math.rad(yaw), 0); a pillar stands upright"
  },
  "theme": {
-  "tree": "round_tall",
-  "fence": "wood_rail",
-  "liquid": "water",
-  "ground": "6FD046",
-  "road": "F6DFA6",
-  "kerb": "F4EFE6",
-  "kerb_glows": false,
-  "stone": "DCD6CC",
-  "wood": "B9783F",
-  "portal_glow": "FF3D7F",
-  "roofs": "cone",
-  "landmark": "windmill",
+  "tree": "lava_spire",
+  "fence": "basalt_chain",
+  "liquid": "lava",
+  "ground": "FF9A2E",
+  "road": "4A2C3A",
+  "kerb": "FFD23A",
+  "kerb_glows": true,
+  "stone": "5C3848",
+  "wood": "3A2230",
+  "portal_glow": "3DB4FF",
+  "roofs": "flame",
+  "landmark": "volcano",
   "sky": [
-   "3F8FE0",
-   "C4E8FF"
+   "FF7A1E",
+   "FFE27A"
   ]
  },
  "layout_copied_from_the_code": {
@@ -374,32 +374,64 @@
    "name": "Base_Road",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 1008,
+   "triangles": 332,
    "box_blender": {
     "low": [
-     -42.8,
+     -42.0,
      0.0,
      -0.05
     ],
     "high": [
-     42.8,
+     42.0,
      147.0,
-     0.42
+     0.2
     ]
    },
    "box": {
     "low": [
-     -42.8,
+     -42.0,
      -0.05,
      0.0
     ],
     "high": [
-     42.8,
-     0.42,
+     42.0,
+     0.2,
      147.0
     ]
    },
    "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Glow",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 6030,
+   "box_blender": {
+    "low": [
+     -83.56,
+     -38.4,
+     -0.25
+    ],
+    "high": [
+     82.46,
+     168.43,
+     43.95
+    ]
+   },
+   "box": {
+    "low": [
+     -82.46,
+     -0.25,
+     -38.4
+    ],
+    "high": [
+     83.56,
+     43.95,
+     168.43
+    ]
+   },
+   "material": "Neon",
    "white_for_tinting": false
   },
   {
@@ -480,7 +512,7 @@
     "high": [
      55.5,
      14.08,
-     30.6
+     32.4
     ]
    },
    "box": {
@@ -491,7 +523,7 @@
     ],
     "high": [
      55.5,
-     30.6,
+     32.4,
      14.08
     ]
    },
@@ -502,28 +534,28 @@
    "name": "Base_GateTrim",
    "kind": "shell",
    "origin": "the middle of its own base on the ground, front towards Blender -Y",
-   "triangles": 552,
+   "triangles": 520,
    "box_blender": {
     "low": [
-     -14.4,
-     -4.04,
+     -14.7,
+     -4.2,
      0.14
     ],
     "high": [
-     14.4,
+     14.7,
      13.5,
-     30.05
+     31.85
     ]
    },
    "box": {
     "low": [
-     -14.4,
+     -14.7,
      0.14,
-     -4.04
+     -4.2
     ],
     "high": [
-     14.4,
-     30.05,
+     14.7,
+     31.85,
      13.5
     ]
    },
@@ -694,29 +726,29 @@
    "name": "Base_Dressing",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 2228,
+   "triangles": 5612,
    "box_blender": {
     "low": [
-     -54.95,
-     -17.25,
+     -55.05,
+     -17.35,
      -0.2
     ],
     "high": [
-     54.95,
-     150.0,
-     4.1
+     55.05,
+     150.1,
+     3.6
     ]
    },
    "box": {
     "low": [
-     -54.95,
+     -55.05,
      -0.2,
-     -17.25
+     -17.35
     ],
     "high": [
-     54.95,
-     4.1,
-     150.0
+     55.05,
+     3.6,
+     150.1
     ]
    },
    "material": "SmoothPlastic",
@@ -726,7 +758,7 @@
    "name": "Base_Backdrop",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 8207,
+   "triangles": 7309,
    "box_blender": {
     "low": [
      -90.6,
@@ -755,103 +787,39 @@
    "white_for_tinting": false
   },
   {
-   "name": "Base_Water",
-   "kind": "scenery",
-   "origin": "the plot's origin, on the ground",
-   "triangles": 236,
-   "box_blender": {
-    "low": [
-     -23.8,
-     151.1,
-     -0.1
-    ],
-    "high": [
-     -20.2,
-     158.75,
-     28.22
-    ]
-   },
-   "box": {
-    "low": [
-     20.2,
-     -0.1,
-     151.1
-    ],
-    "high": [
-     23.8,
-     28.22,
-     158.75
-    ]
-   },
-   "material": "Glass",
-   "white_for_tinting": false
-  },
-  {
-   "name": "Base_Glow",
-   "kind": "scenery",
-   "origin": "the plot's origin, on the ground",
-   "triangles": 48,
-   "box_blender": {
-    "low": [
-     -16.54,
-     150.42,
-     -0.25
-    ],
-    "high": [
-     16.04,
-     152.46,
-     4.79
-    ]
-   },
-   "box": {
-    "low": [
-     -16.04,
-     -0.25,
-     150.42
-    ],
-    "high": [
-     16.54,
-     4.79,
-     152.46
-    ]
-   },
-   "material": "Neon",
-   "white_for_tinting": false
-  },
-  {
    "name": "Base_Trees",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 7356,
+   "triangles": 1827,
    "box_blender": {
     "low": [
-     -84.76,
-     -40.79,
-     4.38
+     -84.58,
+     -38.7,
+     4.19
     ],
     "high": [
-     83.33,
-     171.17,
-     43.65
+     83.7,
+     169.06,
+     42.55
     ]
    },
    "box": {
     "low": [
-     -83.33,
-     4.38,
-     -40.79
+     -83.7,
+     4.19,
+     -38.7
     ],
     "high": [
-     84.76,
-     43.65,
-     171.17
+     84.58,
+     42.55,
+     169.06
     ]
    },
    "material": "SmoothPlastic",
    "white_for_tinting": false
   }
  ],
- "total_triangles": 40269,
+ "total_triangles": 42264,
  "shells": {
   "Pad": {
    "meshes": [
@@ -968,8 +936,8 @@
     "crest_top": 24.1,
     "tower_parapet": 17.7,
     "tower_battlements": 18.9,
-    "roof_tip": 26.2,
-    "flag_top": 30.6,
+    "roof_tip": 28.0,
+    "flag_top": 32.4,
     "wall_top": 4.5,
     "wall_battlements": 5.37,
     "wall_posts": 5.9,
@@ -1029,7 +997,7 @@
     "crest": 22.7,
     "horn_tips": 25.6
    },
-   "sheet": "Base_PortalSheet (for Neon; the game may fade or dim it as it does its own Portal part) is the sheet with its dark whirl, the two eyes, the runes on the legs and the gem on the brow. Its glow is FF3D7F, on purpose not the world's accent 8E6BFF that the island's friendly portal has"
+   "sheet": "Base_PortalSheet (for Neon; the game may fade or dim it as it does its own Portal part) is the sheet with its dark whirl, the two eyes, the runes on the legs and the gem on the brow. Its glow is 3DB4FF, on purpose not the world's accent FFC83C that the island's friendly portal has"
   },
   "Teleporter": {
    "meshes": [
@@ -1495,7 +1463,7 @@
   "The plaza keeps the code's 40 x 14 but has round corners (radius 3) to the yard. Like the code's ring, a teleporter's dais (3.6 in radius) reaches 0.6 past the plaza's edge.",
   "The fence has 19 posts a side (the code 10; every other one of mine stands on one of the code's) and runs on along the back of the yard at z = -16.6, just outside the ground, where the code has only its hills. Its rails follow the theme's kind; the game's two solid rails stay where they are.",
   "The code's ten world props (PROP_SPOTS) are not used and nothing stands in for them: the floor stays clean, and every tree, rock and the landmark is outside the ground (|x| > 55, z < -16 or z > 150).",
-  "The portal's glow is FF3D7F instead of the code's glow for this world, so it is not the island's portal.",
+  "The portal's glow is 3DB4FF instead of the code's glow for this world, so it is not the island's portal.",
   "The big lighter and darker patches of the ground are flat discs that rise 0.03 in their middle."
  ]
 }

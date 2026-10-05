@@ -1,186 +1,133 @@
-"""The Earth base: a player's plot (world 1) in the chunky, rounded simulator style of the Earth island,
-made to be worn over the base the game builds from parts (src/server/Plots.luau) without moving any of it.
+"""A player's BASE for one of the launch worlds (themes.py), in the chunky, rounded simulator style of the
+islands: the plot the game builds from parts (src/server/Plots.luau), made to be worn over it without moving
+any of it. Every world has the same layout; the look comes from the world's theme.
 
-Run: blender --background --python tools/blender/earth_base.py -- <output folder> [draft] [photos=a,b] [nofiles]
+Run: blender --background --python tools/blender/base.py -- <World> <output folder> [draft] [photos=a,b] [nofiles]
+     <World> is "Earth", "Moon", "Mars", "Neptune" or "The Sun" (the_sun works too).
 
-THE MAPPING. Plot space is the game's (Layout.luau): the middle of the base's edge of the ground is the
-origin, x runs across the plot, +z up the plot to the portal, the ground's top is y = 0 and the yard is
-behind the origin (-z). 1 unit is 1 stud. In Blender:
-    Blender x = plot x        Blender y = -plot z        Blender z = plot y
-so a point (x, y, z) of this file is (x, z, -y) in plot space. The portal is at Blender y = -147, the gate at
-y = -14, the yard at y = 0 ... 16. `at(x, z, y)` turns plot space into Blender's, and every position below is
-written in plot space.
+THE MAPPING. Plot space is the game's (Layout.luau): the origin is the middle of the base's edge of the
+ground, x runs across the plot, +z up the plot to the portal, y is up, the ground's top is y = 0 and the yard
+is behind the origin (-z). 1 unit is 1 stud. In Blender:
+    Blender x = -plot x        Blender y = plot z        Blender z = plot y
+so Blender's (x, y, z) is plot (-x, z, y): the portal is at Blender y = +147, the gate at y = 14, the yard at
+y = -16 ... 0. This is exactly how an FBX lands in Roblox (Blender (x, y, z) -> (-x, z, y)), and it puts the
+plot's north (the portal) on Blender +Y, where tools/studio/setup_models.luau wants a scene's north.
+`at(x, z, y)` turns plot space into Blender's; every position below is written in plot space.
 A shell is made around the middle of its own base, standing on z = 0, its front towards -Y. `face` says
 where that front looks in plot space: 0 up the plot (+z), 90 towards +x, 180 back at the yard (-z).
-In Roblox (an FBX lands as (-x, z, y), so a shell's front is its -Z, as on the island): put a shell on its
-spot with  frame * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(face + 180), 0).
+In Roblox a shell's front is its pivot's -Z:  frame * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(face + 180), 0).
+Two marker meshes are in every export: Base_Origin (a 2 x 2 x 2 cube, its middle 1 above the plot's origin)
+and Base_North (the same cube 10 towards the portal). They are not in the photos.
 
 Everything the game lays out is copied from Layout.luau and Plots.luau (see LAYOUT below): the path and its
 width, the sixteen pads, the gate and its towers and walls, the name sign, the plaza and the arrival pad, the
 portal, the two teleporters, the two lamps, the fence and the size of the ground.
 
-Writes earth_base_hero.png, earth_base_ground.png (and five more photos: top, field, road, gate, portal),
-earth_base.blend, earth_base.fbx and earth_base_manifest.json. Two kinds of mesh, colours on the vertices:
+Writes <world>_base_hero.png, <world>_base_ground.png, <world>_base.blend, <world>_base.fbx and
+<world>_base_manifest.json (world in small letters, _ for spaces). Meshes, colours on the vertices:
   scenery, all with the plot's origin (on the ground) as origin:
-      Base_Ground  Base_Cliff  Base_Road  Base_Backdrop  Base_BackdropTrees  Base_Trees  Base_Dressing
-      Base_Glow (for Neon)  Base_Water (for Glass)
+      Base_Ground  Base_Cliff  Base_Road  Base_Backdrop  Base_Trees  Base_Dressing
+      Base_Glow (for Neon)  Base_Water (for Glass; not on a world whose liquid glows)
   shells, each around the middle of its own base, front towards -Y:
       Base_Pad + Base_PadTrim        Base_Gate + Base_GateTrim        Base_Portal + Base_PortalSheet
       Base_Teleporter + Base_TeleporterTrim        Base_Lamp
   A ...Trim mesh is pure white on its vertices: the game's Color tints it (the owner's colour, a
   teleporter's destination, a pad's state). In the photos it wears a stand-in colour.
-The towers, the monsters, the bulbs, the beams, the words on the signs and the clouds in the photos are
+The floor stays clean: lawn, road and pads are big calm shapes and nothing small lies on them. Trees, rocks
+and the landmark stand outside the ground, where the game has its solid skyline.
+The towers, the monsters, the bulbs, the beams, the words on the signs and the sky in the photos are
 stand-ins and are not exported; neither are the copies of a shell on its other spots.
-`draft` makes the photos at half size. `photos=hero,ground` makes only those. `nofiles` skips the export.
-
-The kit is the one of earth_island.py (box, ball, tube, lathe ..., one flat colour a piece, built with bmesh).
+`draft` makes the photos at half size. `photos=road,gate` makes only those (hero, ground, or one of CHECKS;
+`photos=none` makes none). `nofiles` skips the export.
 """
 import json
 import math
-import random
+import os
 import sys
+from contextlib import contextmanager
 
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
 
-ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else ["."]
-OUT = ARGS[0]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kit
+from kit import *
+from themes import THEMES
+
+ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+WORLD = next((name for name in THEMES if ARGS and name.lower() == ARGS[0].lower().replace("_", " ")), None)
+if WORLD is None:
+    sys.exit(f"base.py: the first argument has to be a world ({', '.join(THEMES)}), then the output folder")
+OUT = ARGS[1] if len(ARGS) > 1 else "."
 DRAFT = "draft" in ARGS
 NOFILES = "nofiles" in ARGS
 ONLY = [name for arg in ARGS if arg.startswith("photos=") for name in arg[7:].split(",")]
+SLUG = WORLD.lower().replace(" ", "_")
+T = THEMES[WORLD]
 
-bpy.ops.wm.read_factory_settings(use_empty=True)
-scene = bpy.context.scene
-materials = {}
-rng = random.Random(11)  # the same "random" base every run
-
-# The island's palette.
-GRASS, GRASS_LIGHT, GRASS_DEEP, GRASS_RIM = "6FD046", "92E35A", "58BE3E", "389A45"
-DIRT, DIRT_DARK = "C98B4D", "9C6436"
-ROCK, ROCK_DARK, ROCK_LIGHT = "9A93B5", "756E98", "B9B3CF"
-UNDER, UNDER_DARK, UNDER_LIGHT = "7C75A3", "5F5888", "958EB6"
-SAND, SAND_DARK, COBBLE = "F6DFA6", "E3C385", "FFF1CC"
-STONE, STONE_DARK, STONE_PALE = "DCD6CC", "B9B2A8", "F4EFE6"
-WOOD, WOOD_LIGHT, WOOD_DARK = "B9783F", "E3B06B", "8A5A2B"
-WATER, WATER_LIGHT = "3FBDF5", "A8E8FF"
-WHITE, INK, GOLD, GOLD_DARK = "FFFFFF", "1B1140", "FFC61A", "E09A12"
-IRON, RED, BLUE = "4A4763", "FF4D4D", "3FA9FF"
-LEAVES = ("4FC44A", "2FA85A", "8FD93E")
-HILLS = ("55BE48", "4AB246", "3FA548", "369A4A")  # the hills round the plot: darker than the lawn
-BOARD = "3A3560"  # what the game writes on in white
-# The monsters' portal: dark stone and a hot pink glow, nothing like the island's cream and purple one.
-LAIR, LAIR_DARK, LAIR_DEEP = "5F5888", "4A4763", "39365A"
-HOT, HOT_DARK, HOT_DEEP, HOT_CORE, EMBER = "FF3D7F", "D81E63", "8E1250", "3A0A30", "FF8A3D"
-BONE, BONE_DARK = "FFF3D6", "E3C385"
-UP = (0, 0, 1)
-
-
-def linear(hex_code):
-    hex_code = hex_code.lstrip("#")
-    return tuple(((int(hex_code[i:i + 2], 16) / 255) ** 2.2) for i in (0, 2, 4))
-
-
-def shade(hex_code, amount):
-    """Darker (amount < 0) or lighter (amount > 0) version of a colour."""
-    hex_code = hex_code.lstrip("#")
-    target = 255 if amount > 0 else 0
-    return "".join("%02X" % round(int(hex_code[i:i + 2], 16) + (target - int(hex_code[i:i + 2], 16)) * abs(amount)) for i in (0, 2, 4))
-
-
-def mat(hex_code, roughness=0.6, emission=0.0, alpha=1.0):
-    key = (hex_code, roughness, emission, alpha)
-    if key not in materials:
-        m = bpy.data.materials.new(hex_code)
-        m.use_nodes = True
-        bsdf = m.node_tree.nodes["Principled BSDF"]
-        colour = linear(hex_code)
-        bsdf.inputs["Base Color"].default_value = (*colour, 1)
-        bsdf.inputs["Roughness"].default_value = roughness
-        bsdf.inputs["Alpha"].default_value = alpha
-        if emission:
-            bsdf.inputs["Emission Color"].default_value = (*colour, 1)
-            bsdf.inputs["Emission Strength"].default_value = emission
-        m.diffuse_color = (*colour, 1)
-        materials[key] = m
-    return materials[key]
-
-
-# ---------------------------------------------------------------------------------------------------
-# The kit (earth_island.py's). Every piece is one flat colour. Pieces are collected per group: a group
-# becomes one mesh. In the scenery anything that glows goes to "Glow" and the water to "Water".
-# ---------------------------------------------------------------------------------------------------
-SCENERY = ("Ground", "Cliff", "Road", "Backdrop", "BackdropTrees", "Trees", "Dressing", "Water", "Glow")
+SCENERY = ("Ground", "Cliff", "Road", "Backdrop", "Trees", "Dressing", "Water", "Glow", "Origin", "North")
 TRIMS = ("PadTrim", "GateTrim", "TeleporterTrim")  # exported white, for the game to tint
 RENDER_ONLY = ("Placeholders", "Sky")  # in the photos, not in the export
-groups = {}  # name -> pieces
-group = "Ground"  # the group being built
-shells = {}  # a shell's group -> the frame it stands at on the plot
-made = []  # every piece, in the order it was made
-SHARP = math.radians(50)  # edges bent more than this stay crisp
+kit.init(seed=11, prefix="Base_", scenery=SCENERY, render_only=RENDER_ONLY)
 
 
-def finish(work, colour, location=(0, 0, 0), rotation=(0, 0, 0), smooth=True, tidy=False, **look):
-    """Turns the shape being worked on into a piece of the current group."""
-    if tidy:  # a hand-made closed shape: make every face look outwards
-        bmesh.ops.recalc_face_normals(work, faces=work.faces)
-    work.normal_update()
-    for edge in work.edges:
-        if len(edge.link_faces) == 2 and edge.calc_face_angle() > SHARP:
-            edge.smooth = False
-    for face in work.faces:
-        face.smooth = smooth
-    data = bpy.data.meshes.new("Piece")
-    work.to_mesh(data)
-    work.free()
-    data.materials.append(mat(colour, **look))
-    obj = bpy.data.objects.new("Piece", data)
-    obj.location, obj.rotation_euler = location, rotation
-    scene.collection.objects.link(obj)
-    groups.setdefault("Glow" if look.get("emission") and group in SCENERY else group, []).append(obj)
-    made.append(obj)
-    return obj
+def mix(a, b, share):
+    """A colour between two."""
+    return "".join("%02X" % round(int(a[i:i + 2], 16) + (int(b[i:i + 2], 16) - int(a[i:i + 2], 16)) * share) for i in (0, 2, 4))
 
 
-def box(size, location, colour, bevel=0.3, rotation=(0, 0, 0), segments=2, **look):
-    work = bmesh.new()
-    bmesh.ops.create_cube(work, size=1.0)
-    bmesh.ops.scale(work, vec=size, verts=work.verts)
-    bmesh.ops.bevel(work, geom=work.edges[:], offset=min(bevel, min(size) * 0.49), offset_type="OFFSET", segments=segments, profile=0.5, affect="EDGES", clamp_overlap=True)
-    return finish(work, colour, location, rotation, **look)
+# ---------------------------------------------------------------------------------------------------
+# The look: the theme's colours, and what a base needs on top of them (LOOKS: a theme key or a colour).
+# ---------------------------------------------------------------------------------------------------
+GRASS, GRASS_LIGHT, GRASS_DEEP, GRASS_RIM = T["grass"], T["grass_light"], T["grass_deep"], T["grass_rim"]
+DIRT, DIRT_DARK = T["dirt"], T["dirt_dark"]
+ROCK, ROCK_DARK, ROCK_LIGHT = T["rock"], T["rock_dark"], T["rock_light"]
+UNDER, UNDER_DARK, UNDER_LIGHT = T["under"], T["under_dark"], T["under_light"]
+SAND, SAND_DARK, COBBLE = T["sand"], T["sand_dark"], T["cobble"]
+STONE, STONE_DARK, STONE_PALE = T["stone"], T["stone_dark"], T["stone_pale"]
+WOOD, WOOD_LIGHT, WOOD_DARK = T["wood"], T["wood_light"], T["wood_dark"]
+WATER, WATER_LIGHT = T["water"], T["water_light"]
+LEAVES, PETALS = T["leaves"], T["petals"]
+ACCENT, ACCENT_PALE = T["accent"], T["accent_pale"]
+WHITE, INK, GOLD, RED, BLUE = "FFFFFF", "1B1140", "FFC61A", "FF4D4D", "3FA9FF"
+BONE, BONE_DARK = "FFF3D6", "E3C385"
+
+LOOKS = {
+    # road, road_edge, kerb: the road has to read as THE path from far away, so on pale ground it is dark.
+    # hot, ember: the monsters' portal glows in a colour that is not the world's accent (the island's portal).
+    # lair: the portal's stone. roof: the towers' roofs. knob: what tops a wall's post. window: a tower's.
+    "Earth": dict(road="sand", road_edge="sand_dark", kerb="stone_pale", kerb_glow=0.0, band="sand_dark", hot="FF3D7F", ember="FF8A3D", lair="5F5888",
+                  roof="cone", knob="ball", window=INK, iron="4A4763", board="3A3560", landmark="windmill", cloud="FFFFFF", ambient=0.85, sun=2.7,
+                  monsters=("5FD35A", "8FD93E", "FF8A3D", "E8F4FF")),
+    "Moon": dict(road="6A5CC4", road_edge="5548A8", kerb="cobble", kerb_glow=0.0, band="6A5CC4", hot="5CFF7A", ember="C8FF5A", lair="52488C",
+                 roof="dome", knob="bulb", window="accent", iron="wood_dark", board="2A2560", landmark="rocket", cloud="3D3684", ambient=1.0, fill=3.2, sun=2.9,
+                 sky=((0.0, "2C2670"), (0.15, "262062"), (0.36, "1F1B54"), (0.47, "3A3182"), (0.5, "5246A0"), (0.62, "2E2872"), (0.8, "1F1B54"), (1.0, "17153F")),
+                 monsters=("B9B5DA", "FF9BE0", "7FD8FF", "FFE27A")),
+    "Mars": dict(road="sand", road_edge="sand_dark", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="B45CFF", ember="FF5CD0", lair="6E2A34",
+                 roof="pagoda", knob="pyramid", window=INK, iron="wood_dark", board="4A1E30", landmark="arch", cloud="FFF1DC", ambient=0.85, sun=2.6,
+                 monsters=("FF5A5A", "FFD25A", "5FD08A", "35D6C4")),
+    "Neptune": dict(road="3A6FCC", road_edge="2A52A8", kerb="cobble", kerb_glow=0.0, band="3A6FCC", hot="FF4D8F", ember="FFB03D", lair="2A52A8",
+                    roof="spire", knob="crystal", window="accent", iron="wood_dark", board="1E3C80", landmark="igloo", cloud="FFFFFF", ambient=0.85, sun=2.6,
+                    monsters=("FFFFFF", "B58CFF", "5AE1FF", "FF9BE0")),
+    "The Sun": dict(road="rock", road_edge="rock_dark", kerb="water_light", kerb_glow=1.0, band="rock", hot="3DB4FF", ember="B06BFF", lair="3F2632",
+                    roof="flame", knob="ember", window="accent", iron="wood_dark", board="26141E", landmark="volcano", cloud="FFF3C4", ambient=0.8, sun=2.5,
+                    monsters=("FF4D4D", "FFE56A", "FFFFFF", "FF8A1F")),
+}
+LOOK = {key: T.get(value, value) if isinstance(value, str) else value for key, value in LOOKS[WORLD].items()}
+ROAD, ROAD_EDGE, KERB_COLOUR = LOOK["road"], LOOK["road_edge"], LOOK["kerb"]
+IRON, BOARD = LOOK["iron"], LOOK["board"]  # metal, and what the game writes on in white
+# The hills round the plot: darker than the ground, four tones from its deep patch to its rim.
+HILLS = ("55BE48", "4AB246", "3FA548", "369A4A") if WORLD == "Earth" else tuple(mix(GRASS_DEEP, GRASS_RIM, share) for share in (0.1, 0.4, 0.7, 1.0))
+# The monsters' portal: dark stone and a hot glow, nothing like the island's friendly one.
+LAIR, LAIR_DARK, LAIR_DEEP = LOOK["lair"], shade(LOOK["lair"], -0.22), shade(LOOK["lair"], -0.4)
+HOT, HOT_DARK, HOT_DEEP, HOT_CORE, EMBER = LOOK["hot"], shade(LOOK["hot"], -0.25), shade(LOOK["hot"], -0.55), shade(LOOK["hot"], -0.82), LOOK["ember"]
+GLOWS = T["liquid"] in ("stardust", "lava")  # the world's liquid glows
 
 
-def slab(size, location, colour, rotation=(0, 0, 0), **look):
-    """A plain block with crisp edges: twelve triangles, for rails, bricks and bars."""
-    work = bmesh.new()
-    bmesh.ops.create_cube(work, size=1.0)
-    bmesh.ops.scale(work, vec=size, verts=work.verts)
-    return finish(work, colour, location, rotation, smooth=False, **look)
-
-
-def ball(radius, location, colour, scale=(1, 1, 1), rotation=(0, 0, 0), segments=12, **look):
-    work = bmesh.new()
-    bmesh.ops.create_uvsphere(work, u_segments=segments, v_segments=max(3, segments // 2), radius=radius)
-    bmesh.ops.scale(work, vec=scale, verts=work.verts)
-    return finish(work, colour, location, rotation, **look)
-
-
-def tube(radius, depth, start, direction, colour, tip=None, vertices=12, **look):
-    """A cylinder (or a cone when tip is given) from `start` along `direction`."""
-    direction = Vector(direction).normalized()
-    work = bmesh.new()
-    bmesh.ops.create_cone(work, cap_ends=True, cap_tris=False, segments=vertices, radius1=radius, radius2=radius if tip is None else tip, depth=depth)
-    return finish(work, colour, Vector(start) + direction * depth / 2, direction.to_track_quat("Z", "Y").to_euler(), **look)
-
-
-def mesh(vertices, faces, colour, location=(0, 0, 0), rotation=(0, 0, 0), **look):
-    work = bmesh.new()
-    corners = [work.verts.new(vertex) for vertex in vertices]
-    for face in faces:
-        work.faces.new([corners[index] for index in face])
-    return finish(work, colour, location, rotation, **look)
-
-
+# ---------------------------------------------------------------------------------------------------
+# What the kit does not have: flat hand-made pieces
+# ---------------------------------------------------------------------------------------------------
 def patch(vertices, faces, colour, **look):
     """A hand-made sheet whose corners may fall together (the inside of a bend): those are welded, what is
     left of a face without area is dropped, and it is turned to face up."""
@@ -195,107 +142,6 @@ def patch(vertices, faces, colour, **look):
     if sum(face.normal.z * face.calc_area() for face in work.faces) < 0:
         bmesh.ops.reverse_faces(work, faces=work.faces[:])
     return finish(work, colour, **look)
-
-
-def hoop(radius, thickness, location, colour, rotation=(0, 0, 0), segments=16, **look):
-    """A ring lying flat: a band around a column, a handle, a halo."""
-    around = 5
-    vertices = []
-    for step in range(segments):
-        a = step * 2 * math.pi / segments
-        for turn in range(around):
-            b = turn * 2 * math.pi / around
-            reach = radius + thickness * math.cos(b)
-            vertices.append((reach * math.cos(a), reach * math.sin(a), thickness * math.sin(b)))
-    faces = [(step * around + turn, ((step + 1) % segments) * around + turn, ((step + 1) % segments) * around + (turn + 1) % around, step * around + (turn + 1) % around)
-             for step in range(segments) for turn in range(around)]
-    return mesh(vertices, faces, colour, location, rotation, tidy=True, **look)
-
-
-def chunk(size, location, colour, detail=2, **look):
-    """A low-poly rock: a faceted ball with its corners pushed in and out."""
-    work = bmesh.new()
-    bmesh.ops.create_icosphere(work, subdivisions=detail, radius=1.0)
-    for vertex in work.verts:
-        push = 1 + rng.uniform(-0.16, 0.16)
-        vertex.co = (vertex.co.x * size[0] * push, vertex.co.y * size[1] * push, vertex.co.z * size[2] * push)
-    return finish(work, colour, location, (0, 0, rng.uniform(0, 6.28)), smooth=False, **look)
-
-
-def ring(degrees, radius):
-    """A point (x, y) on a circle: 0 degrees is +Y, 90 is +X."""
-    angle = math.radians(degrees)
-    return math.sin(angle) * radius, math.cos(angle) * radius
-
-
-def lathe(rings, colour, segments=48, shape=None, rough=0.0, stretch=1.0, **look):
-    """A solid of rings stacked around the Z axis. Each ring is (radius, z), and either may be a function of
-    the angle in degrees; a radius of 0 is a single point. `shape` multiplies every radius by a function of
-    the angle, `rough` shakes every corner by up to that much, `stretch` squeezes it along Y.
-    List the rings the way a cut through the middle is drawn clockwise: outwards along the top, down the
-    outside, back in underneath. Then every face looks outwards."""
-    vertices, starts = [], []
-    for radius, z in rings:
-        starts.append(len(vertices))
-        if not callable(radius) and radius == 0:
-            vertices.append((0, 0, z))
-            continue
-        for step in range(segments):
-            degrees = step * 360 / segments
-            r = radius(degrees) if callable(radius) else radius
-            height = z(degrees) if callable(z) else z
-            if shape:
-                r *= shape(degrees)
-            if rough:
-                r += rng.uniform(-rough, rough)
-                height += rng.uniform(-rough, rough) * 0.5
-            x, y = ring(degrees, r)
-            vertices.append((x, y * stretch, height))
-    starts.append(len(vertices))
-    faces = []
-    for index in range(len(rings) - 1):
-        a, b = starts[index], starts[index + 1]
-        point_a, point_b = b - a == 1, starts[index + 2] - b == 1
-        for step in range(segments):
-            after = (step + 1) % segments
-            if point_a:
-                faces.append((a, b + after, b + step))
-            elif point_b:
-                faces.append((a + step, a + after, b))
-            else:
-                faces.append((a + step, a + after, b + after, b + step))
-    return mesh(vertices, faces, colour, **look)
-
-
-def dome(radius, height, location, colour, rotation=(0, 0, 0), stretch=1.0, sink=None, segments=12, **look):
-    """A low rounded cap, open underneath, to lie on something."""
-    sink = radius * 0.25 if sink is None else sink
-    return lathe([(0, height), (radius * 0.62, height * 0.62), (radius, -sink)], colour, segments=segments, stretch=stretch, location=location, rotation=rotation, **look)
-
-
-def star(radius, location, colour, depth=0.35, rotation=(0, 0, 0), **look):
-    """A chunky five-pointed star standing upright, its face to the front (-Y)."""
-    rim = [ring(index * 36, radius if index % 2 == 0 else radius * 0.5) for index in range(10)]
-    vertices = [(x, 0, z) for x, z in rim] + [(0, -depth, 0), (0, depth, 0)]
-    faces = [(10, (index + 1) % 10, index) for index in range(10)] + [(11, index, (index + 1) % 10) for index in range(10)]
-    return mesh(vertices, faces, colour, location, rotation, smooth=False, tidy=True, **look)
-
-
-def ribbon(profile, width, colour, thickness=0.6, shift=0.0, lift=0.0, **look):
-    """A band that runs out of a prop's front along a path of (forward, height) points: a waterfall."""
-    vertices, faces = [], []
-    for index, (forward, height) in enumerate(profile):
-        before, after = profile[max(index - 1, 0)], profile[min(index + 1, len(profile) - 1)]
-        along = Vector((after[0] - before[0], after[1] - before[1])).normalized()
-        out = Vector((-along.y, along.x))
-        for side, sink in ((-0.5, thickness), (-0.3, 0), (0.3, 0), (0.5, thickness)):
-            vertices.append((shift + side * width, -(forward + out.x * (lift - sink)), height + out.y * (lift - sink)))
-        if index:
-            a, b = (index - 1) * 4, index * 4
-            faces += [(a + corner, a + (corner + 1) % 4, b + (corner + 1) % 4, b + corner) for corner in range(4)]
-    last = len(vertices) - 4
-    faces += [(0, 1, 2, 3), (last, last + 1, last + 2, last + 3)]
-    return mesh(vertices, faces, colour, tidy=True, **look)
 
 
 def rounded(width, depth, radius, steps=4):
@@ -355,23 +201,22 @@ TELEPORTER_TINTS = {"worlds": "46DC8C", "market": "8264FF"}  # rgb(70, 220, 140)
 LAMPS = ((-49, -11), (49, -11))  # x = +-(WIDTH / 2 - 6), z = -YARD + 5
 LAMP_BULB, LAMP_BULB_SIZE = 12.0, 2.2  # the game's bulb: a ball this high and this wide
 FENCE_X, FENCE_RAILS = WIDTH / 2 - 0.7, (1.3, 2.7)  # the rails are solid
-RIM = 3  # how thick the game's solid skyline is: it stands just outside the ground
 WORLD_SIGN = (-9.9, 9.9, 24.76, 31.56)  # the world's name on the middle slab of the skyline, at z = 150: x from, x to, y from, y to
 OWNER = "FF6161"  # a stand-in for the owner's colour in the photos: the game's colour of slot 1
 
 
 def at(x, z, y=0.0):
     """A point of plot space (x across, z up the plot, y up) in Blender's."""
-    return Vector((x, -z, y))
+    return Vector((-x, z, y))
 
 
 def place(build, spot, face=0.0, scale=1.0, **options):
     """Builds a prop (made around its own origin, standing on z = 0, its front towards -Y) and stands it at
     (x, z) or (x, z, y) of plot space, its front looking `face` (0 up the plot, 90 towards +x, 180 at the
-    yard). Returns the frame it stands at."""
+    yard). Returns the frame it stands at. (The kit's own `place` is the island's: it has another north.)"""
     first = len(made)
     build(**options)
-    frame = Matrix.Translation(at(*spot)) @ Matrix.Rotation(math.radians(face), 4, "Z")
+    frame = Matrix.Translation(at(*spot)) @ Matrix.Rotation(math.radians(face + 180), 4, "Z")
     for obj in made[first:]:
         obj.matrix_basis = frame @ Matrix.Scale(scale, 4) @ obj.matrix_basis
     return frame
@@ -385,22 +230,21 @@ def moved(first, frame):
 
 def stand(name, build, spot, face=0.0, also=(), **options):
     """A shell: a group of its own, on one of its spots. `also` names the meshes that share its origin."""
-    global group
-    home, group = group, name
-    shells[name] = place(build, spot, face, **options)
+    with into(name):
+        shells[name] = place(build, spot, face, **options)
     for other in also:
         shells[other] = shells[name]
-    group = home
 
 
-def into(name):
-    """From here on the pieces go to another mesh of the shell being built (its trim, its sheet). In a
-    stand-in for the photos they stay with the stand-in. Returns the group to go back to."""
-    global group
-    home = group
-    if home not in RENDER_ONLY:
-        group = name
-    return home
+@contextmanager
+def part(name):
+    """`with part("PadTrim"):` builds into another mesh of the shell being built (its trim, its sheet). In a
+    stand-in for the photos the pieces stay with the stand-in."""
+    if current() in RENDER_ONLY:
+        yield
+    else:
+        with into(name):
+            yield
 
 
 def turned(way):
@@ -444,24 +288,75 @@ def plate(outline, top, colour, **look):
 
 
 # ---------------------------------------------------------------------------------------------------
-# Plants and dressing
+# What stands on the hills: the theme's `tree`. Each is about 16 tall around its own origin; `tone` picks
+# one of the three leaf colours, `variant` one of two shapes.
 # ---------------------------------------------------------------------------------------------------
-def tree(leaf=LEAVES[0], kind="round", fruit=None, fine=True):
-    """The island's tree: a fat trunk and a few balls of leaves in three tones of one green. About 16 tall.
-    `fine` is for the ones a player walks under; the ones on the hills get by with fewer corners."""
-    big, small = (16, 10) if fine else (12, 8)
-    tube(1.25, 7.5, (0, 0, -0.6), (0.04, 0, 1), WOOD, tip=0.8, vertices=8 if fine else 6)
-    if kind == "round":
-        ball(5.3, (0, 0, 10.2), leaf, scale=(1, 1, 0.9), segments=big)
-        ball(3.5, (-3.3, -1.0, 8.2), shade(leaf, -0.1), segments=small)
-        ball(3.3, (3.1, 1.2, 8.7), shade(leaf, -0.1), segments=small)
-        ball(3.1, (0.9, -1.6, 13.2), shade(leaf, 0.14), segments=small)
-        for x, y, z in fruit and ((-3.6, -3.4, 9.4), (2.2, -4.6, 10.6), (4.9, -1.2, 11.4), (-0.6, -4.2, 13.6), (-5.2, 0.6, 10.8)) or ():
-            ball(0.75, (x, y, z), fruit, segments=6, roughness=0.3)
-    else:  # three balls stacked like a fir
-        ball(4.7, (0, 0, 8.2), shade(leaf, -0.1), scale=(1, 1, 0.8), segments=big - 2)
-        ball(3.8, (0, 0, 12.2), leaf, scale=(1, 1, 0.85), segments=big - 4)
-        ball(2.7, (0, 0, 15.6), shade(leaf, 0.14), scale=(1, 1, 0.95), segments=small)
+def tree_round_tall(tone=0, variant=0):
+    """Earth: a fat trunk and balls of leaves, round or stacked like a fir."""
+    leaf = LEAVES[tone]
+    tube(1.25, 7.5, (0, 0, -0.6), (0.04, 0, 1), WOOD, tip=0.8, vertices=6)
+    if not variant:
+        ball(5.3, (0, 0, 10.2), leaf, scale=(1, 1, 0.9), segments=12)
+        ball(3.5, (-3.3, -1.0, 8.2), shade(leaf, -0.1), segments=8)
+        ball(3.3, (3.1, 1.2, 8.7), shade(leaf, -0.1), segments=8)
+        ball(3.1, (0.9, -1.6, 13.2), shade(leaf, 0.14), segments=8)
+    else:
+        ball(4.7, (0, 0, 8.2), shade(leaf, -0.1), scale=(1, 1, 0.8), segments=10)
+        ball(3.8, (0, 0, 12.2), leaf, scale=(1, 1, 0.85), segments=8)
+        ball(2.7, (0, 0, 15.6), shade(leaf, 0.14), scale=(1, 1, 0.95), segments=8)
+
+
+def tree_crater_rock(tone=0, variant=0):
+    """Moon: a boulder with a crater bowl in it and glowing crystals growing out of it."""
+    chunk((4.8, 4.4, 3.9), (0, 0, 2.6), ROCK_LIGHT if variant else ROCK, detail=1)
+    chunk((2.5, 2.3, 1.9), (3.7, 1.0, 1.0), ROCK_DARK, detail=1)
+    tilt = (math.radians(58), 0, 0)  # the bowl looks to the front and up
+    hoop(1.75, 0.5, (0, -3.1, 4.2), ROCK_LIGHT if not variant else ROCK, rotation=tilt, segments=8)
+    ball(1.7, (0, -2.95, 4.1), ROCK_DARK, scale=(1, 1, 0.3), rotation=tilt, segments=8)
+    for index, (x, y, z, radius, length, lean_x, lean_y) in enumerate(((0.4, 0.6, 4.6, 1.5, 10.5, 0.06, 0.04), (-1.9, 0.9, 4.0, 1.05, 6.8, -0.34, 0.1), (2.2, -0.2, 3.9, 0.95, 5.6, 0.4, -0.08), (-0.6, 2.2, 3.6, 0.8, 4.4, -0.1, 0.42))):
+        if variant and index == 3:
+            continue
+        tube(radius, length, (x, y, z), (lean_x, lean_y, 1), LEAVES[(tone + index) % 3], tip=0.0, vertices=5, smooth=False, roughness=0.2, emission=0.55)
+
+
+def tree_mesa_spire(tone=0, variant=0):
+    """Mars: a flat-topped spire of stacked rock layers."""
+    layers = ((3.5, 3.0, 3.6), (2.8, 2.6, 2.8), (3.0, 2.5, 2.4), (2.3, 2.1, 3.4), (3.4, 3.1, 1.5)) if not variant else ((3.2, 2.8, 2.8), (2.6, 2.3, 3.6), (2.8, 2.6, 1.8), (2.0, 1.8, 2.6), (2.9, 2.6, 1.3))
+    z = -0.7
+    for index, (low, high, height) in enumerate(layers):
+        tube(low, height, (rng.uniform(-0.2, 0.2), rng.uniform(-0.2, 0.2), z), UP, LEAVES[(tone + index) % 3], tip=high, vertices=8, smooth=False, roughness=0.9)
+        z += height
+    tube(1.9, 2.4, (3.6, 0.8, -0.6), UP, LEAVES[(tone + 1) % 3], tip=1.5, vertices=6, smooth=False, roughness=0.9)  # a stump of a second spire beside it
+    tube(2.2, 0.9, (3.6, 0.8, 1.8), UP, LEAVES[(tone + 2) % 3], tip=2.0, vertices=6, smooth=False, roughness=0.9)
+
+
+def tree_ice_spike(tone=0, variant=0):
+    """Neptune: a cluster of leaning ice shards in a drift of snow."""
+    ball(4.0, (0, 0, 0.1), GRASS_LIGHT, scale=(1, 1, 0.42), segments=8, roughness=0.9)
+    shards = ((0, 0.2, 2.0, 16.0, 0.05, 0.0), (-2.2, 0.6, 1.5, 10.5, -0.3, 0.1), (2.3, -0.4, 1.45, 12.0, 0.32, -0.05), (0.4, -2.0, 1.15, 7.5, 0.1, -0.38), (-0.6, 2.1, 1.2, 8.5, -0.12, 0.34))
+    for index, (x, y, radius, length, lean_x, lean_y) in enumerate(shards):
+        if variant and index == 4:
+            continue
+        way = Vector((lean_x, lean_y, 1)).normalized()
+        colour = LEAVES[(tone + index) % 3]
+        tube(radius, length * 0.58, (x, y, -0.6), way, colour, tip=radius * 0.82, vertices=5, smooth=False, roughness=0.2)
+        tube(radius * 0.82, length * 0.42, Vector((x, y, -0.6)) + way * length * 0.58, way, shade(colour, 0.3), tip=0.0, vertices=5, smooth=False, roughness=0.2)
+
+
+def tree_lava_spire(tone=0, variant=0):
+    """The Sun: a basalt spire with glowing cracks and a molten tip."""
+    height = 13.0 if variant else 15.0
+    lathe([(0, height), (0.9, height * 0.86), (1.7, height * 0.64), (2.5, height * 0.38), (3.4, height * 0.13), (4.0, -0.7)], ROCK_LIGHT if variant else ROCK, segments=7, rough=0.3, smooth=False)
+    ball(1.35, (0, 0, height + 0.1), LEAVES[tone], scale=(1, 1, 1.15), segments=8, emission=1.0)
+    tube(0.5, 3.2, (0.45, -0.85, height - 0.4), (0.12, -0.16, -1), LEAVES[(tone + 1) % 3], tip=0.18, vertices=5, emission=1.0)  # a drip down its front
+    tube(0.42, 2.2, (-0.8, 0.3, height - 0.5), (-0.2, 0.05, -1), LEAVES[(tone + 1) % 3], tip=0.15, vertices=5, emission=1.0)
+    for degrees, z, length in ((200, 4.6, 3.6), (150, 7.6, 2.8), (290, 3.4, 3.0), (40, 5.6, 3.2)):  # cracks
+        reach = 2.5 + (3.4 - 2.5) * (height * 0.38 - z) / (height * 0.25) if z < height * 0.38 else 1.7 + (2.5 - 1.7) * (height * 0.64 - z) / (height * 0.26)
+        x, y = ring(degrees, reach + 0.12)
+        slab((0.42, 0.42, length), (x, y, z), LEAVES[(tone + 2) % 3], rotation=(rng.uniform(-0.2, 0.2), rng.uniform(-0.2, 0.2), -math.radians(degrees)), emission=1.0)
+
+
+TREE = {"round_tall": tree_round_tall, "crater_rock": tree_crater_rock, "mesa_spire": tree_mesa_spire, "ice_spike": tree_ice_spike, "lava_spire": tree_lava_spire}[T["tree"]]
 
 
 def rocks(colour=ROCK):
@@ -470,20 +365,48 @@ def rocks(colour=ROCK):
     chunk((0.95, 0.9, 0.7), (-2.1, -0.9, 0.35), shade(colour, 0.14), detail=1)
 
 
+# ---------------------------------------------------------------------------------------------------
+# The fence: the theme's kind, where the game's solid rails are
+# ---------------------------------------------------------------------------------------------------
 def fence_run(start, end, count, first=True, last=True):
-    """A wooden fence from one point of the plot to another, `count` posts on it: chunky posts and the two
-    rails the game has (they are solid in the game, and stand exactly here)."""
+    """A fence from one point of the plot to another, `count` posts on it."""
+    kind = T["fence"]
     start, end = Vector(start), Vector(end)
     way = end - start
-    turn = -math.atan2(way.x, -way.y) if way.length else 0
-    for index in range(count):
+    turn = math.atan2(way.x, way.y)
+    points = [start + way * index / (count - 1) for index in range(count)]
+    for index, point in enumerate(points):
         if (index == 0 and not first) or (index == count - 1 and not last):
             continue
-        point = start + way * index / (count - 1)
-        box((1.3, 1.3, 4.3), at(point.x, point.y, 1.95), WOOD_LIGHT, bevel=0.3, segments=1, rotation=(0, 0, turn))
+        if kind == "wood_rail":
+            box((1.3, 1.3, 4.3), at(point.x, point.y, 1.95), WOOD_LIGHT, bevel=0.3, segments=1, rotation=(0, 0, turn))
+        elif kind == "metal_rail":
+            tube(0.55, 3.7, at(point.x, point.y, -0.2), UP, WOOD, vertices=6)
+            tube(0.8, 0.35, at(point.x, point.y, 3.4), UP, WOOD_DARK, vertices=6)
+            ball(0.72, at(point.x, point.y, 4.3), ACCENT, segments=6, emission=0.9)
+        elif kind == "rope_post":
+            box((1.5, 1.5, 4.0), at(point.x, point.y, 1.8), STONE_DARK, bevel=0.3, segments=1, rotation=(0, 0, turn))
+            box((1.9, 1.9, 0.6), at(point.x, point.y, 4.0), STONE_PALE, bevel=0.2, segments=1, rotation=(0, 0, turn))
+        elif kind == "ice_post":
+            tube(1.0, 5.0, at(point.x, point.y, -0.3), (rng.uniform(-0.1, 0.1), rng.uniform(-0.1, 0.1), 1), LEAVES[index % 3], tip=0.0, vertices=5, smooth=False, roughness=0.2)
+        else:  # basalt_chain
+            box((1.5, 1.5, 3.8), at(point.x, point.y, 1.7), ROCK_LIGHT, bevel=0.3, segments=1, rotation=(0, 0, turn))
+            ball(0.7, at(point.x, point.y, 4.0), LEAVES[0], segments=6, emission=1.0)
     middle = (start + end) / 2
-    for height in FENCE_RAILS:
-        slab((0.5, way.length, 0.5), at(middle.x, middle.y, height), WOOD, rotation=(0, 0, turn))
+    if kind in ("wood_rail", "metal_rail", "ice_post"):
+        colours = {"wood_rail": (WOOD, WOOD), "metal_rail": (WOOD_DARK, WOOD_LIGHT), "ice_post": (WATER, WATER_LIGHT)}[kind]
+        for height, colour in zip(FENCE_RAILS, colours):
+            slab((0.5, way.length, 0.5), at(middle.x, middle.y, height), colour, rotation=(0, 0, turn))
+    else:  # a rope or a chain that sags from post to post, twice
+        colour = SAND_DARK if kind == "rope_post" else shade(ROCK_LIGHT, 0.25)
+        for a, b in zip(points, points[1:]):
+            for top, sag in ((3.1, 0.75), (1.75, 0.5)):
+                heights = (top, top - sag, top - sag, top)
+                for step in range(3):
+                    low, high = a + (b - a) * step / 3, a + (b - a) * (step + 1) / 3
+                    rise, run = heights[step + 1] - heights[step], (high - low).length
+                    spot = (low + high) / 2
+                    slab((0.34, math.hypot(run, rise) + 0.1, 0.34), at(spot.x, spot.y, (heights[step] + heights[step + 1]) / 2), colour, rotation=(math.atan2(rise, run), 0, turn))
 
 
 def lamp():
@@ -502,8 +425,11 @@ def lamp():
     ball(0.32, (0, 0, 14.6), GOLD, segments=8, roughness=0.3)
 
 
+# ---------------------------------------------------------------------------------------------------
+# A landmark for the hills beside the plot, one per world. Front -Y.
+# ---------------------------------------------------------------------------------------------------
 def windmill():
-    """A landmark for the hills beside the plot: a stone mill with a red cap and four sails. Front -Y."""
+    """Earth: a stone mill with a red cap and four sails."""
     tube(4.7, 1.2, (0, 0, 0), UP, STONE_DARK, vertices=12)
     tube(4.2, 12.6, (0, 0, 1.0), UP, STONE_PALE, tip=3.0, vertices=12)
     hoop(3.72, 0.3, (0, 0, 5.4), WOOD, segments=12)
@@ -523,9 +449,57 @@ def windmill():
         moved(first, Matrix.Translation(hub + Vector((0, -0.4, 0))) @ Matrix.Rotation(math.radians(index * 90 + 24), 4, "Y"))
 
 
-def cloud():
-    for x, y, z, radius in ((0, 0, 0, 1.0), (-1.15, 0.1, -0.2, 0.72), (1.2, -0.1, -0.15, 0.8), (0.45, 0.4, 0.4, 0.66), (-0.5, -0.3, 0.3, 0.6), (2.05, 0, -0.38, 0.5), (-1.95, 0, -0.4, 0.46)):
-        ball(radius, (x, y, z * 0.8), WHITE, scale=(1, 1, 0.78), segments=16, roughness=1.0)
+def rocket():
+    """Moon: a fat little rocket on its fins, ready to go."""
+    tube(1.7, 1.6, (0, 0, 1.6), UP, IRON, tip=2.3, vertices=10)
+    lathe([(0, 14.0), (2.75, 14.0), (3.3, 10.6), (3.3, 6.0), (2.5, 3.2), (0, 3.2)], COBBLE, segments=12)
+    lathe([(0, 19.4), (0.9, 18.4), (1.9, 16.6), (2.78, 14.0), (0, 14.0)], RED, segments=12)
+    ball(0.5, (0, 0, 19.5), GOLD, segments=8, roughness=0.3)
+    hoop(3.36, 0.34, (0, 0, 6.2), GOLD, segments=12, roughness=0.3)
+    hoop(2.82, 0.3, (0, 0, 13.9), GOLD, segments=12, roughness=0.3)
+    tube(1.45, 0.6, (0, -2.95, 10.2), (0, -1, 0), WOOD_DARK, vertices=10)
+    tube(1.05, 0.7, (0, -2.95, 10.2), (0, -1, 0), ACCENT, vertices=10, emission=0.8)
+    for index in range(3):
+        x, y = ring(index * 120 + 60, 3.4)
+        mesh([(0, -0.35, 6.6), (0, -0.35, 0), (3.0, -0.35, -0.6), (3.0, -0.35, 2.2), (0, 0.35, 6.6), (0, 0.35, 0), (3.0, 0.35, -0.6), (3.0, 0.35, 2.2)],
+             [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)], RED, (x * 0.8, y * 0.8, 0.6), (0, 0, math.radians(90 - (index * 120 + 60))), smooth=False, tidy=True)
+
+
+def arch():
+    """Mars: a natural arch of layered rock."""
+    for side in (-1, 1):
+        for index, (width, height) in enumerate(((5.2, 3.6), (4.4, 3.2), (4.8, 3.0), (4.2, 3.2))):
+            box((width, width * 0.9, height + 0.1), (side * (6.4 - index * 0.25), 0, -0.6 + sum(h for w, h in ((5.2, 3.6), (4.4, 3.2), (4.8, 3.0), (4.2, 3.2))[:index]) + height / 2), LEAVES[(index + (side > 0)) % 3], bevel=0.7, rotation=(0, 0, rng.uniform(-0.15, 0.15)), roughness=0.9)
+    box((18.5, 4.6, 3.4), (0, 0, 14.0), LEAVES[1], bevel=0.9, roughness=0.9)
+    box((12.0, 4.0, 2.0), (0.6, 0, 16.5), LEAVES[2], bevel=0.7, roughness=0.9)
+    box((6.0, 3.4, 1.5), (-1.0, 0, 18.1), LEAVES[0], bevel=0.6, roughness=0.9)
+
+
+def igloo():
+    """Neptune: an igloo with a lit doorway and a flag."""
+    ball(6.4, (0, 0, -0.4), COBBLE, scale=(1, 1, 0.92), segments=14, roughness=0.8)
+    for z, colour in ((1.5, STONE_DARK), (3.4, STONE_DARK), (4.9, STONE_DARK)):
+        hoop(math.sqrt(6.4 ** 2 - ((z + 0.4) / 0.92) ** 2) + 0.02, 0.13, (0, 0, z), colour, segments=14)
+    tube(3.0, 4.2, (0, -3.6, 0.2), (0, -1, 0), STONE, vertices=10)
+    tube(3.25, 0.7, (0, -7.4, 0.2), (0, -1, 0), STONE_PALE, vertices=10)
+    tube(2.2, 0.3, (0, -7.95, 0.2), (0, -1, 0), "FFD86B", vertices=10, emission=0.9)
+    tube(0.2, 5.0, (0, 0, 5.2), UP, WOOD_DARK, vertices=5)
+    mesh([(0, -0.1, 1.1), (0, -0.1, -1.1), (3.4, -0.1, 0), (0, 0.1, 1.1), (0, 0.1, -1.1), (3.4, 0.1, 0)], [(0, 1, 2), (3, 5, 4), (0, 3, 4, 1), (1, 4, 5, 2), (2, 5, 3, 0)], RED, (0.15, 0, 9.0), smooth=False, tidy=True)
+
+
+def volcano():
+    """The Sun: a small volcano, lava in its crater and down its sides."""
+    lathe([(0, 12.0), (2.6, 12.2), (3.6, 13.6), (4.6, 12.8), (6.4, 8.4), (9.2, 3.6), (12.0, 0.4), (12.6, -1.5)], ROCK, segments=10, rough=0.35, smooth=False)
+    lathe([(0, 13.0), (3.5, 13.0), (3.5, 12.0)], WATER_LIGHT, segments=10, emission=1.2)
+    ball(1.5, (0.6, -0.4, 15.4), WATER_LIGHT, segments=8, emission=1.2)
+    ball(0.8, (-1.2, 0.6, 17.4), WATER, segments=6, emission=1.2)
+    for degrees, length in ((180, 9.5), (120, 6.5), (250, 7.5), (40, 8.0), (320, 5.5)):  # lava runs down from the rim
+        x, y = ring(degrees, 4.5)
+        way = Vector((math.sin(math.radians(degrees)) * 0.55, math.cos(math.radians(degrees)) * 0.55, -1))
+        tube(1.0, length, (x, y, 13.0), way, WATER, tip=0.35, vertices=5, emission=1.0)
+
+
+LANDMARK = {"windmill": windmill, "rocket": rocket, "arch": arch, "igloo": igloo, "volcano": volcano}[LOOK["landmark"]]
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -537,7 +511,7 @@ BUN = ((0.0, 1.0), (0.3, 0.97), (0.55, 0.86), (0.76, 0.64), (0.9, 0.36), (1.0, 0
 
 
 def hill(x, z, across, along, height, colour, segments=16):
-    """A round green hill, `across` wide (its radius along x) and `along` deep (along z)."""
+    """A round hill, `across` wide (its radius along x) and `along` deep (along z)."""
     rings = [(across * share, height * rise) for share, rise in BUN[:-1]] + [(across, -0.6)]
     lathe(rings, colour, segments=segments, stretch=along / across, location=at(x, z), roughness=0.9)
     hills.append((x, z, across, along, height))
@@ -561,7 +535,7 @@ def peak(radius, height, colour, stretch=1.0, segments=9):
 
 
 def butte(radius, height, colour, stretch=1.0, cap=GRASS_DEEP, segments=9):
-    """A blunt rock with a cap of grass, like the island's floating rocks."""
+    """A blunt rock with a cap of the world's ground, like the island's floating rocks."""
     lathe([(0, height), (radius * 0.5, height * 0.985), (radius * 0.74, height * 0.84), (radius * 0.9, height * 0.45), (radius, 0), (radius * 1.02, -1.5)],
           colour, segments=segments, rough=radius * 0.05, smooth=False, stretch=stretch)
     if cap:
@@ -570,22 +544,22 @@ def butte(radius, height, colour, stretch=1.0, cap=GRASS_DEEP, segments=9):
 
 
 def waterfall(fall, pool, reach):
-    """Water that comes out from under a butte's cap, runs down its front and ends in a small pool at its
+    """The world's liquid coming out from under a butte's cap, down its front and into a small pool at its
     foot. `fall` is its path as (forward of the butte's middle, height) points, `pool` the pool's radius,
     `reach` how far forward of the butte's middle the pool lies."""
-    global group
     for index in range(7):  # stones round the pool
         x, y = ring(index * 38 + 66, pool + 0.5)
         chunk((rng.uniform(0.7, 1.0), rng.uniform(0.7, 0.95), rng.uniform(0.55, 0.8)), (x, -reach + y, 0.3), rng.choice((ROCK, ROCK_LIGHT, ROCK_DARK)), detail=1)
-    for x, z, radius in ((-0.9, 0.5, 0.8), (0.3, 0.7, 0.95), (1.1, 0.4, 0.7)):  # foam where it lands
-        ball(radius, (x, -fall[-1][0] - 0.3, z), WHITE, segments=8)
-    home, group = group, "Water"
-    ribbon(fall, 3.6, WATER, lift=0.7, roughness=0.15)
-    for shift, width, skip in ((-0.9, 0.7, 1), (0.8, 0.5, 2)):  # lighter streaks down the fall
-        ribbon(fall[skip:], width, WATER_LIGHT, thickness=0.3, shift=shift, lift=0.9, roughness=0.15)
-    tube(pool, 0.4, (0, -reach, -0.1), UP, WATER, vertices=16, roughness=0.15)
-    tube(pool * 0.58, 0.4, (0.25, -reach + 0.2, -0.06), UP, shade(WATER, 0.25), vertices=12, roughness=0.15)
-    group = home
+    if T["liquid"] in ("water", "oasis"):
+        for x, z, radius in ((-0.9, 0.5, 0.8), (0.3, 0.7, 0.95), (1.1, 0.4, 0.7)):  # foam where it lands
+            ball(radius, (x, -fall[-1][0] - 0.3, z), WHITE, segments=8)
+    wet = dict(roughness=0.15, emission=0.9) if GLOWS else dict(roughness=0.15)
+    with into("Water"):
+        ribbon(fall, 3.6, WATER, lift=0.7, **wet)
+        for shift, width, skip in ((-0.9, 0.7, 1), (0.8, 0.5, 2)):  # lighter streaks down the fall
+            ribbon(fall[skip:], width, WATER_LIGHT, thickness=0.3, shift=shift, lift=0.9, **wet)
+        tube(pool, 0.4, (0, -reach, -0.1), UP, WATER, vertices=16, **wet)
+        tube(pool * 0.58, 0.4, (0.25, -reach + 0.2, -0.06), UP, shade(WATER, 0.25), vertices=12, **wet)
 
 
 def monolith(radius, height, colour, stretch=1.0, segments=11):
@@ -601,23 +575,20 @@ def pad(tint=WHITE):
     """One cannon pad: PAD_SIZE square, a stone plate on a darker foot with gold corners. Nothing of it is
     higher than PAD_HEIGHT (its corners); the plate, flat and empty, is 0.04 lower, so the game's "+" on
     the pad's top and the tower's foot lie just over it. PadTrim is the band round the plate."""
-    global group
     tile(PAD_SIZE, PAD_SIZE, 0.9, 0.0, 0.32, STONE_DARK, lip=0.1)
     tile(6.3, 6.3, 0.7, 0.28, PAD_HEIGHT - 0.04, STONE_PALE, lip=0.07)
     for x in (-1, 1):
         for y in (-1, 1):
             tile(1.5, 1.5, 0.45, 0.2, PAD_HEIGHT, GOLD, lip=0.07, location=(x * 2.75, y * 2.75, 0), roughness=0.3)
-    home = into("PadTrim")
-    inlay(rounded(6.0, 6.0, 0.5), rounded(4.9, 4.9, 0.3), PAD_HEIGHT - 0.03, tint)
-    group = home
+    with part("PadTrim"):
+        inlay(rounded(6.0, 6.0, 0.5), rounded(4.9, 4.9, 0.3), PAD_HEIGHT - 0.03, tint)
 
 
 def teleporter(tint=WHITE):
     """A walk-on teleporter: a low round dais (the game's ring is TELEPORTER_RING across it) under a slim
     stone arch. The game's beam (TELEPORTER_BEAM wide, 0.4 to 8.4 up) stands in the arch. TeleporterTrim
     is what the game tints: the ring and the disc on the dais, the orb in the arch's crown (where the
-    game's own orb floats) and a gem on each leg. Its title floats over it: nothing here is higher than 11."""
-    global group
+    game's own orb floats) and a gem on each leg. Its title floats over it: nothing here is higher than 11.3."""
     tube(3.6, 0.3, (0, 0, 0), UP, STONE_DARK, vertices=24)
     tube(TELEPORTER_RING, 0.42, (0, 0, 0), UP, STONE, vertices=24)
     for index in range(8):
@@ -634,14 +605,13 @@ def teleporter(tint=WHITE):
         angle = math.radians(degrees)
         box((1.72, 1.55, 1.5), (-math.cos(angle) * reach, 0, crown + math.sin(angle) * reach), STONE_PALE if index % 2 == 0 else STONE, bevel=0.3, segments=1, rotation=(0, angle - math.pi / 2, 0))
     hoop(1.12, 0.22, (0, 0, crown + reach), GOLD, rotation=(math.pi / 2, 0, 0), segments=14, roughness=0.3)
-    home = into("TeleporterTrim")
-    lathe([(2.25, 0.42), (2.32, 0.47), (2.88, 0.47), (2.95, 0.42)], tint, segments=24, emission=0.9)
-    lathe([(0, 0.47), (TELEPORTER_BEAM, 0.47), (TELEPORTER_BEAM + 0.08, 0.42)], tint, segments=20, emission=0.9)
-    ball(0.95, (0, 0, crown + reach), tint, segments=12, emission=1.2)
-    for side in (-1, 1):
-        for front in (-1, 1):
-            tube(0.5, 0.45, (side * reach, front * 0.78, 3.6), (0, front, 0), tint, tip=0.0, vertices=4, emission=0.9)
-    group = home
+    with part("TeleporterTrim"):
+        lathe([(2.25, 0.42), (2.32, 0.47), (2.88, 0.47), (2.95, 0.42)], tint, segments=24, emission=0.9)
+        lathe([(0, 0.47), (TELEPORTER_BEAM, 0.47), (TELEPORTER_BEAM + 0.08, 0.42)], tint, segments=20, emission=0.9)
+        ball(0.95, (0, 0, crown + reach), tint, segments=12, emission=1.2)
+        for side in (-1, 1):
+            for front in (-1, 1):
+                tube(0.5, 0.45, (side * reach, front * 0.78, 3.6), (0, front, 0), tint, tip=0.0, vertices=4, emission=0.9)
 
 
 def arch_wall(half, spring, top, depth, colour, steps=12):
@@ -685,8 +655,35 @@ def door_leaf():
         hoop(0.62, 0.15, (5.9, front * 0.42, 5.8), GOLD, rotation=(math.pi / 2, 0, 0), segments=10, roughness=0.3)
 
 
+# The towers' roofs, one shape a world: a cut for `lathe` from the tip down to the parapet (17.7), how many
+# sides it has and whether it is faceted.
+ROOFS = {
+    "cone": ([(0, 26.2), (0.95, 24.0), (2.1, 21.4), (3.25, 19.2), (3.9, 18.1), (3.7, 17.7), (0, 17.7)], 16, True),
+    "dome": ([(0, 24.6), (1.5, 24.2), (2.9, 23.0), (3.8, 21.3), (4.15, 19.6), (3.95, 18.3), (3.7, 17.7), (0, 17.7)], 16, True),
+    "pagoda": ([(0, 26.0), (0.9, 24.2), (2.0, 22.6), (3.3, 21.7), (2.4, 21.3), (2.9, 19.8), (4.6, 18.2), (3.7, 17.7), (0, 17.7)], 12, True),
+    "spire": ([(0, 29.0), (1.5, 24.0), (3.0, 20.4), (4.1, 18.2), (3.7, 17.7), (0, 17.7)], 6, False),
+    "flame": ([(0, 28.0), (0.6, 26.4), (1.7, 24.6), (3.2, 22.4), (4.2, 20.2), (4.1, 18.7), (3.6, 17.7), (0, 17.7)], 12, True),
+}
+
+
+def knob(x, y, z):
+    """What tops a post of the base's wall, one kind a world."""
+    kind = LOOK["knob"]
+    if kind == "ball":
+        ball(0.7, (x, y, z + 0.4), GOLD, segments=8, roughness=0.3)
+    elif kind == "bulb":
+        tube(0.5, 0.3, (x, y, z - 0.25), UP, IRON, vertices=6)
+        ball(0.75, (x, y, z + 0.5), ACCENT, segments=8, emission=0.9)
+    elif kind == "pyramid":
+        tube(1.2, 1.5, (x, y, z - 0.3), UP, GOLD, tip=0.0, vertices=4, roughness=0.3)
+    elif kind == "crystal":
+        tube(0.75, 2.2, (x, y, z - 0.3), UP, LEAVES[2], tip=0.0, vertices=5, smooth=False, roughness=0.2)
+    else:  # ember
+        ball(0.8, (x, y, z + 0.45), ACCENT, scale=(1, 1, 1.2), segments=8, emission=1.0)
+
+
 def gate(tint=OWNER):
-    """The base's gatehouse, the piece the monsters come for: two round towers with pointed roofs and
+    """The base's gatehouse, the piece the monsters come for: two round towers with the world's roofs and
     banners, a round arch between them with a portcullis drawn up and its door standing open to the road,
     the owner's name over it on both sides, a crest on top, and a wall with battlements out to each fence.
     Its origin is the middle of the gate on the ground; its front (-Y) is the side the monsters see.
@@ -694,8 +691,11 @@ def gate(tint=OWNER):
     (WALL_THICK thick, WALL_HEIGHT high). The arch is GATE_WIDTH wide and GATE_HEIGHT high in the middle.
     GateTrim is everything in the owner's colour: the roofs, the flags, the banners, the crest and the
     disc of the arrival pad (10 studs behind the gate, like the game's)."""
-    global group
     spring = GATE_HEIGHT / 2  # the arch: half a circle, GATE_WIDTH across
+    roof, sides, smooth = ROOFS[LOOK["roof"]]
+    tip = roof[0][1]
+    window = LOOK["window"]
+    lit = dict(emission=0.9) if window != INK else {}
     for side in (-1, 1):
         x = side * TOWER_X
         tube(4.0, 1.1, (x, 0, 0), UP, STONE_DARK, vertices=16)
@@ -707,28 +707,30 @@ def gate(tint=OWNER):
         for index in range(8):
             a, b = ring(index * 45 + 22.5, 3.72)
             box((1.55, 1.2, 1.25), (x + a, b, 18.3), STONE_PALE, bevel=0.22, segments=1, rotation=(0, 0, -math.radians(index * 45 + 22.5)))
+            if LOOK["roof"] == "spire":  # icicles under the parapet
+                a, b = ring(index * 45, 4.15)
+                tube(0.34, 1.5 + 0.5 * (index % 2), (x + a, b, 16.65), (0, 0, -1), WATER_LIGHT, tip=0.0, vertices=5, roughness=0.2)
         for degrees, z in ((38, 3.6), (-52, 5.4), (128, 4.2), (-140, 6.6), (64, 11.6), (-118, 12.6), (150, 12.0), (-30, 13.2)):  # stones that stand out of the wall
             a, b = ring(degrees, 3.42)
             slab((1.7, 0.5, 0.85), (x + a, b, z), STONE_DARK if z < 9 else STONE, rotation=(0, 0, -math.radians(degrees)))
         for front in (-1, 1):  # a window to the road and one to the yard
             box((2.0, 0.6, 3.2), (x, front * 3.3, 5.6), STONE_DARK, bevel=0.25, segments=1)
-            box((1.2, 0.5, 2.0), (x, front * 3.48, 5.35), INK, bevel=0.1, segments=1)
-            tube(0.6, 0.5, (x, front * 3.23, 6.35), (0, front, 0), INK, vertices=10)
+            box((1.2, 0.5, 2.0), (x, front * 3.48, 5.35), window, bevel=0.1, segments=1, **lit)
+            tube(0.6, 0.5, (x, front * 3.23, 6.35), (0, front, 0), window, vertices=10, **lit)
             tube(0.14, 3.2, (x - 1.6, front * 3.95, 14.2), (1, 0, 0), GOLD, vertices=6, roughness=0.3)  # the banner's rod
             for end in (-1, 1):
                 ball(0.3, (x + end * 1.6, front * 3.95, 14.2), GOLD, segments=6, roughness=0.3)
             star(0.72, (x, front * 4.02, 12.5), GOLD, depth=0.16, roughness=0.3)
-        tube(0.16, 4.2, (x, 0, 26.0), UP, IRON, vertices=5)
-        ball(0.5, (x, 0, 26.2), GOLD, segments=8, roughness=0.3)
-        ball(0.3, (x, 0, 30.3), GOLD, segments=6, roughness=0.3)
-        home = into("GateTrim")
-        lathe([(0, 26.2), (0.95, 24.0), (2.1, 21.4), (3.25, 19.2), (3.9, 18.1), (3.7, 17.7), (0, 17.7)], tint, segments=16, location=(x, 0, 0))
-        for front in (-1, 1):
-            banner(2.7, 5.0, tint, (x, front * 3.9, 14.2), back=front > 0)
-        # The flag: a pennant that flies away from the gate.
-        mesh([(0, -0.1, 0.95), (0, -0.1, -0.95), (3.2, -0.1, 0), (0, 0.1, 0.95), (0, 0.1, -0.95), (3.2, 0.1, 0)], [(0, 1, 2), (3, 5, 4), (0, 3, 4, 1), (1, 4, 5, 2), (2, 5, 3, 0)],
-             tint, (x + side * 0.16, 0, 29.1), (0, 0, 0 if side > 0 else math.pi), smooth=False, tidy=True, roughness=0.8)
-        group = home
+        tube(0.16, 4.2, (x, 0, tip - 0.2), UP, IRON, vertices=5)
+        ball(0.5, (x, 0, tip), GOLD, segments=8, roughness=0.3)
+        ball(0.3, (x, 0, tip + 4.1), GOLD, segments=6, roughness=0.3)
+        with part("GateTrim"):
+            lathe(roof, tint, segments=sides, smooth=smooth, location=(x, 0, 0))
+            for front in (-1, 1):
+                banner(2.7, 5.0, tint, (x, front * 3.9, 14.2), back=front > 0)
+            # The flag: a pennant that flies away from the gate.
+            mesh([(0, -0.1, 0.95), (0, -0.1, -0.95), (3.2, -0.1, 0), (0, 0.1, 0.95), (0, 0.1, -0.95), (3.2, 0.1, 0)], [(0, 1, 2), (3, 5, 4), (0, 3, 4, 1), (1, 4, 5, 2), (2, 5, 3, 0)],
+                 tint, (x + side * 0.16, 0, tip + 2.9), (0, 0, 0 if side > 0 else math.pi), smooth=False, tidy=True, roughness=0.8)
         # The piers of the arch, up to the top of the gatehouse.
         box((1.75, 3.6, 17.4), (side * (GATE_WIDTH / 2 + 0.875), 0, 8.7), STONE_DARK, bevel=0.3, segments=1)
         for index, degrees in enumerate((13, 31, 48)):  # the arch's stones; over them the name board takes the wall
@@ -752,9 +754,8 @@ def gate(tint=OWNER):
     hoop(2.0, 0.26, (0, 0, 21.8), GOLD, rotation=(math.pi / 2, 0, 0), segments=18, roughness=0.3)
     for front in (-1, 1):
         star(1.2, (0, front * 0.3, 21.8), GOLD, depth=0.2, roughness=0.3)
-    home = into("GateTrim")
-    tube(2.0, 0.44, (0, 0.22, 21.8), (0, -1, 0), tint, vertices=18)
-    group = home
+    with part("GateTrim"):
+        tube(2.0, 0.44, (0, 0.22, 21.8), (0, -1, 0), tint, vertices=18)
     # The portcullis, drawn up into the arch on the road's side: gold tips over the monsters' heads.
     grille = -0.95
     for x in (-5, -3, -1, 1, 3, 5):
@@ -779,7 +780,7 @@ def gate(tint=OWNER):
         for x in posts:
             box((2.8, 3.0, 5.4), (side * x, 0, 2.7), STONE_DARK, bevel=0.3, segments=1)
             box((3.2, 3.4, 0.6), (side * x, 0, 5.6), STONE_PALE, bevel=0.2, segments=1)
-            ball(0.7, (side * x, 0, 6.3), GOLD, segments=8, roughness=0.3)
+            knob(side * x, 0, 5.9)
         for before, after in zip((WALL_FROM - 0.4,) + posts, posts):
             count = 1 if after - before < 6 else 3
             for index in range(count):
@@ -796,9 +797,8 @@ def gate(tint=OWNER):
         x, y = ring(index * 45 + 22.5, 3.76)
         ball(0.3, (x, behind + y, 0.26), GOLD, scale=(1, 1, 0.6), segments=6, roughness=0.3)
     star(2.3, (0, behind, 0.205), WHITE, depth=0.045, rotation=(math.pi / 2, 0, 0))
-    home = into("GateTrim")
-    lathe([(0, 0.2), (ARRIVAL_RADIUS, 0.2), (ARRIVAL_RADIUS, 0.14)], tint, segments=28, location=(0, behind, 0), emission=0.5)
-    group = home
+    with part("GateTrim"):
+        lathe([(0, 0.2), (ARRIVAL_RADIUS, 0.2), (ARRIVAL_RADIUS, 0.14)], tint, segments=28, location=(0, behind, 0), emission=0.5)
 
 
 def portal():
@@ -806,7 +806,6 @@ def portal():
     its mouth. Its origin is the middle of the sheet on the ground (the game's own spot), its front (-Y) looks
     down the road at the gate. The mouth is 14.5 wide and 16.5 high in the middle: the game's sheet is 14 by 15.
     PortalSheet is everything that glows, for Neon: the sheet with its dark whirl, the eyes, the runes."""
-    global group
     crown, reach = 9.3, 9.2  # where the arch springs, and its radius through the middle of its stones
     for side in (-1, 1):
         box((4.8, 5.0, 1.5), (side * 9.45, 0, 0.75), LAIR_DEEP, bevel=0.45)
@@ -820,7 +819,7 @@ def portal():
     for degrees in (30, 52, 75, 105, 128, 150):
         angle = math.radians(degrees)
         inner = 6.95 if 70 < degrees < 110 else 7.3
-        tube(0.66, 1.9, (math.cos(angle) * inner, -1.0, crown + math.sin(angle) * inner), (-math.cos(angle), 0, -math.sin(angle)), COBBLE, tip=0.0, vertices=8, roughness=0.3)
+        tube(0.66, 1.9, (math.cos(angle) * inner, -1.0, crown + math.sin(angle) * inner), (-math.cos(angle), 0, -math.sin(angle)), BONE, tip=0.0, vertices=8, roughness=0.3)
     # Horns: fat cones that bend up and in.
     for side in (-1, 1):
         bends = ((8.2, 16.0, 1.55), (10.9, 18.1, 1.3), (12.8, 20.6, 1.0), (13.7, 23.2, 0.66), (13.3, 25.6, 0.0))  # (x, z, radius)
@@ -837,40 +836,39 @@ def portal():
         box((3.3, 1.0, 0.95), (x + side * 0.1, -2.25, 19.1), LAIR_DEEP, bevel=0.3, rotation=(0, -side * 0.4, 0))
     for x in (-1.5, 0, 1.5):  # a crest of spikes on its brow
         tube(0.7, 2.2 if x == 0 else 1.6, (x, 0, crown + reach + 2.0), (x * 0.12, 0, 1), LAIR_DEEP, tip=0.0, vertices=6)
-    home = into("PortalSheet")
-    slab((14.6, 0.36, crown), (0, 0, crown / 2), HOT, emission=1.0)
-    tube(7.3, 0.4, (0, 0.2, crown), (0, -1, 0), HOT, vertices=28, emission=1.0)
-    for radius, depth, x, z, colour in ((5.7, 0.5, 0.0, 8.5, HOT_DARK), (4.3, 0.6, 0.45, 8.9, HOT_DEEP), (2.9, 0.7, -0.2, 9.1, HOT_CORE), (1.5, 0.8, 0.2, 8.9, "1A0518")):  # the whirl: darker towards its middle
-        tube(radius, depth, (x, depth / 2, z), (0, -1, 0), colour, vertices=20, emission=0.6)
-    for x, z, radius in ((-4.6, 4.0, 0.5), (4.9, 12.0, 0.42), (-3.4, 13.4, 0.36), (4.2, 3.0, 0.3), (-5.3, 9.6, 0.3)):  # sparks
-        tube(radius, 0.6, (x, 0.3, z), (0, -1, 0), "FFB3CF", vertices=8, emission=1.4)
-    for side in (-1, 1):
-        ball(1.3, (side * 3.95, -2.1, 17.6), "FFE45C", scale=(1, 0.36, 1.08), segments=14, emission=1.2)  # an eye
-        for z in (4.2, 6.6):  # runes on the legs
-            box((0.6, 0.3, 1.5), (side * reach, -2.0, z), HOT, bevel=0.1, segments=1, emission=1.2)
-    tube(0.75, 0.6, (0, -2.25, crown + reach - 0.3), (0, -1, 0), HOT, tip=0.0, vertices=4, emission=1.2)  # a gem on its brow
-    group = home
+    with part("PortalSheet"):
+        slab((14.6, 0.36, crown), (0, 0, crown / 2), HOT, emission=1.0)
+        tube(7.3, 0.4, (0, 0.2, crown), (0, -1, 0), HOT, vertices=28, emission=1.0)
+        for radius, depth, x, z, colour in ((5.7, 0.5, 0.0, 8.5, HOT_DARK), (4.3, 0.6, 0.45, 8.9, HOT_DEEP), (2.9, 0.7, -0.2, 9.1, HOT_CORE), (1.5, 0.8, 0.2, 8.9, shade(HOT_CORE, -0.5))):  # the whirl: darker towards its middle
+            tube(radius, depth, (x, depth / 2, z), (0, -1, 0), colour, vertices=20, emission=0.6)
+        for x, z, radius in ((-4.6, 4.0, 0.5), (4.9, 12.0, 0.42), (-3.4, 13.4, 0.36), (4.2, 3.0, 0.3), (-5.3, 9.6, 0.3)):  # sparks
+            tube(radius, 0.6, (x, 0.3, z), (0, -1, 0), shade(HOT, 0.6), vertices=8, emission=1.4)
+        for side in (-1, 1):
+            ball(1.3, (side * 3.95, -2.1, 17.6), "FFE45C", scale=(1, 0.36, 1.08), segments=14, emission=1.2)  # an eye
+            for z in (4.2, 6.6):  # runes on the legs
+                box((0.6, 0.3, 1.5), (side * reach, -2.0, z), HOT, bevel=0.1, segments=1, emission=1.2)
+        tube(0.75, 0.6, (0, -2.25, crown + reach - 0.3), (0, -1, 0), HOT, tip=0.0, vertices=4, emission=1.2)  # a gem on its brow
 
 
 # ---------------------------------------------------------------------------------------------------
-# Stand-ins for the photos: a tower, a monster
+# Stand-ins for the photos: a tower, a monster, the words on the signs
 # ---------------------------------------------------------------------------------------------------
 def stand_in_tower(colour=RED):
     """The game's rank 1 cannon in rough: a wooden plinth, a carriage with wheels, a fat barrel."""
-    tube(2.5, 1.0, (0, 0, 0), UP, WOOD, vertices=16)
-    box((2.2, 3.0, 0.9), (0, 0.3, 1.65), WOOD_DARK, bevel=0.2, segments=1)
+    tube(2.5, 1.0, (0, 0, 0), UP, "B9783F", vertices=16)
+    box((2.2, 3.0, 0.9), (0, 0.3, 1.65), "8A5A2B", bevel=0.2, segments=1)
     for side in (-1, 1):
-        tube(1.15, 0.5, (side * 1.15, 0.4, 2.15), (side, 0, 0), IRON, vertices=12)
-    aim, back = Vector((0, -math.cos(math.radians(12)), math.sin(math.radians(12)))), Vector((0, 1.7, 2.55))
-    tube(0.8, 4.2, back, aim, colour, vertices=12, roughness=0.35)
+        tube(1.15, 0.5, (side * 1.15, 0.4, 2.15), (side, 0, 0), "4A4763", vertices=12)
+    aim_at, back = Vector((0, -math.cos(math.radians(12)), math.sin(math.radians(12)))), Vector((0, 1.7, 2.55))
+    tube(0.8, 4.2, back, aim_at, colour, vertices=12, roughness=0.35)
     ball(0.88, back, shade(colour, -0.3), segments=10, roughness=0.35)
-    tube(1.0, 0.5, back + aim * 3.8, aim, shade(colour, -0.3), vertices=12, roughness=0.35)
-    tube(0.55, 0.06, back + aim * 4.3, aim, INK, vertices=10)
-    tube(0.98, 0.3, back + aim * 2.6, aim, WHITE, vertices=12)
+    tube(1.0, 0.5, back + aim_at * 3.8, aim_at, shade(colour, -0.3), vertices=12, roughness=0.35)
+    tube(0.55, 0.06, back + aim_at * 4.3, aim_at, INK, vertices=10)
+    tube(0.98, 0.3, back + aim_at * 2.6, aim_at, WHITE, vertices=12)
 
 
 def stand_in_monster(colour="5FD35A", eye="FFE23A"):
-    """One of Earth's monsters in rough: a rounded cube with two big glossy eyes. About 2.4 tall."""
+    """A monster in rough: a rounded cube with two big glossy eyes. About 2.4 tall."""
     box((2.5, 2.3, 2.1), (0, 0, 1.35), colour, bevel=0.7, segments=3, roughness=0.4)
     for side in (-1, 1):
         box((0.9, 1.1, 0.55), (side * 0.7, -0.1, 0.28), shade(colour, -0.25), bevel=0.24)
@@ -887,16 +885,24 @@ def words(text, spot, size, face=180.0, colour=WHITE):
     curve.body, curve.size, curve.align_x, curve.align_y = text, size, "CENTER", "CENTER"
     curve.materials.append(mat(colour, emission=0.3))
     obj = bpy.data.objects.new("RenderOnly_Words", curve)
-    obj.matrix_basis = Matrix.Translation(at(*spot)) @ Matrix.Rotation(math.radians(face), 4, "Z") @ Matrix.Rotation(math.pi / 2, 4, "X")
-    scene.collection.objects.link(obj)
+    obj.matrix_basis = Matrix.Translation(at(*spot)) @ Matrix.Rotation(math.radians(face + 180), 4, "Z") @ Matrix.Rotation(math.pi / 2, 4, "X")
+    bpy.context.scene.collection.objects.link(obj)
 
 
 # ---------------------------------------------------------------------------------------------------
-# The ground: a floating island like Earth's, but rounded-square. The lawn is level over the whole of the
-# game's ground and well past it; the hills stand on the band outside.
+# The markers: where the plot's origin is and which way the portal lies. In the export, not in the photos.
+# ---------------------------------------------------------------------------------------------------
+with into("Origin"):
+    slab((2, 2, 2), at(0, 0, 1), "FF00FF").hide_render = True
+with into("North"):
+    slab((2, 2, 2), at(0, 10, 1), "00FFFF").hide_render = True
+
+# ---------------------------------------------------------------------------------------------------
+# The ground: a floating island like the world's own, but rounded-square. It is level (y = 0) over the
+# whole of the game's ground and well past it; the hills stand on the band outside.
 # ---------------------------------------------------------------------------------------------------
 HALF_X, HALF_Z, MIDDLE_Z, SQUARE = 91.0, 118.0, 73.0, 6  # the island reaches x +-91 and z -45 ... 191
-FLAT = 0.955  # the share of the way to the edge that the grass stays level
+FLAT = 0.955  # the share of the way to the edge that the ground stays level
 
 
 def outline(degrees):
@@ -917,7 +923,7 @@ def island(rings, colour, segments, **look):
 def edge(degrees, share):
     """The point (x, z) of plot space in a direction from the island's middle, a share of the way to its edge."""
     x, y = ring(degrees, HALF_X * outline(degrees) * share)
-    return x, MIDDLE_Z - y * HALF_Z / HALF_X
+    return -x, MIDDLE_Z + y * HALF_Z / HALF_X
 
 
 R = HALF_X
@@ -936,15 +942,15 @@ def spike(radius, depth, colour=UNDER):
     lathe([(0, 2.0), (radius, 0.0), (radius * 0.72, -depth * 0.4), (radius * 0.34, -depth * 0.78), (0, -depth)], colour, segments=7, rough=radius * 0.1, smooth=False)
 
 
-group = "Ground"
-# (The lawn ends under the darker rim of the Cliff group, and has as many corners round its edge: nothing of it pokes through.)
+use("Ground")
+# (The ground ends under the darker rim of the Cliff group, and has as many corners round its edge: nothing of it pokes through.)
 island([(0, 0.0), (R * FLAT, 0.0), (R * 0.966, top(0.966)), (R * 0.972, top(0.972) - 2.0), (R * 0.972, -6.0), (0, -6.0)], GRASS, LOBES * 4, roughness=0.9)
-# A few big lighter and darker patches, so the lawn is not one flat green. (x, z, radius, colour)
+# A few big lighter and darker patches, lying flat in the ground, so it is not one flat colour. (x, z, radius, colour)
 for x, z, radius, colour in ((30, 21, 13, GRASS_LIGHT), (-33, 23, 11, GRASS_DEEP), (46, 50, 9, GRASS_LIGHT), (-16, 83, 12, GRASS_DEEP), (-47, 83, 8, GRASS_LIGHT), (33, 114, 12, GRASS_LIGHT),
                               (-8, 114, 10, GRASS_DEEP), (22, 140, 9, GRASS_LIGHT), (-30, 143, 10, GRASS_LIGHT), (-40, -7, 10, GRASS_DEEP), (38, -6, 11, GRASS_LIGHT), (0, 53, 9, GRASS_LIGHT)):
-    dome(radius, 0.07, at(x, z), colour, rotation=(0, 0, rng.uniform(0, 3)), stretch=rng.uniform(0.72, 0.9), sink=0.02, segments=16, roughness=0.9)
+    dome(radius, 0.03, at(x, z), mix(GRASS, colour, 0.75), rotation=(0, 0, rng.uniform(0, 3)), stretch=rng.uniform(0.72, 0.9), sink=0.02, segments=16, roughness=0.9)
 
-group = "Cliff"
+use("Cliff")
 island([(R * 0.958, top(0.958) - 0.3), (R * 0.965, top(0.965) + 0.15), (R * 0.99, top(0.99) + 0.28), (R * 1.016, -3.4), (R * 1.026, -7.0), (R * 1.008, drips), (R * 0.93, -9.5), (0, -9.5)], GRASS_RIM, LOBES * 4, roughness=0.9)
 island([(R * 0.9, -6.0), (R * 0.975, -7.0), (R * 0.955, -20.0), (R * 0.925, wave(-33.0, 2.2, 7)), (R * 0.6, -31.0), (0, -31.0)], DIRT, 48, rough=0.4, roughness=0.9)
 island([(R * 0.6, -28.0), (R * 0.905, -29.0), (R * 0.86, -44.0), (R * 0.79, wave(-57.0, 2.8, 5, 1.0)), (R * 0.5, -53.0), (0, -53.0)], DIRT_DARK, 40, rough=0.5, roughness=0.9)
@@ -961,17 +967,17 @@ for index in range(12):  # stones stuck in the dirt wall
 # ---- The road: exactly on the path, PATH_WIDTH wide, flat, its top at ROAD_TOP, with a kerb of KERB on
 # each side. It starts under the portal and ends in the gate. Round the outside of a bend it runs in an arc
 # (inside the square corner the game's own slabs make). ----
-group = "Road"
+use("Road")
 HALF = PATH_WIDTH / 2
-sweep(PATH, [(-HALF + 0.7, ROAD_TOP), (HALF - 0.7, ROAD_TOP)], SAND, back=PORTAL_DEPTH, roughness=0.9)
+sweep(PATH, [(-HALF + 0.7, ROAD_TOP), (HALF - 0.7, ROAD_TOP)], ROAD, back=PORTAL_DEPTH, roughness=0.9)
 for side in (-1, 1):
-    sweep(PATH, [(side * (HALF - 0.7), ROAD_TOP), (side * HALF, ROAD_TOP)], SAND_DARK, back=PORTAL_DEPTH, roughness=0.9)  # a darker band along each edge
+    sweep(PATH, [(side * (HALF - 0.7), ROAD_TOP), (side * HALF, ROAD_TOP)], ROAD_EDGE, back=PORTAL_DEPTH, roughness=0.9)  # a darker band along each edge
     sweep(PATH, [(side * HALF, ROAD_TOP - 0.1), (side * HALF, 0.33), (side * (HALF + 0.1), 0.42), (side * (HALF + KERB - 0.1), 0.42), (side * (HALF + KERB), 0.33), (side * (HALF + KERB), -0.05)],
-          STONE_PALE, back=PORTAL_DEPTH, caps=True, roughness=0.8)
+          KERB_COLOUR, back=PORTAL_DEPTH, caps=True, roughness=0.8, **(dict(emission=LOOK["kerb_glow"]) if LOOK["kerb_glow"] else {}))
 # The plaza behind the gate: the game's 40 x 14 of paving, with round corners to the yard and a pale border.
 PLAZA_PATH = ((-PLAZA_WIDTH / 2 + 3, GATE_Z), (-PLAZA_WIDTH / 2 + 3, 3), (PLAZA_WIDTH / 2 - 3, 3), (PLAZA_WIDTH / 2 - 3, GATE_Z))
-sweep(PLAZA_PATH, [(-3.0, -0.05), (-3.0, PLAZA_TOP - 0.06), (-2.94, PLAZA_TOP), (-2.2, PLAZA_TOP)], STONE_PALE, roughness=0.8)
-sweep(PLAZA_PATH, [(-2.2, PLAZA_TOP), (-1.5, PLAZA_TOP)], SAND_DARK, roughness=0.9)
+sweep(PLAZA_PATH, [(-3.0, -0.05), (-3.0, PLAZA_TOP - 0.06), (-2.94, PLAZA_TOP), (-2.2, PLAZA_TOP)], COBBLE if LOOK["kerb_glow"] else KERB_COLOUR, roughness=0.8)
+sweep(PLAZA_PATH, [(-2.2, PLAZA_TOP), (-1.5, PLAZA_TOP)], LOOK["band"], roughness=0.9)
 plate(offset_line(PLAZA_PATH, -1.5), PLAZA_TOP, SAND, roughness=0.9)
 
 # ---- The shells, on the game's spots ----
@@ -982,14 +988,14 @@ stand("Teleporter", teleporter, TELEPORTERS["worlds"], face=180, also=("Teleport
 stand("Lamp", lamp, LAMPS[0])
 
 # ---- The fence: down both sides where the game's rails are, and along the back of the yard ----
-group = "Dressing"
+use("Dressing")
 for side in (-1, 1):
     fence_run((side * FENCE_X, -YARD - 0.6), (side * FENCE_X, DEPTH - 0.65), 19)
 fence_run((-FENCE_X, -YARD - 0.6), (FENCE_X, -YARD - 0.6), 13, first=False, last=False)
 
 # ---- The hills: two rows down each side (the two sides are not mirror images) and a low row behind the
 # yard, all outside the ground ----
-group = "Backdrop"
+use("Backdrop")
 NEAR = WIDTH / 2 + 0.6
 SIDE_HILLS = {-1: ((-8, 11, 17, 9.5), (19, 13, 18, 12.5), (48, 12, 17, 10.5), (77, 14, 19, 13.5), (107, 12, 18, 11.5), (134, 13, 17, 14.0)),  # (z, across, along, height)
               1: ((-6, 12, 18, 10.5), (23, 12, 17, 11.5), (52, 14, 19, 13.0), (82, 12, 17, 10.5), (110, 13, 19, 13.5), (137, 12, 16, 12.5))}
@@ -1016,14 +1022,14 @@ CRAGS = ((-11, 177, 14, 39, UNDER_DARK, peak), (13, 178, 13, 42, UNDER_DARK, pea
 SQUASH = 0.8  # a crag is this much less deep than it is wide
 for x, z, radius, height, colour, kind in CRAGS:
     place(kind, (x, max(z, BEHIND + radius * SQUASH)), radius=radius, height=height, colour=colour, stretch=SQUASH)
-# A waterfall down the butte to the right of the portal, into a pool at its foot (outside the ground).
+# The world's liquid falls down the butte to the right of the portal, into a pool at its foot (outside the ground).
 place(waterfall, (22, 164), face=180, fall=[(5.2, 27.6), (6.5, 26.9), (7.3, 25.0), (8.0, 21.5), (9.3, 12.0), (10.2, 1.2), (10.75, 0.25)], pool=1.8, reach=11.1)
 place(monolith, (0, BEHIND + 15 * 0.85), radius=15, height=45, colour=UNDER, stretch=0.85)
 for x, z, size in ((-15.5, 153.8, 1.5), (14.6, 153.8, 1.1)):  # a boulder at its foot on each side of the portal
     place(rocks, (x, z), face=rng.uniform(0, 360), scale=size, colour=ROCK_LIGHT)
 for x, z, radius, length, lean, colour in ((-13.0, 151.6, 0.9, 4.6, -0.3, HOT), (-14.6, 151.2, 0.6, 2.8, -0.6, EMBER), (13.4, 151.5, 0.95, 5.0, 0.3, HOT), (15.0, 151.1, 0.6, 3.0, 0.6, EMBER),
                                            (-11.9, 151.0, 0.5, 2.2, 0.1, HOT), (12.2, 150.9, 0.5, 2.4, -0.1, EMBER)):  # crystals beside the portal: they go to Glow
-    tube(radius, length, at(x, z, 0), (lean, 0, 1), colour, tip=0.0, vertices=5, roughness=0.15, emission=0.8)
+    tube(radius, length, at(x, z, 0), (-lean, 0, 1), colour, tip=0.0, vertices=5, roughness=0.15, emission=0.8)
 # The world's name: a flat, empty board where the game writes it (WORLD_SIGN), hung on two beams.
 left, right, low, high = WORLD_SIGN
 sign_x, sign_y, sign_wide, sign_tall = (left + right) / 2, (low + high) / 2, right - left + 1.2, high - low + 0.9
@@ -1033,34 +1039,28 @@ for y in (-1, 1):
 for x in (-1, 1):
     box((0.8, 1.0, sign_tall + 1.6), at(sign_x + x * (sign_wide / 2 + 0.4), DEPTH + 0.35, sign_y), GOLD, bevel=0.2, segments=1, roughness=0.3)
     box((1.4, 9.0, 1.4), at(sign_x + x * 7.5, DEPTH + 4.6, sign_y + 1.5), WOOD_DARK, bevel=0.3, segments=1)
-    star(1.0, at(sign_x + x * (sign_wide / 2 + 0.4), DEPTH - 0.25, sign_y + sign_tall / 2 + 0.4), GOLD, depth=0.3, rotation=(0, 0, math.pi), roughness=0.3)
-# A windmill on the hills to the left, looking over the fence.
+    star(1.0, at(sign_x + x * (sign_wide / 2 + 0.4), DEPTH - 0.25, sign_y + sign_tall / 2 + 0.4), GOLD, depth=0.3, roughness=0.3)
+# The world's landmark on the hills to the left, looking over the fence.
 MILL = (-74, 61)
-place(windmill, (*MILL, hill_top(*MILL) - 1.0), face=78, scale=1.15)
+place(LANDMARK, (*MILL, hill_top(*MILL) - 1.0), face=78, scale=1.15)
 
-# ---- Trees on the hills ----
-group = "BackdropTrees"
+# ---- The theme's trees, on the hills: nothing of them stands on the ground the game lays out ----
+use("Trees")
 HILL_TREES = [(side * (NEAR + 9 + across + rng.uniform(-2, 2)), z + rng.uniform(-3, 3), rng.uniform(1.15, 1.45)) for side in (-1, 1) for z, across, along, height in FAR_HILLS[side]]
 HILL_TREES += [(side * (NEAR + across + rng.uniform(1, 4)), z + rng.uniform(-4, 4), rng.uniform(0.85, 1.05)) for side in (-1, 1) for z, across, along, height in SIDE_HILLS[side][1::2]]
 HILL_TREES += [(-66, -25, 1.3), (67, -26, 1.35), (-74, -14, 1.0), (76, -13, 1.05), (-67, 150, 1.3), (69, 150, 1.25), (-54, 163, 0.9), (40, 165, 0.8), (-22, 166, 0.85), (-76, 143, 0.95), (78, 141, 1.0),
                (-34, -35, 0.95), (47, -31, 0.9), (10, -36, 0.7)]  # the last three: on the hills behind the yard, where they hide nothing of the base from the hero photo
 for index, (x, z, size) in enumerate(HILL_TREES):
-    if math.hypot(x - MILL[0], z - MILL[1]) < 13:
-        continue  # the mill's hill stays clear
+    if math.hypot(x - MILL[0], z - MILL[1]) < 15:
+        continue  # the landmark's hill stays clear
     ground_here = hill_top(x, z)
     for bx, bz, radius, height, colour, kind in CRAGS:  # the buttes' caps
         if kind is butte and math.hypot(x - bx, z - bz) < radius * 0.5:
             ground_here = max(ground_here, height + 0.6)
-    place(tree, (x, z, ground_here - 0.8), face=rng.uniform(0, 360), scale=size, leaf=LEAVES[index % 3], kind="tall" if index % 3 == 1 else "round", fine=False)
-
-# ---- A few big trees inside, right against the side fences, clear of the road and of every pad ----
-group = "Trees"
-TREES = ((-49.5, 26, "round", 1.05, 0), (49.5, 27, "tall", 1.0, 1), (49.5, 55, "round", 1.1, 2), (-49.5, 82, "tall", 1.05, 1), (49.5, 110, "round", 1.0, 0), (-48.5, 141, "round", 1.1, 2), (48.5, 141, "tall", 1.0, 1))
-for index, (x, z, kind, size, leaf) in enumerate(TREES):
-    place(tree, (x, z), face=rng.uniform(0, 360), scale=size, leaf=LEAVES[leaf], kind=kind, fruit=RED if index in (2, 5) else None)
+    place(TREE, (x, z, ground_here - 0.8), face=rng.uniform(0, 360), scale=size, tone=index % 3, variant=1 if index % 3 == 1 else 0)
 
 # ---- For the photos only: the shells on their other spots, towers, monsters, bulbs, beams, words ----
-group = "Placeholders"
+use("Placeholders")
 BUILT = {1: RED, 2: BLUE, 3: "FFC61A", 4: "B58CFF", 6: RED, 7: BLUE, 9: "FF8A1F", 11: "FFC61A", 12: "B58CFF"}  # pad -> its tower's colour
 OWNED = (5, 8, 10)  # bought and still empty
 for index, spot in enumerate(PADS, start=1):
@@ -1081,155 +1081,84 @@ for kind, spot in TELEPORTERS.items():
 place(lamp, LAMPS[1])
 for spot in LAMPS:
     ball(LAMP_BULB_SIZE / 2, at(*spot, LAMP_BULB), "FFD68C", emission=1.2)
-# Monsters on the road, walking down it. (how far along the path, colour, eyes, size)
+# Monsters on the road, walking down it. (how far along the path, which colour, size)
 LENGTHS = [(Vector(b) - Vector(a)).length for a, b in zip(PATH, PATH[1:])]
-for far, colour, eye, size in ((9, "5FD35A", "FFE23A", 1.5), (34, "8FD93E", "FFE23A", 1.5), (47, "FF8A3D", "FFE23A", 1.5), (70, "5FD35A", "FFE23A", 1.5), (88, "E8F4FF", "45C8FF", 1.5), (112, "8FD93E", "FFE23A", 1.5),
-                               (131, "6FB2E8", "FFE23A", 3.3), (160, "FF8A3D", "FFE23A", 1.5), (178, "5FD35A", "FFE23A", 1.5), (205, "E8F4FF", "45C8FF", 1.5), (232, "8FD93E", "FFE23A", 1.5), (262, "5FD35A", "FFE23A", 1.5),
-                               (283, "FF8A3D", "FFE23A", 1.5)):
+MONSTERS = LOOK["monsters"]
+for far, tone, size in ((9, 0, 1.5), (34, 1, 1.5), (47, 2, 1.5), (70, 0, 1.5), (88, 3, 1.5), (112, 1, 1.5), (131, 3, 3.3), (160, 2, 1.5), (178, 0, 1.5), (205, 3, 1.5), (232, 1, 1.5), (262, 0, 1.5), (283, 2, 1.5)):
     for (a, b), length in zip(zip(PATH, PATH[1:]), LENGTHS):
         if far <= length:
             a, b = Vector(a), Vector(b)
             point, way = a + (b - a) * far / length, (b - a).normalized()
-            place(stand_in_monster, (point.x + rng.uniform(-1.6, 1.6), point.y, ROAD_TOP), face=math.degrees(math.atan2(way.x, way.y)), scale=size, colour=colour, eye=eye)
+            place(stand_in_monster, (point.x + rng.uniform(-1.6, 1.6), point.y, ROAD_TOP), face=math.degrees(math.atan2(way.x, way.y)), scale=size, colour=MONSTERS[tone], eye="45C8FF" if tone == 3 else "FFE23A")
             break
         far -= length
 words("YAANI'S BASE", (0, GATE_Z - NAME_SIGN[2] / 2 - 0.02, NAME_SIGN_Y), 1.5, face=180)
 words("YAANI'S BASE", (0, GATE_Z + NAME_SIGN[2] / 2 + 0.02, NAME_SIGN_Y), 1.5, face=0)
-words("EARTH", (sign_x, DEPTH - 0.02, sign_y), 5.4, face=180)
+words(WORLD.upper(), (sign_x, DEPTH - 0.02, sign_y), 5.4 if len(WORLD) < 6 else 4.4, face=180)
 
-group = "Sky"
+use("Sky")
 for x, z, y, size in ((-150, 60, -40, 11), (160, 90, -34, 10), (-140, 200, -55, 8), (150, 220, -60, 9), (-60, -80, -70, 10), (70, -90, -75, 9),  # around and under the island
                       (-140, 330, 85, 15), (120, 350, 100, 16), (-10, 420, 140, 17), (230, 300, 60, 12), (-250, 280, 55, 12), (40, 300, 60, 9)):  # the sky seen from the yard
-    place(cloud, (x, z, y), face=180 + rng.uniform(-25, 25), scale=size)
+    place(cloud, (x, z, y), face=180 + rng.uniform(-25, 25), scale=size, colour=LOOK["cloud"])
+if WORLD == "Moon":  # stars, all round and above
+    for index in range(110):
+        turn, lift = rng.uniform(0, 2 * math.pi), rng.uniform(-0.5, 1.1)
+        far = 1300
+        ball(rng.uniform(2.2, 5.5), (math.cos(turn) * math.cos(lift) * far, 73 + math.sin(turn) * math.cos(lift) * far, math.sin(lift) * far), rng.choice(("FFFFFF", "FFE9A8", "BFD8FF")), segments=6, emission=3.0)
+    ball(46, at(-330, 760, 300), "7FB8FF", segments=24, roughness=0.9)  # the Earth, far off
+    ball(46.3, at(-330, 760, 300), "6FD046", scale=(0.62, 1, 0.5), rotation=(0.3, 0.2, 0.5), segments=16, roughness=0.9)
 
-bpy.context.view_layer.update()
-triangles = {}
-for name, pieces in groups.items():
-    triangles[name] = 0
-    for obj in pieces:
-        obj.data.calc_loop_triangles()
-        triangles[name] += len(obj.data.loop_triangles)
-    print(f"GROUP {'RenderOnly_' if name in RENDER_ONLY else 'Base_'}{name} pieces {len(pieces)} triangles {triangles[name]}")
-print(f"EXPORT triangles {sum(count for name, count in triangles.items() if name not in RENDER_ONLY)}")
+triangles = kit.count()
 
 # ---------------------------------------------------------------------------------------------------
-# The photos: the island's sky and light
+# The photos: the world's sky and light
 # ---------------------------------------------------------------------------------------------------
-world = bpy.data.worlds.new("World")
-world.use_nodes = True
-nodes, links = world.node_tree.nodes, world.node_tree.links
-direction, split, remap, ramp = (nodes.new(kind) for kind in ("ShaderNodeTexCoord", "ShaderNodeSeparateXYZ", "ShaderNodeMapRange", "ShaderNodeValToRGB"))
-remap.inputs["From Min"].default_value = -1.0
-links.new(direction.outputs["Generated"], split.inputs[0])
-links.new(split.outputs["Z"], remap.inputs["Value"])
-links.new(remap.outputs["Result"], ramp.inputs["Fac"])
-links.new(ramp.outputs["Color"], nodes["Background"].inputs["Color"])
-SKY = ((0.0, "E8F6FF"), (0.15, "CDEBFF"), (0.36, "6DB6F5"), (0.47, "8FCBFA"), (0.5, "C4E8FF"), (0.62, "8CCBFB"), (0.8, "5AA7EE"), (1.0, "3F8FE0"))  # straight down ... the horizon at 0.5 ... straight up
-stops = ramp.color_ramp.elements
-for index, (position, colour) in enumerate(SKY):
-    stop = stops[index] if index < 2 else stops.new(position)
-    stop.position = position
-    stop.color = (*linear(colour), 1)
-nodes["Background"].inputs["Strength"].default_value = 0.85
-scene.world = world
+kit.studio(OUT, draft=DRAFT, sky=kit.EARTH_SKY if WORLD == "Earth" else LOOK.get("sky") or kit.sky_ramp(T["sky_top"], T["sky_horizon"]), clip_end=4000, strength=LOOK["ambient"])
+if LOOK.get("fill"):  # a night sky: dark to look at, but it lights the base `fill` times as much as it shows
+    tree = bpy.context.scene.world.node_tree
+    rays, scale = tree.nodes.new("ShaderNodeLightPath"), tree.nodes.new("ShaderNodeMapRange")
+    scale.inputs["To Min"].default_value, scale.inputs["To Max"].default_value = LOOK["ambient"] * LOOK["fill"], LOOK["ambient"]
+    tree.links.new(rays.outputs["Is Camera Ray"], scale.inputs["Value"])
+    tree.links.new(scale.outputs["Result"], tree.nodes["Background"].inputs["Strength"])
+bpy.context.scene.cycles.samples = 32 if DRAFT else 64  # other Blender jobs render at the same time
+kit.sun.data.energy = LOOK["sun"]
 
 
-def aim(obj, eye, target):
-    obj.location = eye
-    obj.rotation_euler = (Vector(target) - Vector(eye)).to_track_quat("-Z", "Y").to_euler()
-
-
-def from_sky(degrees, height, distance):
+def sky_point(degrees, height, distance):
     """A point `distance` away in a direction of plot space (0 up the plot, 90 towards +x, 180 behind the
-    yard) and `height` degrees above the ground."""
+    yard) and `height` degrees above the ground, in Blender's space."""
     reach = distance * math.cos(math.radians(height))
-    return Vector((math.sin(math.radians(degrees)) * reach, -math.cos(math.radians(degrees)) * reach, distance * math.sin(math.radians(height))))
+    return Vector((-math.sin(math.radians(degrees)) * reach, math.cos(math.radians(degrees)) * reach, distance * math.sin(math.radians(height))))
 
 
-sun_data = bpy.data.lights.new("Sun", "SUN")
-sun_data.energy = 2.7
-sun_data.angle = math.radians(6)
-sun_data.color = (1.0, 0.96, 0.88)
-sun = bpy.data.objects.new("Sun", sun_data)
-scene.collection.objects.link(sun)
-# A weak second light from below and in front, without shadows: what sky and clouds throw back up.
-bounce_data = bpy.data.lights.new("Bounce", "SUN")
-bounce_data.energy = 0.8
-bounce_data.color = (1.0, 0.93, 0.85)
-bounce_data.use_shadow = False
-bounce_data.specular_factor = 0.0
-bounce = bpy.data.objects.new("Bounce", bounce_data)
-scene.collection.objects.link(bounce)
-
-camera_data = bpy.data.cameras.new("Camera")
-camera_data.clip_end = 3000
-camera = bpy.data.objects.new("Camera", camera_data)
-scene.collection.objects.link(camera)
-scene.camera = camera
-
-scene.render.engine = "CYCLES"
-scene.cycles.samples = 32 if DRAFT else 80
-scene.cycles.use_denoising = True
-scene.render.resolution_x = 2000
-scene.render.resolution_y = 1200
-scene.render.resolution_percentage = 50 if DRAFT else 100
-scene.view_settings.view_transform = "Standard"
-try:  # the graphics card when there is one
-    devices = bpy.context.preferences.addons["cycles"].preferences
-    devices.compute_device_type = "METAL"
-    (getattr(devices, "refresh_devices", None) or devices.get_devices)()
-    for device in devices.devices:
-        device.use = device.type != "CPU"
-    scene.cycles.device = "GPU"
-except Exception as problem:
-    print("Rendering on the processor:", problem)
-
-
-def photo(name, eye, target, lens, light=(215, 50)):
+def shot(name, eye, target, lens, light=(215, 50)):
     """A photo from `eye` at `target`, both points of Blender's space (use at). `light` is where the sun
-    stands: its direction (like from_sky) and its height."""
-    if ONLY and name not in ONLY:
-        return
-    camera_data.type, camera_data.lens = "PERSP", lens
-    aim(camera, eye, target)
-    aim(sun, from_sky(light[0], light[1], 100), (0, 0, 0))
-    aim(bounce, from_sky(light[0] - 40, -60, 100), (0, 0, 0))
-    scene.render.filepath = f"{OUT}/earth_base_{name}.png"
-    bpy.ops.render.render(write_still=True)
+    stands: its direction in plot space (like sky_point) and its height."""
+    photo(f"{SLUG}_base_{name}", eye, target, lens, light=(-light[0], light[1]))
 
 
-# Straight down on the plot, the portal to the left and the yard to the right: the layout, to lay over the code's.
-if not ONLY or "top" in ONLY:
-    camera_data.type, camera_data.ortho_scale = "ORTHO", 300
-    camera.location, camera.rotation_euler = at(0, MIDDLE_Z, 400), (0, 0, math.pi / 2)
-    aim(sun, from_sky(215, 55, 100), (0, 0, 0))
-    aim(bounce, from_sky(175, -60, 100), (0, 0, 0))
-    scene.render.filepath = f"{OUT}/earth_base_top.png"
-    bpy.ops.render.render(write_still=True)
-# The portal, from the road in front of it.
-photo("portal", at(12, 106, 7.5), at(2, 150, 14.5), 22, light=(205, 48))
-# The base as the monsters see it when they come out of the portal.
-photo("road", at(-12, 133, 9.5), at(0, 14, 6.0), 26, light=(-30, 48))
-# The gate from close by, from the road.
-photo("gate", at(-11, 47, 7.0), at(0, 14, 10.5), 24, light=(-35, 46))
-# A player's eyes in the yard behind the gate, looking up the road to the portal.
-photo("ground", at(0, -14.5, 6.2), at(0, 40, 10.5), 17)
-# The same eyes out in the field: the road, the pads and the horizon the hills make.
-photo("field", at(6, 30, 6.0), at(-50, 92, 7.0), 20)
-# For checking only, when asked for by name (photos=pad,passage ...): close looks at the small things.
-CHECKS = {"pad": (at(-15, 41, 5.5), at(-23, 53, 0.3), 35), "passage": (at(5, 3, 13.0), at(0, 15, 0.0), 22), "lamp": (at(-38, -4, 7.0), at(-49, -11, 7.5), 28),
-          "back": (at(0, 9, 6.2), at(8, -30, 5.0), 18), "right": (at(-10, 96, 6.0), at(50, 130, 9.0), 20), "teleporter": (at(-4, -6, 6.5), at(-13, 3, 4.5), 26)}
+# For checking only, when asked for by name (photos=road,gate ...).
+CHECKS = {"portal": (at(12, 106, 7.5), at(2, 150, 14.5), 22, (205, 48)),  # the portal, from the road in front of it
+          "road": (at(-12, 133, 9.5), at(0, 14, 6.0), 26, (-30, 48)),  # the base as the monsters see it when they come out of the portal
+          "gate": (at(-11, 47, 7.0), at(0, 14, 10.5), 24, (-35, 46)),  # the gate from close by, from the road
+          "field": (at(6, 30, 6.0), at(-50, 92, 7.0), 20),  # a player's eyes out in the field: the road, the pads and the horizon
+          "pad": (at(-15, 41, 5.5), at(-23, 53, 0.3), 35), "lamp": (at(-38, -4, 7.0), at(-49, -11, 7.5), 28), "back": (at(0, 9, 6.2), at(8, -30, 5.0), 18),
+          "right": (at(-10, 96, 6.0), at(50, 130, 9.0), 20), "teleporter": (at(-4, -6, 6.5), at(-13, 3, 4.5), 26), "mill": (at(-30, 61, 8.0), at(-74, 61, 18.0), 28)}
 for name in ONLY:
     if name in CHECKS:
-        photo(name, *CHECKS[name])
+        shot(name, *CHECKS[name])
+# A player's eyes in the yard behind the gate, looking up the road to the portal.
+if not ONLY or "ground" in ONLY:
+    shot("ground", at(0, -14.5, 6.2), at(0, 40, 10.5), 17)
 # Three-quarters from above, from behind the yard. Last, so the saved file opens on this view.
-HERO_TARGET = at(0, 68, -34)
-photo("hero", HERO_TARGET + from_sky(156, 32, 520), HERO_TARGET, 48)
+if not ONLY or "hero" in ONLY:
+    HERO_TARGET = at(0, 66, -26)
+    shot("hero", HERO_TARGET + sky_point(156, 34, 500), HERO_TARGET, 52)
+
 
 # ---------------------------------------------------------------------------------------------------
 # For Roblox: one mesh per group, colours on the vertices (white on a trim), none with over 10,000
-# triangles. The scenery keeps the plot's origin, so dropped at the same spot it all lines up. A shell is
-# exported around its own base, front towards -Y; in the saved file it stands on its spot of the plot.
+# triangles, and a manifest that says where everything goes.
 # ---------------------------------------------------------------------------------------------------
 def beside_path(x, z):
     """How far a point of plot space is from the middle of the road (which starts PORTAL_DEPTH behind the path's first point)."""
@@ -1238,69 +1167,52 @@ def beside_path(x, z):
     return min((here - (a + (b - a) * max(0.0, min(1.0, (here - a).dot(b - a) / (b - a).dot(b - a))))).length for a, b in zip(line, line[1:]))
 
 
+def rounded_list(values, places=2):
+    return [round(value, places) + 0.0 for value in values]
+
+
 def export():
-    exported, report, bounds = [], [], {}
-    for name, pieces in groups.items():
-        bpy.ops.object.select_all(action="DESELECT")
-        for obj in pieces:
-            colour = (1.0, 1.0, 1.0) if name in TRIMS else obj.data.materials[0].diffuse_color
-            attribute = obj.data.color_attributes.new(name="Col", type="BYTE_COLOR", domain="CORNER")
-            attribute.data.foreach_set("color", [colour[0], colour[1], colour[2], 1.0] * len(obj.data.loops))
-            obj.select_set(True)
-        bpy.context.view_layer.objects.active = pieces[0]
-        bpy.ops.object.join()
-        joined = bpy.context.object
-        joined.name = joined.data.name = ("RenderOnly_" if name in RENDER_ONLY else "Base_") + name
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        if name in shells:
-            joined.data.transform(shells[name].inverted())
-            joined.matrix_basis = shells[name]
-        if name in RENDER_ONLY:
-            continue
-        exported.append(joined)
-        low = Vector([min(vertex.co[axis] for vertex in joined.data.vertices) for axis in range(3)])
-        high = Vector([max(vertex.co[axis] for vertex in joined.data.vertices) for axis in range(3)])
-        bounds[name] = (low, high)
-        report.append({
-            "name": joined.name,
-            "kind": "shell" if name in shells else "scenery",
-            "origin": "the middle of its own base on the ground, front towards Blender -Y" if name in shells else "the plot's origin, on the ground",
-            "triangles": triangles[name],
-            "centre": [round(value, 2) for value in (low + high) / 2],
-            "size": [round(value, 2) for value in high - low],
+    report = kit.export(f"{OUT}/{SLUG}_base.fbx", white=TRIMS)
+    meshes, bounds = [], {}
+    for entry in report:
+        name, least, most = entry["group"], entry["low"], entry["high"]
+        bounds[name] = (least, most)
+        is_shell, is_marker = name in shells, name in ("Origin", "North")
+        meshes.append({
+            "name": entry["name"],
+            "kind": "marker" if is_marker else "shell" if is_shell else "scenery",
+            "origin": "the middle of its own base on the ground, front towards Blender -Y" if is_shell else "the plot's origin, on the ground",
+            "triangles": entry["triangles"],
+            "box_blender": {"low": rounded_list(least), "high": rounded_list(most)},
+            # the same box in the game's axes: plot space for scenery, the shell's own pivot (front -Z) for a shell
+            "box": {"low": rounded_list((-most.x, least.z, least.y)), "high": rounded_list((-least.x, most.z, most.y))},
             "material": "Neon" if name in ("Glow", "PortalSheet") else "Glass" if name == "Water" else "SmoothPlastic",
             "white_for_tinting": name in TRIMS,
         })
 
-    bpy.ops.object.select_all(action="DESELECT")
-    for obj in exported:
-        obj.select_set(True)
-    for name in shells:
-        bpy.data.objects["Base_" + name].matrix_basis = Matrix.Identity(4)
-    bpy.context.view_layer.update()
-    bpy.ops.export_scene.fbx(filepath=f"{OUT}/earth_base.fbx", use_selection=True, apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE", colors_type="SRGB")
-    for name, frame in shells.items():
-        bpy.data.objects["Base_" + name].matrix_basis = frame
-    bpy.context.preferences.filepaths.save_version = 0  # no .blend1 beside it
-    bpy.ops.wm.save_as_mainfile(filepath=f"{OUT}/earth_base.blend")
-
     # The layout, measured back off the meshes: what the game's own numbers say they should be.
-    road = [vertex.co for vertex in bpy.data.objects["Base_Road"].data.vertices if -vertex.co.y > GATE_Z + 0.01 or (-vertex.co.y > GATE_Z - 0.01 and abs(vertex.co.x) < PATH_WIDTH)]  # without the plaza
+    road = [vertex.co for vertex in bpy.data.objects["Base_Road"].data.vertices if vertex.co.y > GATE_Z + 0.01 or (vertex.co.y > GATE_Z - 0.01 and abs(vertex.co.x) < PATH_WIDTH)]  # without the plaza
+    if LOOK["kerb_glow"]:  # the glowing kerb is in Base_Glow
+        road += [vertex.co for vertex in bpy.data.objects["Base_Glow"].data.vertices if vertex.co.z < 0.45 and beside_path(-vertex.co.x, vertex.co.y) < 4.81 and vertex.co.y < 147.01]
     surface = [co for co in road if abs(co.z - ROAD_TOP) < 0.001]
     pad_low, pad_high = bounds["Pad"]
+    origin_low, origin_high = bounds["Origin"]
+    north_low, north_high = bounds["North"]
     checks = {
         "road_top": [round(min(co.z for co in surface), 3), round(max(co.z for co in surface), 3)],
-        "road_half_width": round(max(beside_path(co.x, -co.y) for co in surface), 3),
-        "road_with_kerb_half_width": round(max(beside_path(co.x, -co.y) for co in road), 3),
-        "road_from_z_to_z": [round(max(-co.y for co in road), 3), round(min(-co.y for co in road), 3)],
+        "road_half_width": round(max(beside_path(-co.x, co.y) for co in surface), 3),
+        "road_with_kerb_half_width": round(max(beside_path(-co.x, co.y) for co in road), 3),
+        "road_from_z_to_z": [round(max(co.y for co in road), 3), round(min(co.y for co in road), 3)],
         "kerb_top": round(max(co.z for co in road), 3),
         "pad_size": [round(value, 3) for value in pad_high - pad_low],
-        "ground_top": round(max(vertex.co.z for vertex in bpy.data.objects["Base_Ground"].data.vertices if abs(vertex.co.x) < 60 and -160 < vertex.co.y < 20), 3),
-        "biggest_mesh": max(entry["triangles"] for entry in report),
+        "ground_top": round(max(vertex.co.z for vertex in bpy.data.objects["Base_Ground"].data.vertices if abs(vertex.co.x) < 60 and -20 < vertex.co.y < 160), 3),
+        "origin_marker_centre_plot": rounded_list(((-(origin_low.x + origin_high.x) / 2), (origin_low.z + origin_high.z) / 2, (origin_low.y + origin_high.y) / 2)),
+        "north_marker_centre_plot": rounded_list(((-(north_low.x + north_high.x) / 2), (north_low.z + north_high.z) / 2, (north_low.y + north_high.y) / 2)),
+        "biggest_mesh": max(entry["triangles"] for entry in meshes),
     }
-    total = sum(entry["triangles"] for entry in report)
+    total = sum(entry["triangles"] for entry in meshes)
     print("CHECKS", checks)
-    print(f"EXPORTED {len(report)} meshes, {total} triangles")
+    print(f"EXPORTED {WORLD}: {len(meshes)} meshes, {total} triangles, biggest {checks['biggest_mesh']}")
 
     def box_of(what, x, z, size, yaw=0.0, optional=False):
         return {"what": what, "shape": "box", "centre": [round(x, 2), round(size[1] / 2, 2), round(z, 2)], "size": [round(value, 2) for value in size], "yaw": yaw, "optional": optional}
@@ -1308,8 +1220,7 @@ def export():
     def pillar_of(what, x, z, radius, height):
         return {"what": what, "shape": "pillar", "centre": [round(x, 2), round(height / 2, 2), round(z, 2)], "radius": round(radius, 2), "height": round(height, 2)}
 
-    colliders = [pillar_of("tree", x, z, 1.1 * size, 7.0 * size) for x, z, kind, size, leaf in TREES]
-    colliders += [pillar_of("lamp", x, z, 0.6, 11.0) for x, z in LAMPS]
+    colliders = [pillar_of("lamp", x, z, 0.6, 11.0) for x, z in LAMPS]
     colliders += [box_of("teleporter leg", x + side * 3.9, z, (2.1, 7.6, 2.1)) for x, z in TELEPORTERS.values() for side in (-1, 1)]
     colliders += [box_of("portal leg", PORTAL_AT[0] + side * 9.45, PORTAL_AT[1], (4.8, 10.0, 5.0)) for side in (-1, 1)]
     colliders += [box_of("gate pier (the edge of the arch; the tower behind it is the game's own)", side * (GATE_WIDTH / 2 + 0.875), GATE_Z, (1.75, 14.0, 3.6)) for side in (-1, 1)]
@@ -1321,19 +1232,23 @@ def export():
     colliders += [box_of("wall post (the wall under it is the game's own, solid to 4.5)", side * x, GATE_Z, (2.8, 5.9, 3.0), optional=True) for side in (-1, 1) for x in (18.6, 27.6, 36.6, 45.6, 53.9)]
 
     wide, tall, apart = NAME_SIGN
-    left, right, low, high = WORLD_SIGN
+    roof_tip = ROOFS[LOOK["roof"]][0][0][1]
     manifest = {
-        "what": "The Earth base (world 1): scenery and shells for src/server/Plots.luau to wear over the base it builds from parts, as Islands.wear does for the island. Made by tools/blender/earth_base.py.",
+        "what": f"The {WORLD} base: scenery and shells for src/server/Plots.luau to wear over the base it builds from parts, as Islands.wear does for the island. Made by tools/blender/base.py \"{WORLD}\".",
+        "world": WORLD,
         "units": "1 Blender unit = 1 stud",
         "mapping": {
             "plot_space": "Layout.luau: the origin is the middle of the base's edge of the ground, x across the plot, +z up the plot to the portal, y up, the ground's top at y = 0, the yard behind the origin (-z)",
-            "blender_to_plot": "plot (x, y, z) = Blender (x, z, -y)",
-            "plot_to_blender": "Blender (x, y, z) = plot (x, -z, y)",
-            "scenery_in_roblox": "an FBX lands as Roblox (-x, z, y) of Blender's (x, y, z), half a circle off, exactly as the Earth island's did: give the scenery model the plot's origin as its pivot, turned half a circle about Y, and Model:PivotTo(plot.frame) puts every scenery mesh in place",
-            "shell_in_roblox": "a shell's pivot is the middle of its base on the ground and its front (Blender -Y) is its -Z, like the island's shells: shell:PivotTo(plot.frame * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0)) with yaw = face + 180",
+            "blender_to_plot": "plot (x, y, z) = Blender (-x, z, y)",
+            "plot_to_blender": "Blender (x, y, z) = plot (-x, z, y)",
+            "markers": "Base_Origin: a 2 x 2 x 2 cube centred at plot (0, 1, 0). Base_North: the same cube at plot (0, 1, 10), towards the portal (Blender +Y). tools/studio/setup_models.luau reads and deletes them",
+            "scenery_in_roblox": "an FBX lands as Roblox (-x, z, y) of Blender's (x, y, z), which is plot space itself. setup_models.luau gives the scenery Model the plot's origin as its pivot with its -Z towards the North marker, the portal; the plot's +Z runs to the portal, so: model:PivotTo(plot.frame * CFrame.Angles(0, math.pi, 0))",
+            "shell_in_roblox": "a shell's pivot is the middle of its base on the ground and its front (Blender -Y) is its -Z: shell:PivotTo(plot.frame * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0)) with yaw = face + 180",
             "face": "where a shell's front looks, in plot space: 0 = up the plot (+z), 90 = towards +x, 180 = back at the yard (-z)",
             "colliders": "centre is (x, y, z) in plot space; a box's size is (x, y, z) in its own frame, turned by CFrame.Angles(0, math.rad(yaw), 0); a pillar stands upright",
         },
+        "theme": {"tree": T["tree"], "fence": T["fence"], "liquid": T["liquid"], "ground": GRASS, "road": ROAD, "kerb": KERB_COLOUR, "kerb_glows": bool(LOOK["kerb_glow"]), "stone": STONE, "wood": WOOD,
+                  "portal_glow": HOT, "roofs": LOOK["roof"], "landmark": LOOK["landmark"], "sky": [T["sky_top"], T["sky_horizon"]]},
         "layout_copied_from_the_code": {
             "ground": {"x": [-WIDTH / 2, WIDTH / 2], "z": [-YARD, DEPTH], "top": 0},
             "path": [list(point) for point in PATH], "path_width": PATH_WIDTH, "kerb": KERB, "road_top": ROAD_TOP, "road_starts_at_z": PORTAL_AT[1],
@@ -1345,7 +1260,7 @@ def export():
             "teleporters": {kind: list(spot) for kind, spot in TELEPORTERS.items()}, "lamps": [list(spot) for spot in LAMPS],
             "fence_x": [-FENCE_X, FENCE_X], "fence_rails_y": list(FENCE_RAILS), "skyline_from": {"x": WIDTH / 2, "z_behind_the_yard": -YARD, "z_behind_the_portal": DEPTH},
         },
-        "meshes": report,
+        "meshes": meshes,
         "total_triangles": total,
         "shells": {
             "Pad": {
@@ -1353,24 +1268,31 @@ def export():
                 "footprint": [PAD_SIZE, PAD_SIZE], "highest": PAD_HEIGHT, "plate_top": PAD_HEIGHT - 0.04,
                 "heights": "the gold corners are PAD_HEIGHT (0.5) high, the plate 0.46: the game's pad stays as the solid floor and the carrier of the prompt and the '+', and its top (0.5, where a tower stands) is 0.04 over the plate",
                 "trim": "Base_PadTrim is the band round the plate, for the pad's state. In the photos: for sale B0B4C0, the owner's and empty 6EEB8C, built on FFC61A",
+                "sign": {"what": "the '+' on an empty pad (the pad's Top)", "written_at_y": PAD_HEIGHT, "flat_empty_face": "the plate, at y = 0.46: x -3.08 ... 3.08, z -3.08 ... 3.08 around the pad's middle, but for the gold corners (1.5 square each)"},
             },
             "Gate": {
                 "meshes": ["Base_Gate", "Base_GateTrim"], "spots": [[0, GATE_Z]], "y": 0, "face": 0, "yaw": 180, "note": "its front is the side the monsters see; the yard's side looks the same",
                 "heights": {"arch": "round, 14 wide; 14 high in the middle, springing 7 up (the game's see-through Gate part, 14 x 14, fits behind it: its top corners are inside the stone)",
-                            "portcullis_tips": 10.1, "name_board": [14.05, 17.15], "gatehouse_top": 19.2, "crest_top": 24.1, "tower_parapet": 17.7, "tower_battlements": 18.9, "roof_tip": 26.2, "flag_top": 30.6,
-                            "wall_top": WALL_HEIGHT, "wall_battlements": 5.37, "wall_posts": 5.9, "wall_post_knobs": 7.0, "arrival_ring": 0.28, "arrival_disc": 0.2},
+                            "portcullis_tips": 10.1, "name_board": [14.05, 17.15], "gatehouse_top": 19.2, "crest_top": 24.1, "tower_parapet": 17.7, "tower_battlements": 18.9, "roof_tip": roof_tip, "flag_top": roof_tip + 4.4,
+                            "wall_top": WALL_HEIGHT, "wall_battlements": 5.37, "wall_posts": 5.9, "wall_post_knobs": 7.9, "arrival_ring": 0.28, "arrival_disc": 0.2},
                 "trim": "Base_GateTrim is everything in the owner's colour (plot.colored): the two roofs, the two flags, the four banners, the crest's shield and the disc of the arrival pad (at plot 0, 4; its top is 0.2, under the game's own disc at 0.25). In the photos FF6161, slot 1's colour",
+                "signs": [
+                    {"what": "the owner's name, yard side (NameSign, Front)", "written_at_z": GATE_Z - apart / 2, "x": [-wide / 2, wide / 2], "y": [NAME_SIGN_Y - tall / 2, NAME_SIGN_Y + tall / 2],
+                     "flat_empty_face": "a dark board at plot z = 12.35 (0.05 behind the writing): x -6.55 ... 6.55, y 14.05 ... 17.15"},
+                    {"what": "the owner's name, road side (NameSign, Back)", "written_at_z": GATE_Z + apart / 2, "x": [-wide / 2, wide / 2], "y": [NAME_SIGN_Y - tall / 2, NAME_SIGN_Y + tall / 2],
+                     "flat_empty_face": "a dark board at plot z = 15.65: x -6.55 ... 6.55, y 14.05 ... 17.15"},
+                ],
             },
             "Portal": {
                 "meshes": ["Base_Portal", "Base_PortalSheet"], "spots": [list(PORTAL_AT)], "y": 0, "face": 180, "yaw": 0, "note": "its front looks down the road at the gate; its back is plain (the rock is 3 studs behind it)",
                 "heights": {"mouth": "14.5 wide between the legs; 16.2 high in the middle, springing 9.3 up", "sheet_top": 16.6, "top_of_the_arch": 20.8, "crest": 22.7, "horn_tips": 25.6},
-                "sheet": "Base_PortalSheet (for Neon; the game may fade or dim it as it does its own Portal part) is the sheet with its dark whirl, the two eyes, the runes on the legs and the gem on the brow. Hot pink (FF3D7F), not the island's purple",
+                "sheet": f"Base_PortalSheet (for Neon; the game may fade or dim it as it does its own Portal part) is the sheet with its dark whirl, the two eyes, the runes on the legs and the gem on the brow. Its glow is {HOT}, on purpose not the world's accent {ACCENT} that the island's friendly portal has",
             },
             "Teleporter": {
                 "meshes": ["Base_Teleporter", "Base_TeleporterTrim"], "spots": [list(TELEPORTERS["worlds"]), list(TELEPORTERS["market"])], "y": 0, "face": 180, "yaw": 0, "note": "the same from the front and the back",
                 "heights": {"dais_top": 0.42, "trim_on_the_dais": 0.47, "orb": TELEPORTER_ORB, "highest": 11.25, "inside_the_arch": "6.2 wide between the legs, 9.15 high in the middle: the game's beam (1.7 in radius, 0.4 to 8.4 up) stands in it"},
-                "trim": "Base_TeleporterTrim is the ring and the disc on the dais, the orb in the crown (where the game's own orb floats) and a gem on each leg. Tint it by destination: worlds 46DC8C (70, 220, 140), market 8264FF (130, 100, 255)",
-                "titles": "the game's titles are billboards (15 x 3.8, their middle 13.3 up): no face to keep. Nothing of the shell is higher than 11.25, the titles' lower edge is 11.4",
+                "trim": "Base_TeleporterTrim is pure white: the ring and the disc on the dais, the orb in the crown (where the game's own orb floats) and a gem on each leg. Tint it by destination: worlds 46DC8C (70, 220, 140), market 8264FF (130, 100, 255)",
+                "sign": "the game's titles are billboards (15 x 3.8, their middle 13.3 up): no face to keep. Nothing of the shell is higher than 11.25, the titles' lower edge is 11.4",
             },
             "Lamp": {
                 "meshes": ["Base_Lamp"], "spots": [list(spot) for spot in LAMPS], "y": 0, "face": 0, "yaw": 180, "note": "the same from all sides",
@@ -1378,18 +1300,13 @@ def export():
                 "bulb": "the shell has no bulb: the game's own Lamp ball (2.2 across, its middle 12 up) hangs in the cage and keeps its light and its Halloween colour",
             },
         },
-        "signs": [
-            {"what": "the owner's name, yard side (NameSign, Front)", "written_at_z": GATE_Z - apart / 2, "x": [-wide / 2, wide / 2], "y": [NAME_SIGN_Y - tall / 2, NAME_SIGN_Y + tall / 2],
-             "board": "Base_Gate: flat and empty, dark (3A3560), at z = 12.35, x -6.55 ... 6.55, y 14.05 ... 17.15; in the shell's own space y = 1.65"},
-            {"what": "the owner's name, road side (NameSign, Back)", "written_at_z": GATE_Z + apart / 2, "x": [-wide / 2, wide / 2], "y": [NAME_SIGN_Y - tall / 2, NAME_SIGN_Y + tall / 2],
-             "board": "Base_Gate: flat and empty, dark, at z = 15.65, x -6.55 ... 6.55, y 14.05 ... 17.15; in the shell's own space y = -1.65"},
+        "signs_on_scenery": [
             {"what": "the world's name (the middle slab of the skyline, Front)", "written_at_z": DEPTH, "x": [left, right], "y": [low, high],
-             "board": "Base_Backdrop: flat and empty, dark, at z = 150.1, x -10.5 ... 10.5, y 24.31 ... 32.01"},
-            {"what": "the '+' on an empty pad (the pad's Top)", "written_at_y": PAD_HEIGHT, "board": "Base_Pad: the plate, flat and empty at y = 0.46, 6.16 square but for the gold corners (1.5 square each)"},
+             "flat_empty_face": "Base_Backdrop: a dark board at plot z = 150.1 (0.1 behind the writing): x -10.5 ... 10.5, y 24.31 ... 32.01"},
         ],
         "game_parts": {
             "stay_seen": ["Lamp (the bulb)", "WorldsPortal and MarketPortal (the teleporters' see-through beams)", "Gate (the see-through sheet in the arch, if wanted)", "the pads' FOR SALE signs, the towers"],
-            "unseen_but_kept": "everything else in Scenery and the Decor folder (the ten world props: the base brings its own trees): Ground, Yard, Kerb, Road, Backdrop, Surround, FencePost, FenceRail, Plaza, ArrivalPad, GateTower, Battlement, Roof, FlagPole, Flag, Wall, GateBeam, Merlon, NameSign, LampFoot, LampPost, PortalPillar, PortalBeam, PortalHorn, Portal, WorldsRing, MarketRing, WorldsOrb, MarketOrb, Pad_1 ... Pad_16. The signs on NameSign, Backdrop and the pads stay on",
+            "unseen_but_kept": "everything else in Scenery and the Decor folder (the ten world props: the base brings its own backdrop): Ground, Yard, Kerb, Road, Backdrop, Surround, FencePost, FenceRail, Plaza, ArrivalPad, GateTower, Battlement, Roof, FlagPole, Flag, Wall, GateBeam, Merlon, NameSign, LampFoot, LampPost, PortalPillar, PortalBeam, PortalHorn, Portal, WorldsRing, MarketRing, WorldsOrb, MarketOrb, Pad_1 ... Pad_16. The signs on NameSign, Backdrop and the pads stay on",
         },
         "colliders": colliders,
         "checks_measured_off_the_meshes": checks,
@@ -1399,12 +1316,13 @@ def export():
             "The gate's arch is round: 14 wide and 14 high in the middle like the code's opening, lower towards its sides. A portcullis hangs in its top (tips 10.1 up) and its door stands open to the road: two leaves beside the way, x = +-7.3 ... +-8.5, z = 15.9 ... 22.8 (see colliders).",
             "The towers are 3.6 in radius (the code's solid 3.5), their feet 4.0. The walls' posts are 2.8 x 3.0 (the solid wall is 2 thick) and stand 1.4 over its top.",
             "The plaza keeps the code's 40 x 14 but has round corners (radius 3) to the yard. Like the code's ring, a teleporter's dais (3.6 in radius) reaches 0.6 past the plaza's edge.",
-            "The fence has 19 posts a side (the code 10; every other one of mine stands on one of the code's) and runs on along the back of the yard at z = -16.6, just outside the ground, where the code has only its hills.",
-            "The code's ten world props (PROP_SPOTS) are not used: seven trees stand inside, against the side fences (see colliders); the rest of the trees are outside the ground.",
-            "The portal's glow is hot pink instead of the code's Earth glow (130, 100, 255), so it is not the island's purple portal.",
+            "The fence has 19 posts a side (the code 10; every other one of mine stands on one of the code's) and runs on along the back of the yard at z = -16.6, just outside the ground, where the code has only its hills. Its rails follow the theme's kind; the game's two solid rails stay where they are.",
+            "The code's ten world props (PROP_SPOTS) are not used and nothing stands in for them: the floor stays clean, and every tree, rock and the landmark is outside the ground (|x| > 55, z < -16 or z > 150).",
+            f"The portal's glow is {HOT} instead of the code's glow for this world, so it is not the island's portal.",
+            "The big lighter and darker patches of the ground are flat discs that rise 0.03 in their middle.",
         ],
     }
-    with open(f"{OUT}/earth_base_manifest.json", "w") as file:
+    with open(f"{OUT}/{SLUG}_base_manifest.json", "w") as file:
         json.dump(manifest, file, indent=1)
 
 
