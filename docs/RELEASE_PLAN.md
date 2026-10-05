@@ -70,7 +70,8 @@ P0 ships on Saturday or the release moves. P1 ships if it is done by its freeze.
 | 2.4 | P0 | Monsters as one mesh each with vertex colours, the way `minis.py` joins a mini cannon. Earth's six are 189 MeshParts today (about 30 a monster, 10 to 20 monsters on screen) and their colours are material colours, which the importer drops | `wave.py` and `boss_king.py` export one mesh a monster; `COLOURS` is gone from `organize_imports.luau`; 60 frames a second on a phone with 20 monsters out |
 | 2.5 | P0 | `tools/studio/organize_imports.luau` for every world: monsters and bosses by a name table instead of Earth's six, worlds with two-word names (`The Sun`, `Crystal Belt`, `Robot Factory`, `Alien Jungle`, `Black Hole`, `The Big Bang`) | Moon's files import with no edit to the script |
 | 2.6 | P0 | Earth's two coin eggs: Basic Egg and Forest Egg and their 10 mini cannons. They are the first thing every player hatches and they are parts today | in the place; hatch reveal checked |
-| 2.7 | P0 | The six `.conflict` files: fold in what is missing or delete them | none left in the repository |
+| 2.7 | P0 | The six `.conflict` files: fold in what is missing or delete them | none left in the repository. **Done 6 Oct** |
+| 2.8 | P0 | Game speed: 2x free for everyone, 3x is the 99 Robux pass ("3x Speed", `Config.Passes.gameSpeed`) | **Done 6 Oct** in code and `tests/smoke.luau`. Left: the pass itself is created with 3.7, and 2.1 is measured for a player at 2x |
 
 ### Wednesday 7 October: Earth and the base, finished
 

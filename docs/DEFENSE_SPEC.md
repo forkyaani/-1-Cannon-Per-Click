@@ -148,7 +148,7 @@ New hooks: `levelStart (wave)`, `levelFailed (wave)`, `leak (monster)`.
 | `nextWave`, `prevWave`, `travel`, `toggleAuto`, `goMarket`, `goHome` | as today | Level selection and travel |
 | `goIsland` | world index | To that world's island. Needs `Config.worldUnlocked(index, bestCleared)` and a registered `Game.places.island` (`Islands.luau`) |
 | `rebirth` | `true` | The prestige (section 8). Anything but `true` is ignored: the window sends it on the confirming press |
-| `setSpeed` | nothing, or 1 to 3 | The game speed: no argument steps 1x, 2x, 3x and back; a number picks one. The plot takes that many simulation steps per tick. Needs the `gameSpeed` pass: without it nothing changes and the pass is offered |
+| `setSpeed` | nothing, or 1 to 3 | The game speed: no argument steps 1x, 2x, 3x and back; a number picks one. The plot takes that many simulation steps per tick. 1x and 2x are free; 3x needs the `gameSpeed` pass: without it the pass is offered (a number changes nothing, the button steps back to 1x) |
 | `offlineClaim` | nothing | Pays the offline earnings worked out at join, once (`Features/Offline.luau`) |
 | `setPaused` | `true`, `false`, or nothing | Pauses or resumes the player's own plot (nothing switches). While paused the plot takes no simulation step; its field keeps being sent. Never saved |
 | `visitInvite`, `visitJoin`, `visitKick` | the other player's user id | Invite a player to the asker's base; accept that owner's invitation and be moved there; send one of the asker's guests home (`Features/Visit.luau`) |
@@ -330,7 +330,7 @@ Instances, so the client can find things (all under `workspace.Plots`):
 - **Equip slots are a derived number**: the modifier kind `equipSlots` (the base, the weekly shop's slots and
   the slot passes are its core sources) and `Game.refreshPets(player)`. The Slots mastery track is on sale.
 - **Game speed**: `data.speed`, `setSpeed`, `GameSpeed`; `Game.start`'s loop steps a plot `speed` times per
-  tick. Brought over from the live tree. Since 5 Oct it is the `gameSpeed` pass: `GameSpeed` is 1 without it.
+  tick. Brought over from the live tree. Since 6 Oct 2x is free and 3x is the `gameSpeed` pass: `GameSpeed` is 2 at most without it.
 - **Offline earnings** (`Features/Offline.luau` x3, 5 Oct): `data.lastSeen`, `state.away`, the `offlineCap` and
   `offlineShare` modifiers, `Meta_offline`, the action `offlineClaim`. Described in `docs/ARCHITECTURE.md`.
 - **The client follows the per-player tower multipliers**: `Field.luau` draws every tower's shots at

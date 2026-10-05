@@ -159,7 +159,8 @@ does not model mastery, so the pace floor of queue 0c is unchecked with it switc
 levels easier beyond what the damage numbers say.
 
 **Game speed** (1x, 2x, 3x; `setSpeed`) runs the whole fight of a plot that many times as fast, in real time:
-at 3x everything in section 1 takes a third as long. The simulator's times are for 1x.
+at 3x everything in section 1 takes a third as long. The simulator's times are for 1x. Since 6 Oct 2x is free
+and 3x is the 99 Robux pass, so a player who pays nothing plays at 2x.
 
 ## 5d. Enchanting and fusing (queue 4 and 5)
 

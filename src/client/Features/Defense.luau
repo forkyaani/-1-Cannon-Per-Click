@@ -80,8 +80,8 @@ function Feature.start(ctx)
 	pauseButton.Activated:Connect(function()
 		ctx.act("setPaused", State.get("Paused", false) ~= true)
 	end)
-	-- Game speed: one press steps 1x, 2x, 3x and back. It is the 2x and 3x Speed pass: without it the button
-	-- shows a lock, and the server answers a press with the pass's purchase prompt.
+	-- Game speed: one press steps 1x, 2x, 3x and back. 2x is free; 3x is the 3x Speed pass: without it a press
+	-- at 2x gets the pass's purchase prompt from the server and steps back to 1x.
 	local speedButton = UI.button({ Position = UDim2.fromOffset(340, 96), Size = UDim2.fromOffset(64, 44), Text = "1x", TextSize = 20, Parent = cluster })
 	speedButton.Activated:Connect(function()
 		ctx.act("setSpeed")
@@ -249,13 +249,8 @@ function Feature.start(ctx)
 		local auto = State.get("AutoAdvance", true)
 		autoToggle.set(auto, if auto then "AUTO" else "FARM", if auto then UI.Variants.primary else UI.Variants.gold)
 		local speed = State.get("GameSpeed", 1)
-		if (State.meta.passes or {}).gameSpeed == true then
-			speedButton.Text = `⏩ {speed}x`
-			speedButton.BackgroundColor3 = if speed > 1 then Colors.gold else Colors.blue
-		else
-			speedButton.Text = "🔒 2x"
-			speedButton.BackgroundColor3 = Colors.premium
-		end
+		speedButton.Text = `⏩ {speed}x`
+		speedButton.BackgroundColor3 = if speed > 1 then Colors.gold else Colors.blue
 
 		-- A boss level starting gets a warning. Not the one the player joins in the middle of.
 		local key = `{wave}:{phase}`

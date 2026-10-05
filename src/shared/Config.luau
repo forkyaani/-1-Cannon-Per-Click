@@ -1257,8 +1257,9 @@ Config.Passes = {
 	-- offline earnings is the candidate for the place.
 	-- storage = extra mini cannon storage on top of MaxPets while owned.
 	storage500 = { id = 0, order = 6, name = "+500 Mini Cannon Storage", desc = "Store 500 more mini cannons", price = 249, storage = 500 },
-	-- The game speed button (Game.luau's setSpeed): without this pass a plot runs at 1x, whatever the save says.
-	gameSpeed = { id = 0, order = 7, name = "2x and 3x Speed", desc = "Run your plot at 2x or 3x game speed", price = 99 },
+	-- The game speed button (Game.luau's setSpeed): 2x is free for everyone, 3x is this pass. Without it a plot
+	-- runs at 2x at most, whatever the save says.
+	gameSpeed = { id = 0, order = 7, name = "3x Speed", desc = "Run your plot at 3x game speed", price = 99 },
 }
 
 ----------------------------------------------------------------------------------------------------

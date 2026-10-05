@@ -27,7 +27,8 @@ local Game = {}
 
 local Defense = Config.Defense
 local STEP = Defense.tick -- seconds per simulation step
-local MAX_SPEED = 3 -- the fastest game speed a player can pick
+local MAX_SPEED = 3 -- the fastest game speed a player can pick (with the 3x Speed pass)
+local FREE_SPEED = 2 -- the fastest one without it
 local MAX_STEPS = 10 -- simulation steps one frame may run to catch up; past that the fight just runs slow
 local MAX_SHOTS_PER_STEP = 5 -- per tower and per mini cannon: bounds the work of one step
 local MAX_PET_RATE = 10 -- shots a second one mini cannon's damage is dealt in at most, however fast it is said to fire
@@ -414,13 +415,15 @@ local function equipSlots(player: Player, data): number
 	return derived("equipSlots", data, states[player])
 end
 
--- The game speed the player's plot really runs at: what they picked, or 1x without the 2x and 3x Speed pass.
+-- The fastest game speed the player may run: 3x with the 3x Speed pass, 2x without it.
+local function speedLimit(player: Player): number
+	return if Passes.owns(player, "gameSpeed") then MAX_SPEED else FREE_SPEED
+end
+
+-- The game speed the player's plot really runs at: what they picked, or 2x at most without the 3x Speed pass.
 -- The save keeps what was picked, so the pass brings it back.
 local function gameSpeed(player: Player, data): number
-	if not Passes.owns(player, "gameSpeed") then
-		return 1
-	end
-	return math.clamp(data.speed, 1, MAX_SPEED)
+	return math.clamp(data.speed, 1, speedLimit(player))
 end
 
 -- The towers' half of Cannon Power: the damage per second of all the player's towers on one target, with the
@@ -1631,17 +1634,20 @@ end
 -- The speed button: 1x, 2x, 3x, then back to 1x. A number picks that speed. Faster than 1x is the 2x and 3x
 -- Speed pass: without it the press offers the pass and nothing changes.
 function actions.setSpeed(player: Player, data, _state, speed: unknown)
-	if not Passes.owns(player, "gameSpeed") then
+	-- 1x and 2x are free. Asking for more without the 3x Speed pass offers the pass: a number then changes
+	-- nothing, and the button steps back to 1x.
+	local limit = speedLimit(player)
+	local picked = if typeof(speed) == "number" and speed == speed then math.clamp(math.floor(speed), 1, MAX_SPEED) else nil
+	local wanted = picked or math.min(data.speed, limit) + 1
+	if wanted > limit and limit < MAX_SPEED then
 		if not Passes.prompt(player, "gameSpeed") then
 			notify(player, `{Config.Passes.gameSpeed.name} is not on sale yet`, "info")
 		end
-		return
+		if picked then
+			return
+		end
 	end
-	if typeof(speed) == "number" and speed == speed then
-		data.speed = math.clamp(math.floor(speed), 1, MAX_SPEED)
-	else
-		data.speed = data.speed % MAX_SPEED + 1
-	end
+	data.speed = picked or (if wanted > limit then 1 else wanted)
 end
 
 -- The pause button: while paused the player's own plot does not step at all (nothing spawns, walks, fires,

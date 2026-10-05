@@ -1556,33 +1556,47 @@ do
 	run(2)
 	local fast = state.clock - before
 	check(fast > slow * 2.5 and fast < slow * 3.5, `at 3x the plot's fight runs three times as fast ({slow} against {fast})`)
-	-- The speed button is the 2x and 3x Speed pass (the prelude gave this player every pass).
+	-- 2x is free; 3x is the 3x Speed pass (the prelude gave this player every pass).
 	check(Config.Passes.gameSpeed ~= nil and Config.Passes.gameSpeed.price == 99 and Config.Passes.gameSpeed.id == 0, "the speed pass is in Config.Passes: 99 Robux, not on sale yet")
+	eq(Config.Passes.gameSpeed.name, "3x Speed", "and it is the 3x Speed pass")
 	check(T.meta().passes.gameSpeed == true, "the client is told the pass is owned")
 	debug("pass:gameSpeed", 0)
 	check(T.meta().passes.gameSpeed == nil, "the pass is taken away")
 	eq(data.speed, 3, "the save keeps the speed that was picked")
-	eq(player:GetAttribute("GameSpeed"), 1, "without the pass a saved 3x counts as 1x")
-	eq(Game.speed(player), 1, "Game.speed says so too")
+	eq(player:GetAttribute("GameSpeed"), 2, "without the pass a saved 3x counts as 2x")
+	eq(Game.speed(player), 2, "Game.speed says so too")
 	before = state.clock
 	run(2)
-	local locked = state.clock - before
-	check(math.abs(locked - slow) < slow * 0.2, `without the pass the plot runs at 1x ({locked} against {slow})`)
+	local free = state.clock - before
+	check(free > slow * 1.6 and free < slow * 2.4, `without the pass the plot runs at 2x ({free} against {slow})`)
+	T.toasts = {}
+	act("setSpeed", 3)
+	eq(data.speed, 3, "asking for 3x without the pass changes nothing")
+	check(string.find(T.lastToast(), "not on sale yet", 1, true) ~= nil, "it says the pass is not on sale yet: " .. T.lastToast())
+	eq(player:GetAttribute("GameSpeed"), 2, "and the plot stays at 2x")
+	act("setSpeed", 99)
+	eq(player:GetAttribute("GameSpeed"), 2, "setSpeed 99 without the pass stays at 2x")
 	T.toasts = {}
 	act("setSpeed")
-	eq(data.speed, 3, "a press without the pass changes nothing")
-	check(string.find(T.lastToast(), "not on sale yet", 1, true) ~= nil, "the press says the pass is not on sale yet: " .. T.lastToast())
-	for _, value in { 2, 3, 99, "fast" } do
-		act("setSpeed", value)
-		eq(player:GetAttribute("GameSpeed"), 1, `setSpeed {tostring(value)} without the pass stays at 1x`)
-	end
-	local lockShown = false
+	eq(data.speed, 1, "a press at 2x without the pass steps back to 1x")
+	check(string.find(T.lastToast(), "not on sale yet", 1, true) ~= nil, "and offers the pass: " .. T.lastToast())
+	T.toasts = {}
+	act("setSpeed")
+	eq(data.speed, 2, "the next press is 2x again, free")
+	eq(player:GetAttribute("GameSpeed"), 2, "and the plot runs at it")
+	eq(#T.toasts, 0, "with nothing offered")
+	act("setSpeed", 1)
+	eq(player:GetAttribute("GameSpeed"), 1, "1x can be picked without the pass")
+	act("setSpeed", 2)
+	eq(player:GetAttribute("GameSpeed"), 2, "and so can 2x")
+	local speedShown = false
 	for _, item in player.PlayerGui:GetDescendants() do
-		if item:IsA("TextButton") and item.Text == "🔒 2x" then
-			lockShown = true
+		if item:IsA("TextButton") and item.Text == "⏩ 2x" then
+			speedShown = true
 		end
 	end
-	check(lockShown, "the speed button shows a lock")
+	check(speedShown, "the speed button shows 2x, with no lock")
+	data.speed = 3
 	debug("pass:gameSpeed", 1)
 	eq(player:GetAttribute("GameSpeed"), 3, "with the pass back the picked speed runs again")
 	before = state.clock

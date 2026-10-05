@@ -248,12 +248,12 @@ as they scaled the bonus.
 - **Leaderboards**: Gems, Rebirths, Cannon Power (`Leaderboard.luau`; ids `Gems`, `Rebirths`, `Power`), on
   three boards in the marketplace, in the TOP PLAYERS window and as the player list's `leaderstats`.
 
-- **Game speed** is a game pass (`Config.Passes.gameSpeed`, "2x and 3x Speed", 99 Robux): `data.speed` (1 to
-  3) is what the player picked, the action `setSpeed` (no argument steps 1x, 2x, 3x, 1x; a number picks one)
-  changes it, and `Game.speed(player)` / the `GameSpeed` attribute is what the plot really runs at: the picked
-  speed with the pass, 1 without it (a saved 2x or 3x is kept and comes back with the pass). Without the pass
-  `setSpeed` changes nothing and opens the purchase prompt, or says "not on sale yet" while the pass's id is 0;
-  the button (level HUD, `Features/Defense.luau`) then shows a lock. The player's plot takes that many
+- **Game speed**: 2x is free, 3x is a game pass (`Config.Passes.gameSpeed`, "3x Speed", 99 Robux). `data.speed`
+  (1 to 3) is what the player picked, the action `setSpeed` (no argument steps 1x, 2x, 3x, 1x; a number picks
+  one) changes it, and `Game.speed(player)` / the `GameSpeed` attribute is what the plot really runs at: the
+  picked speed with the pass, 2 at most without it (a saved 3x is kept and comes back with the pass). Without
+  the pass, asking for 3x opens the purchase prompt, or says "not on sale yet" while the pass's id is 0: a
+  number then changes nothing, and the button (level HUD, `Features/Defense.luau`) steps back to 1x. The player's plot takes that many
   simulation steps per tick: monsters, towers, burns and the break between levels all run faster. It is not
   part of Cannon Power and does not count towards offline earnings.
 
@@ -486,7 +486,7 @@ State.feature("stats") = {
   `Passes.owns(player, key)` (`require(script.Parent.Parent.Passes)`). The store window lists it automatically.
   `id = 0` means not on sale yet. Nobody owns a pass they have not bought, in Studio either: there the Debug
   remote gives or takes one (`"pass:<key>"`, below). The passes today: x3 Egg Opener, x3 Luck, +3 and +5 Mini
-  Cannon Slots, +500 Mini Cannon Storage, 2x and 3x Speed (`gameSpeed`).
+  Cannon Slots, +500 Mini Cannon Storage, 3x Speed (`gameSpeed`; 2x is free).
 - Developer products: `Game.products[productId] = function(player) ... return true end`, prompt with
   `Game.promptProduct(player, productId)`.
 

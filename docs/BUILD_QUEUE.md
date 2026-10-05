@@ -201,9 +201,10 @@ not model them, and its player now fuses only from The Sun on).
 
 ## Game speed pass and offline earnings (built 5 Oct 2026)
 
-- **Game speed is a game pass**: `Config.Passes.gameSpeed`, "2x and 3x Speed", 99 Robux, id 0 until it is
-  created on Roblox. Without it a plot runs at 1x (a saved 2x or 3x is kept for when the pass is bought), the
-  speed button shows a lock and a press offers the pass.
+- **3x game speed is a game pass, 2x is free** (decided 6 Oct; until then 2x was in the pass too):
+  `Config.Passes.gameSpeed`, "3x Speed", 99 Robux, id 0 until it is created on Roblox. Without it a plot runs
+  at 2x at most (a saved 3x is kept for when the pass is bought), and a press at 2x offers the pass and steps
+  back to 1x.
 - **Offline earnings** (`Features/Offline.luau` x3): on joining after more than a minute away, the towers are
   paid for farming the highest level cleared (or the highest they can still clear) for the time away, capped
   at 8 hours, at 50% (`Config.Offline`). Coins only; paid by CLAIM on a welcome-back card; game speed does not
