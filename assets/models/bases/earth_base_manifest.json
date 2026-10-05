@@ -1,0 +1,1261 @@
+{
+ "what": "The Earth base (world 1): scenery and shells for src/server/Plots.luau to wear over the base it builds from parts, as Islands.wear does for the island. Made by tools/blender/earth_base.py.",
+ "units": "1 Blender unit = 1 stud",
+ "mapping": {
+  "plot_space": "Layout.luau: the origin is the middle of the base's edge of the ground, x across the plot, +z up the plot to the portal, y up, the ground's top at y = 0, the yard behind the origin (-z)",
+  "blender_to_plot": "plot (x, y, z) = Blender (x, z, -y)",
+  "plot_to_blender": "Blender (x, y, z) = plot (x, -z, y)",
+  "scenery_in_roblox": "an FBX lands as Roblox (-x, z, y) of Blender's (x, y, z), half a circle off, exactly as the Earth island's did: give the scenery model the plot's origin as its pivot, turned half a circle about Y, and Model:PivotTo(plot.frame) puts every scenery mesh in place",
+  "shell_in_roblox": "a shell's pivot is the middle of its base on the ground and its front (Blender -Y) is its -Z, like the island's shells: shell:PivotTo(plot.frame * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0)) with yaw = face + 180",
+  "face": "where a shell's front looks, in plot space: 0 = up the plot (+z), 90 = towards +x, 180 = back at the yard (-z)",
+  "colliders": "centre is (x, y, z) in plot space; a box's size is (x, y, z) in its own frame, turned by CFrame.Angles(0, math.rad(yaw), 0); a pillar stands upright"
+ },
+ "layout_copied_from_the_code": {
+  "ground": {
+   "x": [
+    -55.0,
+    55.0
+   ],
+   "z": [
+    -16,
+    150
+   ],
+   "top": 0
+  },
+  "path": [
+   [
+    0,
+    145
+   ],
+   [
+    0,
+    128
+   ],
+   [
+    -38,
+    128
+   ],
+   [
+    -38,
+    98
+   ],
+   [
+    38,
+    98
+   ],
+   [
+    38,
+    68
+   ],
+   [
+    -38,
+    68
+   ],
+   [
+    -38,
+    38
+   ],
+   [
+    0,
+    38
+   ],
+   [
+    0,
+    14
+   ]
+  ],
+  "path_width": 8,
+  "kerb": 0.8,
+  "road_top": 0.2,
+  "road_starts_at_z": 147,
+  "pads": [
+   [
+    -14,
+    26
+   ],
+   [
+    14,
+    26
+   ],
+   [
+    -8,
+    53
+   ],
+   [
+    8,
+    53
+   ],
+   [
+    -24,
+    53
+   ],
+   [
+    24,
+    53
+   ],
+   [
+    -8,
+    83
+   ],
+   [
+    8,
+    83
+   ],
+   [
+    -24,
+    83
+   ],
+   [
+    24,
+    83
+   ],
+   [
+    -20,
+    113
+   ],
+   [
+    4,
+    113
+   ],
+   [
+    24,
+    113
+   ],
+   [
+    -50,
+    53
+   ],
+   [
+    50,
+    83
+   ],
+   [
+    -50,
+    113
+   ]
+  ],
+  "pad_size": 7,
+  "pad_height": 0.5,
+  "gate": {
+   "at": [
+    0,
+    14
+   ],
+   "opening": [
+    14,
+    14
+   ],
+   "towers_x": [
+    -10.5,
+    10.5
+   ],
+   "tower_radius": 3.5,
+   "tower_top": 18,
+   "walls_x": [
+    14.0,
+    55.0
+   ],
+   "wall_height": 4.5,
+   "wall_thickness": 2
+  },
+  "plaza": {
+   "x": [
+    -20.0,
+    20.0
+   ],
+   "z": [
+    0,
+    14
+   ],
+   "top": 0.15
+  },
+  "arrival_pad": {
+   "at": [
+    0,
+    4
+   ],
+   "radius": 3.5,
+   "top": 0.25
+  },
+  "portal": {
+   "at": [
+    0,
+    147
+   ],
+   "sheet": [
+    14,
+    15
+   ]
+  },
+  "teleporters": {
+   "worlds": [
+    -13,
+    3
+   ],
+   "market": [
+    13,
+    3
+   ]
+  },
+  "lamps": [
+   [
+    -49,
+    -11
+   ],
+   [
+    49,
+    -11
+   ]
+  ],
+  "fence_x": [
+   -54.3,
+   54.3
+  ],
+  "fence_rails_y": [
+   1.3,
+   2.7
+  ],
+  "skyline_from": {
+   "x": 55.0,
+   "z_behind_the_yard": -16,
+   "z_behind_the_portal": 150
+  }
+ },
+ "meshes": [
+  {
+   "name": "Base_Ground",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 1440,
+   "centre": [
+    0.32,
+    -73.18,
+    -2.96
+   ],
+   "size": [
+    183.11,
+    237.94,
+    6.07
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Cliff",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 2914,
+   "centre": [
+    0.33,
+    -73.2,
+    -66.99
+   ],
+   "size": [
+    187.87,
+    244.14,
+    134.02
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Road",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 1008,
+   "centre": [
+    0.0,
+    -73.5,
+    0.18
+   ],
+   "size": [
+    85.6,
+    147.0,
+    0.47
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Pad",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 588,
+   "centre": [
+    0.0,
+    0.0,
+    0.25
+   ],
+   "size": [
+    7.0,
+    7.0,
+    0.5
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_PadTrim",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 40,
+   "centre": [
+    0.0,
+    0.0,
+    0.47
+   ],
+   "size": [
+    6.0,
+    6.0,
+    0.0
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": true
+  },
+  {
+   "name": "Base_Gate",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 9268,
+   "centre": [
+    0.0,
+    2.63,
+    15.3
+   ],
+   "size": [
+    111.0,
+    22.89,
+    30.6
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_GateTrim",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 552,
+   "centre": [
+    0.0,
+    4.73,
+    15.1
+   ],
+   "size": [
+    28.8,
+    17.54,
+    29.91
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": true
+  },
+  {
+   "name": "Base_Portal",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 3290,
+   "centre": [
+    0.0,
+    -0.12,
+    12.8
+   ],
+   "size": [
+    28.7,
+    5.25,
+    25.6
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_PortalSheet",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 1082,
+   "centre": [
+    0.0,
+    -1.23,
+    9.5
+   ],
+   "size": [
+    19.0,
+    3.25,
+    19.0
+   ],
+   "material": "Neon",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Teleporter",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 1332,
+   "centre": [
+    0.0,
+    -0.0,
+    5.6
+   ],
+   "size": [
+    10.04,
+    7.2,
+    11.21
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_TeleporterTrim",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 348,
+   "centre": [
+    -0.0,
+    -0.0,
+    5.63
+   ],
+   "size": [
+    8.8,
+    5.9,
+    10.43
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": true
+  },
+  {
+   "name": "Base_Lamp",
+   "kind": "shell",
+   "origin": "the middle of its own base on the ground, front towards Blender -Y",
+   "triangles": 468,
+   "centre": [
+    0.0,
+    0.0,
+    7.46
+   ],
+   "size": [
+    3.33,
+    3.5,
+    14.92
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Dressing",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 2228,
+   "centre": [
+    0.0,
+    -66.38,
+    1.95
+   ],
+   "size": [
+    109.9,
+    167.25,
+    4.3
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Backdrop",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 8207,
+   "centre": [
+    0.0,
+    -72.68,
+    21.56
+   ],
+   "size": [
+    181.2,
+    230.37,
+    46.88
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Water",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 236,
+   "centre": [
+    22.0,
+    -154.93,
+    14.06
+   ],
+   "size": [
+    3.6,
+    7.65,
+    28.32
+   ],
+   "material": "Glass",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Glow",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 48,
+   "centre": [
+    0.25,
+    -151.44,
+    2.27
+   ],
+   "size": [
+    32.58,
+    2.03,
+    5.04
+   ],
+   "material": "Neon",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_BackdropTrees",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 7356,
+   "centre": [
+    0.72,
+    -65.19,
+    24.02
+   ],
+   "size": [
+    168.09,
+    211.95,
+    39.27
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  },
+  {
+   "name": "Base_Trees",
+   "kind": "scenery",
+   "origin": "the plot's origin, on the ground",
+   "triangles": 3396,
+   "centre": [
+    0.24,
+    -83.63,
+    9.18
+   ],
+   "size": [
+    110.83,
+    127.54,
+    19.79
+   ],
+   "material": "SmoothPlastic",
+   "white_for_tinting": false
+  }
+ ],
+ "total_triangles": 43801,
+ "shells": {
+  "Pad": {
+   "meshes": [
+    "Base_Pad",
+    "Base_PadTrim"
+   ],
+   "spots": [
+    [
+     -14,
+     26
+    ],
+    [
+     14,
+     26
+    ],
+    [
+     -8,
+     53
+    ],
+    [
+     8,
+     53
+    ],
+    [
+     -24,
+     53
+    ],
+    [
+     24,
+     53
+    ],
+    [
+     -8,
+     83
+    ],
+    [
+     8,
+     83
+    ],
+    [
+     -24,
+     83
+    ],
+    [
+     24,
+     83
+    ],
+    [
+     -20,
+     113
+    ],
+    [
+     4,
+     113
+    ],
+    [
+     24,
+     113
+    ],
+    [
+     -50,
+     53
+    ],
+    [
+     50,
+     83
+    ],
+    [
+     -50,
+     113
+    ]
+   ],
+   "y": 0,
+   "face": 0,
+   "yaw": 180,
+   "note": "the same from all four sides: any quarter turn will do",
+   "footprint": [
+    7,
+    7
+   ],
+   "highest": 0.5,
+   "plate_top": 0.46,
+   "heights": "the gold corners are PAD_HEIGHT (0.5) high, the plate 0.46: the game's pad stays as the solid floor and the carrier of the prompt and the '+', and its top (0.5, where a tower stands) is 0.04 over the plate",
+   "trim": "Base_PadTrim is the band round the plate, for the pad's state. In the photos: for sale B0B4C0, the owner's and empty 6EEB8C, built on FFC61A"
+  },
+  "Gate": {
+   "meshes": [
+    "Base_Gate",
+    "Base_GateTrim"
+   ],
+   "spots": [
+    [
+     0,
+     14
+    ]
+   ],
+   "y": 0,
+   "face": 0,
+   "yaw": 180,
+   "note": "its front is the side the monsters see; the yard's side looks the same",
+   "heights": {
+    "arch": "round, 14 wide; 14 high in the middle, springing 7 up (the game's see-through Gate part, 14 x 14, fits behind it: its top corners are inside the stone)",
+    "portcullis_tips": 10.1,
+    "name_board": [
+     14.05,
+     17.15
+    ],
+    "gatehouse_top": 19.2,
+    "crest_top": 24.1,
+    "tower_parapet": 17.7,
+    "tower_battlements": 18.9,
+    "roof_tip": 26.2,
+    "flag_top": 30.6,
+    "wall_top": 4.5,
+    "wall_battlements": 5.37,
+    "wall_posts": 5.9,
+    "wall_post_knobs": 7.0,
+    "arrival_ring": 0.28,
+    "arrival_disc": 0.2
+   },
+   "trim": "Base_GateTrim is everything in the owner's colour (plot.colored): the two roofs, the two flags, the four banners, the crest's shield and the disc of the arrival pad (at plot 0, 4; its top is 0.2, under the game's own disc at 0.25). In the photos FF6161, slot 1's colour"
+  },
+  "Portal": {
+   "meshes": [
+    "Base_Portal",
+    "Base_PortalSheet"
+   ],
+   "spots": [
+    [
+     0,
+     147
+    ]
+   ],
+   "y": 0,
+   "face": 180,
+   "yaw": 0,
+   "note": "its front looks down the road at the gate; its back is plain (the rock is 3 studs behind it)",
+   "heights": {
+    "mouth": "14.5 wide between the legs; 16.2 high in the middle, springing 9.3 up",
+    "sheet_top": 16.6,
+    "top_of_the_arch": 20.8,
+    "crest": 22.7,
+    "horn_tips": 25.6
+   },
+   "sheet": "Base_PortalSheet (for Neon; the game may fade or dim it as it does its own Portal part) is the sheet with its dark whirl, the two eyes, the runes on the legs and the gem on the brow. Hot pink (FF3D7F), not the island's purple"
+  },
+  "Teleporter": {
+   "meshes": [
+    "Base_Teleporter",
+    "Base_TeleporterTrim"
+   ],
+   "spots": [
+    [
+     -13,
+     3
+    ],
+    [
+     13,
+     3
+    ]
+   ],
+   "y": 0,
+   "face": 180,
+   "yaw": 0,
+   "note": "the same from the front and the back",
+   "heights": {
+    "dais_top": 0.42,
+    "trim_on_the_dais": 0.47,
+    "orb": 9.9,
+    "highest": 11.25,
+    "inside_the_arch": "6.2 wide between the legs, 9.15 high in the middle: the game's beam (1.7 in radius, 0.4 to 8.4 up) stands in it"
+   },
+   "trim": "Base_TeleporterTrim is the ring and the disc on the dais, the orb in the crown (where the game's own orb floats) and a gem on each leg. Tint it by destination: worlds 46DC8C (70, 220, 140), market 8264FF (130, 100, 255)",
+   "titles": "the game's titles are billboards (15 x 3.8, their middle 13.3 up): no face to keep. Nothing of the shell is higher than 11.25, the titles' lower edge is 11.4"
+  },
+  "Lamp": {
+   "meshes": [
+    "Base_Lamp"
+   ],
+   "spots": [
+    [
+     -49,
+     -11
+    ],
+    [
+     49,
+     -11
+    ]
+   ],
+   "y": 0,
+   "face": 0,
+   "yaw": 180,
+   "note": "the same from all sides",
+   "heights": {
+    "bulb": 12.0,
+    "cage": [
+     10.85,
+     13.1
+    ],
+    "top": 14.9
+   },
+   "bulb": "the shell has no bulb: the game's own Lamp ball (2.2 across, its middle 12 up) hangs in the cage and keeps its light and its Halloween colour"
+  }
+ },
+ "signs": [
+  {
+   "what": "the owner's name, yard side (NameSign, Front)",
+   "written_at_z": 12.3,
+   "x": [
+    -6.2,
+    6.2
+   ],
+   "y": [
+    14.4,
+    16.8
+   ],
+   "board": "Base_Gate: flat and empty, dark (3A3560), at z = 12.35, x -6.55 ... 6.55, y 14.05 ... 17.15; in the shell's own space y = 1.65"
+  },
+  {
+   "what": "the owner's name, road side (NameSign, Back)",
+   "written_at_z": 15.7,
+   "x": [
+    -6.2,
+    6.2
+   ],
+   "y": [
+    14.4,
+    16.8
+   ],
+   "board": "Base_Gate: flat and empty, dark, at z = 15.65, x -6.55 ... 6.55, y 14.05 ... 17.15; in the shell's own space y = -1.65"
+  },
+  {
+   "what": "the world's name (the middle slab of the skyline, Front)",
+   "written_at_z": 150,
+   "x": [
+    -9.9,
+    9.9
+   ],
+   "y": [
+    24.76,
+    31.56
+   ],
+   "board": "Base_Backdrop: flat and empty, dark, at z = 150.1, x -10.5 ... 10.5, y 24.31 ... 32.01"
+  },
+  {
+   "what": "the '+' on an empty pad (the pad's Top)",
+   "written_at_y": 0.5,
+   "board": "Base_Pad: the plate, flat and empty at y = 0.46, 6.16 square but for the gold corners (1.5 square each)"
+  }
+ ],
+ "game_parts": {
+  "stay_seen": [
+   "Lamp (the bulb)",
+   "WorldsPortal and MarketPortal (the teleporters' see-through beams)",
+   "Gate (the see-through sheet in the arch, if wanted)",
+   "the pads' FOR SALE signs, the towers"
+  ],
+  "unseen_but_kept": "everything else in Scenery and the Decor folder (the ten world props: the base brings its own trees): Ground, Yard, Kerb, Road, Backdrop, Surround, FencePost, FenceRail, Plaza, ArrivalPad, GateTower, Battlement, Roof, FlagPole, Flag, Wall, GateBeam, Merlon, NameSign, LampFoot, LampPost, PortalPillar, PortalBeam, PortalHorn, Portal, WorldsRing, MarketRing, WorldsOrb, MarketOrb, Pad_1 ... Pad_16. The signs on NameSign, Backdrop and the pads stay on"
+ },
+ "colliders": [
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    -49.5,
+    3.68,
+    26
+   ],
+   "radius": 1.16,
+   "height": 7.35
+  },
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    49.5,
+    3.5,
+    27
+   ],
+   "radius": 1.1,
+   "height": 7.0
+  },
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    49.5,
+    3.85,
+    55
+   ],
+   "radius": 1.21,
+   "height": 7.7
+  },
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    -49.5,
+    3.68,
+    82
+   ],
+   "radius": 1.16,
+   "height": 7.35
+  },
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    49.5,
+    3.5,
+    110
+   ],
+   "radius": 1.1,
+   "height": 7.0
+  },
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    -48.5,
+    3.85,
+    141
+   ],
+   "radius": 1.21,
+   "height": 7.7
+  },
+  {
+   "what": "tree",
+   "shape": "pillar",
+   "centre": [
+    48.5,
+    3.5,
+    141
+   ],
+   "radius": 1.1,
+   "height": 7.0
+  },
+  {
+   "what": "lamp",
+   "shape": "pillar",
+   "centre": [
+    -49,
+    5.5,
+    -11
+   ],
+   "radius": 0.6,
+   "height": 11.0
+  },
+  {
+   "what": "lamp",
+   "shape": "pillar",
+   "centre": [
+    49,
+    5.5,
+    -11
+   ],
+   "radius": 0.6,
+   "height": 11.0
+  },
+  {
+   "what": "teleporter leg",
+   "shape": "box",
+   "centre": [
+    -16.9,
+    3.8,
+    3
+   ],
+   "size": [
+    2.1,
+    7.6,
+    2.1
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "teleporter leg",
+   "shape": "box",
+   "centre": [
+    -9.1,
+    3.8,
+    3
+   ],
+   "size": [
+    2.1,
+    7.6,
+    2.1
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "teleporter leg",
+   "shape": "box",
+   "centre": [
+    9.1,
+    3.8,
+    3
+   ],
+   "size": [
+    2.1,
+    7.6,
+    2.1
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "teleporter leg",
+   "shape": "box",
+   "centre": [
+    16.9,
+    3.8,
+    3
+   ],
+   "size": [
+    2.1,
+    7.6,
+    2.1
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "portal leg",
+   "shape": "box",
+   "centre": [
+    -9.45,
+    5.0,
+    147
+   ],
+   "size": [
+    4.8,
+    10.0,
+    5.0
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "portal leg",
+   "shape": "box",
+   "centre": [
+    9.45,
+    5.0,
+    147
+   ],
+   "size": [
+    4.8,
+    10.0,
+    5.0
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "gate pier (the edge of the arch; the tower behind it is the game's own)",
+   "shape": "box",
+   "centre": [
+    -7.88,
+    7.0,
+    14
+   ],
+   "size": [
+    1.75,
+    14.0,
+    3.6
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "gate pier (the edge of the arch; the tower behind it is the game's own)",
+   "shape": "box",
+   "centre": [
+    7.88,
+    7.0,
+    14
+   ],
+   "size": [
+    1.75,
+    14.0,
+    3.6
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "gate door leaf",
+   "shape": "box",
+   "centre": [
+    -7.91,
+    6.0,
+    19.35
+   ],
+   "size": [
+    0.6,
+    12.0,
+    7.0
+   ],
+   "yaw": -10.0,
+   "optional": false
+  },
+  {
+   "what": "gate door leaf",
+   "shape": "box",
+   "centre": [
+    7.91,
+    6.0,
+    19.35
+   ],
+   "size": [
+    0.6,
+    12.0,
+    7.0
+   ],
+   "yaw": 10.0,
+   "optional": false
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    -18.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    -27.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    -36.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    -45.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    -53.9,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    18.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    27.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    36.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    45.6,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  },
+  {
+   "what": "wall post (the wall under it is the game's own, solid to 4.5)",
+   "shape": "box",
+   "centre": [
+    53.9,
+    2.95,
+    14
+   ],
+   "size": [
+    2.8,
+    5.9,
+    3.0
+   ],
+   "yaw": 0.0,
+   "optional": true
+  }
+ ],
+ "checks_measured_off_the_meshes": {
+  "road_top": [
+   0.2,
+   0.2
+  ],
+  "road_half_width": 4.0,
+  "road_with_kerb_half_width": 4.8,
+  "road_from_z_to_z": [
+   147.0,
+   14.0
+  ],
+  "kerb_top": 0.42,
+  "pad_size": [
+   7.0,
+   7.0,
+   0.5
+  ],
+  "ground_top": 0.07,
+  "biggest_mesh": 9268
+ },
+ "not_as_the_code": [
+  "The road runs round the outside of each of its eight bends in an arc (radius 4, with the kerb 4.8): inside the square corner the game's slabs make, never outside it.",
+  "The kerb is 0.8 wide as in the code but 0.42 high (the code's is a flat band at 0.1, lower than the road's 0.2).",
+  "The gate's arch is round: 14 wide and 14 high in the middle like the code's opening, lower towards its sides. A portcullis hangs in its top (tips 10.1 up) and its door stands open to the road: two leaves beside the way, x = +-7.3 ... +-8.5, z = 15.9 ... 22.8 (see colliders).",
+  "The towers are 3.6 in radius (the code's solid 3.5), their feet 4.0. The walls' posts are 2.8 x 3.0 (the solid wall is 2 thick) and stand 1.4 over its top.",
+  "The plaza keeps the code's 40 x 14 but has round corners (radius 3) to the yard. Like the code's ring, a teleporter's dais (3.6 in radius) reaches 0.6 past the plaza's edge.",
+  "The fence has 19 posts a side (the code 10; every other one of mine stands on one of the code's) and runs on along the back of the yard at z = -16.6, just outside the ground, where the code has only its hills.",
+  "The code's ten world props (PROP_SPOTS) are not used: seven trees stand inside, against the side fences (see colliders); the rest of the trees are outside the ground.",
+  "The portal's glow is hot pink instead of the code's Earth glow (130, 100, 255), so it is not the island's purple portal."
+ ]
+}
