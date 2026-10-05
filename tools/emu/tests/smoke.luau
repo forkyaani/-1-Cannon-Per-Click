@@ -238,15 +238,15 @@ check(Plots.worlds[state.slot] == #Config.Worlds, "the plot wears the last world
 noErrors("jumping through the worlds")
 
 T.section("mini cannons deal flat damage per second, wherever the player is")
--- A mini cannon's bonus is its own damage per second (x Config.PetDps = 100), not a multiplier on the towers.
+-- A mini cannon's bonus is its own damage per second (x Config.PetDps = 350), not a multiplier on the towers.
 debug("towers", 1)
 debug("wave", 41) -- a level the level 1 towers cannot clear: there is always a monster to shoot
 run(4)
 Game.sync(player)
 local leaf = Config.Pets.leaf
-eq(leaf.dps, leaf.bonus * 100, "a mini cannon's dps is its bonus x 100")
-eq(Config.PetDps, 100, "Config.PetDps")
-eq(T.Format.petPower(leaf), `+{math.floor(leaf.bonus * 100 + 0.5)} DPS`, "and that is how it reads")
+eq(leaf.dps, leaf.bonus * Config.PetDps, "a mini cannon's dps is its bonus x Config.PetDps")
+eq(Config.PetDps, 350, "Config.PetDps")
+eq(T.Format.petPower(leaf), `+{math.floor(leaf.bonus * Config.PetDps + 0.5)} DPS`, "and that is how it reads")
 eq(T.Format.petPower({ dps = 129 }), "+129 DPS", "bonus 1.29 reads +129 DPS")
 eq(T.Format.petPower(Config.Pets.hugestorm), "x3", "a Huge still reads x3")
 -- What one shot of a level 1 Cannon tower is worth, from the shot hook: wait for one (the monsters have to
@@ -271,13 +271,13 @@ check(table.find(state.equipped, "leaf") ~= nil, "the Mini Leaf Cannon is equipp
 eq(Game.perClick(player), powerBefore, "equipping a mini cannon leaves the power multiplier alone")
 eq(player:GetAttribute("PowerMult"), powerBefore, "PowerMult")
 eq(player:GetAttribute("TowerDps"), towersBefore, "and the towers' damage per second")
-check(math.abs(player:GetAttribute("CannonPower") - cannonBefore - 100 * leaf.bonus) < 1e-9, `Cannon Power rises by exactly 100 x its bonus (+{100 * leaf.bonus})`)
-check(math.abs(player:GetAttribute("PetDps") - 100 * leaf.bonus) < 1e-9, "PetDps is the mini cannons' half")
-eq(Game.value(player, "petDps"), 100 * leaf.bonus, "Game.value petDps")
+check(math.abs(player:GetAttribute("CannonPower") - cannonBefore - Config.PetDps * leaf.bonus) < 1e-9, `Cannon Power rises by exactly PetDps x its bonus (+{Config.PetDps * leaf.bonus})`)
+check(math.abs(player:GetAttribute("PetDps") - Config.PetDps * leaf.bonus) < 1e-9, "PetDps is the mini cannons' half")
+eq(Game.value(player, "petDps"), Config.PetDps * leaf.bonus, "Game.value petDps")
 do
 	local breakdown = Game.breakdown(player, "petDps")
 	eq(breakdown.base, 0, "its breakdown starts from nothing")
-	check(#breakdown.sources == 1 and breakdown.sources[1].label == leaf.name and math.abs(breakdown.sources[1].add - 100 * leaf.bonus) < 1e-9, "and lists the mini cannon as a line of its own")
+	check(#breakdown.sources == 1 and breakdown.sources[1].label == leaf.name and math.abs(breakdown.sources[1].add - Config.PetDps * leaf.bonus) < 1e-9, "and lists the mini cannon as a line of its own")
 	for _, entry in Game.breakdown(player, "power").sources do
 		check(not string.find(string.lower(entry.label), "mini", 1, true), `the power multiplier has no mini cannon source ({entry.label})`)
 	end
@@ -298,7 +298,7 @@ debug("wave", 41)
 hooked.petShots, hooked.petDamage = 0, 0
 run(20)
 check(hooked.petShots > 0, "mini cannons fire at monsters near the character")
-local perSecond = 100 * leaf.bonus
+local perSecond = Config.PetDps * leaf.bonus
 check(math.abs(hooked.petDamage - perSecond * 20) <= perSecond * 1.5, `twenty seconds near the player deal twenty seconds of its DPS ({hooked.petDamage} of {perSecond * 20})`)
 -- ... and just as much with the player in the marketplace, or with no character at all: no range is asked for.
 act("goMarket")
