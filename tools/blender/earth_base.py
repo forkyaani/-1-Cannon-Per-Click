@@ -937,7 +937,8 @@ def spike(radius, depth, colour=UNDER):
 
 
 group = "Ground"
-island([(0, 0.0), (R * FLAT, 0.0)] + [(R * share, top(share)) for share in (0.968, 0.98, 0.992, 1.0)] + [(R, -6.0), (0, -6.0)], GRASS, 72, roughness=0.9)
+# (The lawn ends under the darker rim of the Cliff group, and has as many corners round its edge: nothing of it pokes through.)
+island([(0, 0.0), (R * FLAT, 0.0), (R * 0.966, top(0.966)), (R * 0.972, top(0.972) - 2.0), (R * 0.972, -6.0), (0, -6.0)], GRASS, LOBES * 4, roughness=0.9)
 # A few big lighter and darker patches, so the lawn is not one flat green. (x, z, radius, colour)
 for x, z, radius, colour in ((30, 21, 13, GRASS_LIGHT), (-33, 23, 11, GRASS_DEEP), (46, 50, 9, GRASS_LIGHT), (-16, 83, 12, GRASS_DEEP), (-47, 83, 8, GRASS_LIGHT), (33, 114, 12, GRASS_LIGHT),
                               (-8, 114, 10, GRASS_DEEP), (22, 140, 9, GRASS_LIGHT), (-30, 143, 10, GRASS_LIGHT), (-40, -7, 10, GRASS_DEEP), (38, -6, 11, GRASS_LIGHT), (0, 53, 9, GRASS_LIGHT)):
@@ -1208,7 +1209,7 @@ if not ONLY or "top" in ONLY:
 # The portal, from the road in front of it.
 photo("portal", at(12, 106, 7.5), at(2, 150, 14.5), 22, light=(205, 48))
 # The base as the monsters see it when they come out of the portal.
-photo("road", at(0, 132, 9.0), at(0, 14, 6.0), 26, light=(-30, 48))
+photo("road", at(-12, 133, 9.5), at(0, 14, 6.0), 26, light=(-30, 48))
 # The gate from close by, from the road.
 photo("gate", at(-11, 47, 7.0), at(0, 14, 10.5), 24, light=(-35, 46))
 # A player's eyes in the yard behind the gate, looking up the road to the portal.

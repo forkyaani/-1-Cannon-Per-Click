@@ -460,7 +460,7 @@
    "name": "Base_Backdrop",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 8447,
+   "triangles": 8207,
    "centre": [
     0.0,
     -72.68,
@@ -481,12 +481,12 @@
    "triangles": 236,
    "centre": [
     22.0,
-    -154.68,
+    -154.93,
     14.06
    ],
    "size": [
-    3.8,
-    8.15,
+    3.6,
+    7.65,
     28.32
    ],
    "material": "Glass",
@@ -514,15 +514,15 @@
    "name": "Base_BackdropTrees",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 6592,
+   "triangles": 7356,
    "centre": [
-    2.02,
-    -68.77,
+    0.72,
+    -65.19,
     24.02
    ],
    "size": [
-    172.7,
-    203.41,
+    168.09,
+    211.95,
     39.27
    ],
    "material": "SmoothPlastic",
@@ -534,20 +534,20 @@
    "origin": "the plot's origin, on the ground",
    "triangles": 3396,
    "centre": [
-    0.34,
-    -83.97,
+    0.24,
+    -83.63,
     9.18
    ],
    "size": [
-    112.36,
-    127.01,
+    110.83,
+    127.54,
     19.79
    ],
    "material": "SmoothPlastic",
    "white_for_tinting": false
   }
  ],
- "total_triangles": 43277,
+ "total_triangles": 43801,
  "shells": {
   "Pad": {
    "meshes": [
@@ -718,7 +718,7 @@
     "trim_on_the_dais": 0.47,
     "orb": 9.9,
     "highest": 11.25,
-    "inside_the_arch": "6.4 wide between the legs, 9.2 high in the middle: the game's beam (1.7 in radius, 0.4 to 8.4 up) stands in it"
+    "inside_the_arch": "6.2 wide between the legs, 9.15 high in the middle: the game's beam (1.7 in radius, 0.4 to 8.4 up) stands in it"
    },
    "trim": "Base_TeleporterTrim is the ring and the disc on the dais, the orb in the crown (where the game's own orb floats) and a gem on each leg. Tint it by destination: worlds 46DC8C (70, 220, 140), market 8264FF (130, 100, 255)",
    "titles": "the game's titles are billboards (15 x 3.8, their middle 13.3 up): no face to keep. Nothing of the shell is higher than 11.25, the titles' lower edge is 11.4"
@@ -999,6 +999,38 @@
     4.8,
     10.0,
     5.0
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "gate pier (the edge of the arch; the tower behind it is the game's own)",
+   "shape": "box",
+   "centre": [
+    -7.88,
+    7.0,
+    14
+   ],
+   "size": [
+    1.75,
+    14.0,
+    3.6
+   ],
+   "yaw": 0.0,
+   "optional": false
+  },
+  {
+   "what": "gate pier (the edge of the arch; the tower behind it is the game's own)",
+   "shape": "box",
+   "centre": [
+    7.88,
+    7.0,
+    14
+   ],
+   "size": [
+    1.75,
+    14.0,
+    3.6
    ],
    "yaw": 0.0,
    "optional": false
