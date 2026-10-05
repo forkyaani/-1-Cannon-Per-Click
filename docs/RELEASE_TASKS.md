@@ -26,8 +26,8 @@ needs a second pass doubles its job.
 
 ## A. Pipeline (do once, makes everything after it fast)
 
-- [ ] A1. `tools/blender/kit.py`: move the shared kit (box, ball, tube, lathe, mat, export) out of the island script · **30 min**
-- [ ] A2. Theme table for the 5 worlds: ground, rock, plant, accent and sky colours, prop kinds (craters, spires, ice, lava) · **20 min**
+- [x] A1. `tools/blender/kit.py`: move the shared kit (box, ball, tube, lathe, mat, export) out of the island script · **30 min**
+- [x] A2. Theme table for the 5 worlds: ground, rock, plant, accent and sky colours, prop kinds (craters, spires, ice, lava) · **20 min**
 - [ ] A3. `earth_island.py` becomes `island.py <world>`: same layout, look from the theme · **45 min**
 - [ ] A4. `earth_base.py` becomes `base.py <world>`: same path and pads, look from the theme · **45 min**
 - [ ] A5. `creatures.py <world>`: one run makes a world's 5 monsters and 2 bosses as one .fbx · **1 h 00**
