@@ -492,6 +492,13 @@ State.feature("stats") = {
   Cannon Slots, +500 Mini Cannon Storage, 3x Speed (`gameSpeed`; 2x is free).
 - Developer products: `Game.products[productId] = function(player) ... return true end`, prompt with
   `Game.promptProduct(player, productId)`.
+- Paid random items: anything random that is paid for with Robux or with a currency of `Config.PaidCurrencies`
+  (gems), and any pass marked `odds = true` (x3 Luck). Before selling one, ask
+  `Policy.maySell(player, "The Gem Egg")` (`require(script.Parent.Parent.Policy)`): it returns true, or false
+  with the toast to show (text, kind). `Policy.restricted(player)` is the bare answer (nil until Roblox has
+  given one) and `Policy.changed` fires with the player when it arrives. The eggs, the crates and enchanting
+  all go through it; show the odds wherever the roll is bought. `tools/emu/tests/policy.luau` checks both
+  (`harness.setPolicy(true | false | nil)` sets what Roblox answers the next player who joins).
 
 ### The marketplace
 

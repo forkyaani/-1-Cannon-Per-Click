@@ -1209,6 +1209,11 @@ end
 ----------------------------------------------------------------------------------------------------
 -- What each currency is called on screen. The save and the code say diamonds; players see gems.
 Config.CurrencyNames = { coins = "coins", diamonds = "gems", candy = "candy" }
+-- Something random bought with one of these is a "paid random item" under Roblox's rules (an egg, a crate, an
+-- enchant roll): the server asks src/server/Policy.luau whether the player may buy one before it sells it.
+-- Gems are on the list because they are meant to be sold for Robux (docs/GEMS.md): from that day on a Gem Egg
+-- is paid for with money. A currency that Robux or gems can buy belongs here from the day it can be bought.
+Config.PaidCurrencies = { robux = true, diamonds = true }
 
 Config.Boosts = {
 	power2x = { name = "2x Power" },
@@ -1257,7 +1262,9 @@ Config.WeeklyFixed = {
 ----------------------------------------------------------------------------------------------------
 Config.Passes = {
 	tripleHatch = { id = 2005905917, order = 1, name = "x3 Egg Opener", desc = "Hatch 3 eggs at once", price = 349 },
-	tripleLuck = { id = 2009312265, order = 2, name = "x3 Luck", desc = "Rare mini cannons hatch 3x more often", price = 449 },
+	-- odds = the pass changes what a random roll gives, which Roblox counts as a paid random item: it is not
+	-- sold where those are restricted (buyPass in Game.luau).
+	tripleLuck = { id = 2009312265, order = 2, name = "x3 Luck", desc = "Rare mini cannons hatch 3x more often", price = 449, odds = true },
 	-- slots = extra mini cannon equip slots while owned; these stack with each other and with the weekly shop's.
 	slots3 = { id = 2008730460, order = 3, name = "+3 Mini Cannon Slots", desc = "Equip 3 more mini cannons", price = 299, slots = 3 },
 	slots5 = { id = 2005569870, order = 4, name = "+5 Mini Cannon Slots", desc = "Equip 5 more mini cannons", price = 549, slots = 5 },

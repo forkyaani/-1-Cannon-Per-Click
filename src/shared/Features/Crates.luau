@@ -42,8 +42,8 @@ Crates.Currency = {
 }
 -- A crate bought with one of these is a "paid random item" under Roblox's rules: the server asks PolicyService
 -- whether the player may buy one before it sells it. Gems are on the list because they are meant to be sold
--- for Robux (docs/GEMS.md): from that day on a gem crate is paid for with money.
-Crates.Paid = { robux = true, diamonds = true }
+-- for Robux (docs/GEMS.md): from that day on a gem crate is paid for with money. The list is the eggs' too.
+Crates.Paid = Config.PaidCurrencies
 
 -- The rewards that are a number of something, by the key their loot rows use.
 local REWARD_CURRENCY = {

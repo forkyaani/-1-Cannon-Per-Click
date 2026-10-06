@@ -22,6 +22,7 @@ local Leaderboard = require(script.Parent.Leaderboard)
 local Marketplace = require(script.Parent.Marketplace)
 local Passes = require(script.Parent.Passes)
 local Plots = require(script.Parent.Plots)
+local Policy = require(script.Parent.Policy)
 
 local Game = {}
 
@@ -1333,6 +1334,14 @@ local function hatchEgg(player: Player, data, state, egg, count: number)
 		notify(player, `Clear {Config.waveLabel(egg.unlock)} to unlock the {egg.name}`, "bad")
 		return
 	end
+	-- An egg paid for with gems is a paid random item: not sold where Roblox restricts those (Policy.luau).
+	if Config.PaidCurrencies[egg.currency] then
+		local ok, why, kind = Policy.maySell(player, `The {egg.name}`)
+		if not ok then
+			notify(player, why, kind)
+			return
+		end
+	end
 	local results = {}
 	for _ = 1, count do
 		local result = hatchOne(player, data, state, egg)
@@ -1494,9 +1503,20 @@ function actions.buyPass(player: Player, _data, _state, key: unknown)
 	if typeof(key) ~= "string" or not Config.Passes[key] then
 		return
 	end
+	local pass = Config.Passes[key]
 	if Passes.owns(player, key) then
-		notify(player, `You already own {Config.Passes[key].name}`, "info")
-	elseif not Passes.prompt(player, key) then
+		notify(player, `You already own {pass.name}`, "info")
+		return
+	end
+	-- A pass that changes the odds of a roll (x3 Luck) is not sold where paid random items are restricted.
+	if pass.odds then
+		local ok, why, kind = Policy.maySell(player, pass.name)
+		if not ok then
+			notify(player, why, kind)
+			return
+		end
+	end
+	if not Passes.prompt(player, key) then
 		notify(player, `{Config.Passes[key].name} is not on sale yet`, "info")
 	end
 end
@@ -1888,6 +1908,7 @@ local function onPlayerAdded(player: Player)
 	local data, loaded = Data.load(player)
 	-- How long the player was away, read before anything can save (a save stamps lastSeen anew).
 	local away = if loaded and data.lastSeen > 0 then math.max(0, os.time() - data.lastSeen) else 0
+	Policy.ask(player) -- does not wait: a paid random item is refused until Roblox has answered
 	Passes.load(player)
 	if not player.Parent then
 		Passes.unload(player)

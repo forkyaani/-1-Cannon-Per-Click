@@ -8,15 +8,14 @@
 --   rarity   the mini cannon's or the item's, when it has one
 --   chance   the per cent chance that reward had
 --   kept     mini cannons only: false when storage was full and it was released
-local PolicyService = game:GetService("PolicyService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Items = require(ReplicatedStorage.Shared.Items)
 local Shared = require(ReplicatedStorage.Shared.Features.Crates)
 local Build = require(script.Parent.Parent.Build)
 local Marketplace = require(script.Parent.Parent.Marketplace)
+local Policy = require(script.Parent.Parent.Policy)
 local Huge = require(script.Parent.Huge)
 
 local Crates = {}
@@ -184,11 +183,8 @@ function Crates.start(Game)
 
 	------------------------------------------------------------------------------------------------
 	-- Paid random items. Roblox does not allow them to be sold to players in some regions, and says which
-	-- through PolicyService. The answer is asked for when a player joins and remembered while they stay.
+	-- through PolicyService. Policy.luau asks when a player joins and remembers the answer while they stay.
 	------------------------------------------------------------------------------------------------
-	local restricted = {} -- [player] = whether they may not buy paid random items; nil until Roblox has answered
-	local asking = {} -- [player] = true while the question is on its way
-
 	-- What the CRATES window needs to know about its player.
 	local function publish(player: Player, data)
 		local save = today(data)
@@ -196,50 +192,27 @@ function Crates.start(Game)
 			claimDay = save.claimDay,
 			buyDay = save.buyDay,
 			bought = save.bought,
-			restricted = restricted[player] == true,
+			restricted = Policy.restricted(player) == true,
 		})
 	end
 
-	local function askPolicy(player: Player)
-		if asking[player] then
-			return
+	Policy.changed:Connect(function(player: Player)
+		local data = Game.data(player)
+		if data then
+			publish(player, data)
 		end
-		asking[player] = true
-		task.spawn(function()
-			local ok, info = pcall(PolicyService.GetPolicyInfoForPlayerAsync, PolicyService, player)
-			asking[player] = nil
-			if not player.Parent then
-				return
-			end
-			if ok and typeof(info) == "table" then
-				restricted[player] = info.ArePaidRandomItemsRestricted == true
-			elseif RunService:IsStudio() then
-				-- Only a play test may go on without an answer. In a live game no answer means no sale.
-				restricted[player] = false
-			else
-				warn(`[Crates] policy lookup failed for {player.Name}: {info}`)
-				return
-			end
-			local data = Game.data(player)
-			if data then
-				publish(player, data)
-			end
-		end)
-	end
+	end)
 
 	-- Whether the crate may be sold to the player. Says why when it may not.
 	local function maySell(player: Player, crate): boolean
-		if not Shared.Paid[crate.price.currency] or restricted[player] == false then
+		if not Shared.Paid[crate.price.currency] then
 			return true
 		end
-		if restricted[player] then
-			Game.notify(player, `The {crate.name} cannot be sold in your region`, "bad")
-		else
-			-- No answer yet, or the lookup failed: ask again rather than guess.
-			askPolicy(player)
-			Game.notify(player, `Still checking whether the {crate.name} can be sold in your region. Try again in a moment`, "info")
+		local ok, why, kind = Policy.maySell(player, `The {crate.name}`)
+		if not ok then
+			Game.notify(player, why, kind)
 		end
-		return false
+		return ok
 	end
 
 	------------------------------------------------------------------------------------------------
@@ -390,8 +363,8 @@ function Crates.start(Game)
 				-- buyCrates only prompts a player who may buy, but a client can open the prompt by itself:
 				-- nothing is handed over unless Roblox has said this player may buy paid random items. The
 				-- receipt stays unprocessed, so Roblox asks again later and refunds what is never granted.
-				if restricted[player] ~= false then
-					askPolicy(player)
+				if Policy.restricted(player) ~= false then
+					Policy.ask(player)
 					return false
 				end
 				if not Game.items.give(player, crate.id, 1) then
@@ -458,12 +431,11 @@ function Crates.start(Game)
 
 	Game.on("ready", function(player: Player, data)
 		publish(player, data)
-		askPolicy(player)
+		Policy.ask(player)
 	end)
 
 	Game.on("leave", function(player: Player)
 		nextRoll[player] = nil
-		restricted[player] = nil
 	end)
 
 	buildStand()

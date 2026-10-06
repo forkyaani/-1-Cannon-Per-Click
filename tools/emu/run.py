@@ -111,6 +111,11 @@ def install_harness(world):
     def set_studio(value):
         world.is_studio = value is True
 
+    def set_policy(restricted=None):
+        # What PolicyService answers from now on: true = paid random items are restricted, false = allowed,
+        # nil = the lookup fails. The game asks once per player, so set it before the player joins.
+        world.policy_restricted = restricted if isinstance(restricted, bool) else None
+
     def set_time(unix):
         world.clock = float(unix)
 
@@ -121,7 +126,7 @@ def install_harness(world):
         "addPlayer": add_player, "removePlayer": remove_player, "runClient": run_client, "step": step,
         "click": click, "forceRandom": force_random, "prompts": prompts, "receipt": receipt,
         "errors": lambda: len(interp.errors), "flush": interp.flush, "advance": world.advance,
-        "setStudio": set_studio, "setTime": set_time, "failOrdered": fail_ordered, "now": lambda: world.clock,
+        "setStudio": set_studio, "setPolicy": set_policy, "setTime": set_time, "failOrdered": fail_ordered, "now": lambda: world.clock,
         "clearRandom": lambda: world.forced_random.clear(), "fire": fire, "load": load,
         "randomLeft": lambda: len(world.forced_random),
     })
