@@ -160,6 +160,10 @@ needs a second pass doubles its job.
 - [ ] I5. Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
 - [ ] I6. Publish **[S]** · **5 min**
 
+## J. Asked for on 7 Oct (Yaani)
+
+- [ ] J1. FUSE window: a **FUSE ALL** button beside FILL / CLEAR / FUSE. One press fuses every set of 3 of the same mini cannon and tier the player has, repeating up the tiers until no set is left; equipped and enchanted ones are kept as the first pick so nothing is lost; a result line says what was made. Server action plus the button (`Features/Fusion`) · **45 min**
+
 ## After launch
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
