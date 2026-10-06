@@ -131,7 +131,7 @@ needs a second pass doubles its job.
 
 ## G. Sky, light and sound
 
-- [ ] G1. Sky and lighting per place in code (Earth, Moon, Mars, Neptune, The Sun, marketplace) · **1 h 00**
+- [ ] G1. Sky and lighting per place in code (Earth, Moon, Mars, Neptune, The Sun, marketplace) · **1 h 00** · **d1v is on this (6 Oct evening)**
 - [ ] G2. `UI.sound` helper and button click / window open / error sounds · **30 min**
 - [ ] G3. Fight sounds: shot, hit, monster pop, boss arrive, level cleared · **30 min**
 - [ ] G4. Hatch sounds: shake, crack, reveal · **20 min**
@@ -142,7 +142,7 @@ needs a second pass doubles its job.
 
 - [ ] I1. Game icon (512 px) from `docs/ui-vision/game-icon.png` · **20 min**
 - [ ] I2. Three thumbnails · **30 min**
-- [ ] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min**
+- [ ] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min** · **d1v is on this (6 Oct evening)**
 - [ ] I4. Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min**
 - [ ] I5. Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
 - [ ] I6. Publish **[S]** · **5 min**
