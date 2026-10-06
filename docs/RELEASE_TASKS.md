@@ -113,8 +113,8 @@ needs a second pass doubles its job.
 
 ## E. Eggs and mini cannons
 
-- [ ] E1. Test the egg prompts (E / R / F, no popup) **[S]** · **15 min**
-- [ ] E2. Check the "what's inside" window on an egg; fix what looks poor · **30 min**
+- [x] E1. Test the egg prompts (E / R / F, no popup) **[S]** · **15 min**
+- [x] E2. Check the "what's inside" window on an egg; fix what looks poor · **30 min**
 - [ ] E3. Earth: Basic Egg and Forest Egg models · **20 min**
 - [ ] E4. Earth: the mini cannons of those two eggs · **1 h 00**
 - [ ] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min**
