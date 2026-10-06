@@ -119,7 +119,7 @@ needs a second pass doubles its job.
 - [x] E4. Earth: the mini cannons of those two eggs · **1 h 00** · d1v, 6 Oct: ten, `mini_wooden` to `mini_jade`, same file; photos `world_row_basic.jpg`, `world_row_forest.jpg`. Not yet imported (E7)
 - [x] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min** · d1v, 6 Oct: eight eggs, same file; photos `world_row_moon.jpg`, `world_row_frost.jpg`. Built with `minis.py -- <folder> full worlds`. Not yet imported (E7)
 - [ ] E6. Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
-- [ ] E7. Import eggs and mini cannons **[S]** · **20 min** · import `assets/models/minis/world_minis.fbx`, then run `tools/studio/add_minis.luau` (it only adds; `organize_imports.luau` would empty the islands and creatures)
+- [ ] E7. (d1v, started 6 Oct 21:20) Import eggs and mini cannons **[S]** · **20 min** · import `assets/models/minis/world_minis.fbx`, then run `tools/studio/add_minis.luau` (it only adds; `organize_imports.luau` would empty the islands and creatures)
 
 ## F. Marketplace
 
