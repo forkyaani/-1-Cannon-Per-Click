@@ -58,16 +58,16 @@ needs a second pass doubles its job.
 - [x] C1. Earth island (live)
 - [x] C2. Moon island: theme, render, check the photo · **20 min**
 - [x] C3. Moon island: colliders list in `Islands.SOLIDS` · **10 min**
-- [ ] C4. Moon island: import and test **[S]** · **15 min**
+- [x] C4. Moon island: import and test **[S]** · **15 min** Seen 6 Oct (d1v's Studio): dressed, eggs, stall, portal and boss statue in place, no errors.
 - [x] C5. Mars island: theme, render, check the photo · **20 min**
 - [x] C6. Mars island: colliders list in `Islands.SOLIDS` · **10 min**
-- [ ] C7. Mars island: import and test **[S]** · **15 min**
+- [x] C7. Mars island: import and test **[S]** · **15 min** Seen 6 Oct (d1v's Studio): dressed, eggs, stall, portal and boss statue in place, no errors.
 - [x] C8. Neptune island: theme, render, check the photo · **20 min**
 - [x] C9. Neptune island: colliders list in `Islands.SOLIDS` · **10 min**
-- [ ] C10. Neptune island: import and test **[S]** · **15 min**
+- [x] C10. Neptune island: import and test **[S]** · **15 min** Seen 6 Oct (d1v's Studio): dressed, eggs, stall, portal and boss statue in place, no errors.
 - [x] C11. The Sun island: theme, render, check the photo · **20 min**
 - [x] C12. The Sun island: colliders list in `Islands.SOLIDS` · **10 min**
-- [ ] C13. The Sun island: import and test **[S]** · **15 min**
+- [x] C13. The Sun island: import and test **[S]** · **15 min** Seen 6 Oct (d1v's Studio): dressed, eggs, stall, portal and boss statue in place, no errors.
 
 ## D. Monsters and bosses
 
@@ -75,7 +75,7 @@ needs a second pass doubles its job.
 - [x] D2. `Models.creatureFor`: each boss uses its own model, not the shared one · **15 min**
 - [x] D3. Earth boss: Ogre Chief · **10 min**
 - [x] D4. Earth boss: Earth Titan · **10 min**
-- [ ] D5. Earth: import the batch and test a wave **[S]** · **20 min**
+- [x] D5. Earth: import the batch and test a wave **[S]** · **20 min** Seen 6 Oct (d1v's Studio): all 7 are models, coloured, facing forward (line-up through `Models.monster`). No wave of this world was watched in a fight.
 - [x] D6. Moon: Moon Rockling · **10 min**
 - [x] D7. Moon: Crater Crawler · **10 min**
 - [x] D8. Moon: Lunar Bat · **10 min**
@@ -83,7 +83,7 @@ needs a second pass doubles its job.
 - [x] D10. Moon: Moon Golem · **10 min**
 - [x] D11. Moon boss: Dark Side Stalker · **10 min**
 - [x] D12. Moon boss: Moon Colossus · **10 min**
-- [ ] D13. Moon: import the batch and test a wave **[S]** · **20 min**
+- [x] D13. Moon: import the batch and test a wave **[S]** · **20 min** Seen 6 Oct (d1v's Studio): all 7 are models, coloured, facing forward (line-up through `Models.monster`). A Moon wave was also watched on the Moon base.
 - [x] D14. Mars: Martian Grunt · **10 min**
 - [x] D15. Mars: Sand Worm · **10 min**
 - [x] D16. Mars: Red Scorpion · **10 min**
@@ -91,7 +91,7 @@ needs a second pass doubles its job.
 - [x] D18. Mars: Rover Bot · **10 min**
 - [x] D19. Mars boss: Martian Warlord · **10 min**
 - [x] D20. Mars boss: Olympus Guardian · **10 min**
-- [ ] D21. Mars: import the batch and test a wave **[S]** · **20 min**
+- [x] D21. Mars: import the batch and test a wave **[S]** · **20 min** Seen 6 Oct (d1v's Studio): all 7 are models, coloured, facing forward (line-up through `Models.monster`). No wave of this world was watched in a fight.
 - [x] D22. Neptune: Frost Imp · **10 min**
 - [x] D23. Neptune: Snow Blob · **10 min**
 - [x] D24. Neptune: Ice Wraith · **10 min**
@@ -99,7 +99,7 @@ needs a second pass doubles its job.
 - [x] D26. Neptune: Yeti · **10 min**
 - [x] D27. Neptune boss: Blizzard Wraith · **10 min**
 - [x] D28. Neptune boss: Frost Giant · **10 min**
-- [ ] D29. Neptune: import the batch and test a wave **[S]** · **20 min**
+- [x] D29. Neptune: import the batch and test a wave **[S]** · **20 min** Seen 6 Oct (d1v's Studio): all 7 are models, coloured, facing forward (line-up through `Models.monster`). No wave of this world was watched in a fight.
 - [x] D30. The Sun: Magma Blob · **10 min**
 - [x] D31. The Sun: Fire Imp · **10 min**
 - [x] D32. The Sun: Lava Crab · **10 min**
@@ -107,7 +107,7 @@ needs a second pass doubles its job.
 - [x] D34. The Sun: Cinder Golem · **10 min**
 - [x] D35. The Sun boss: Inferno Hound · **10 min**
 - [x] D36. The Sun boss: Solar Titan · **10 min**
-- [ ] D37. The Sun: import the batch and test a wave **[S]** · **20 min**
+- [x] D37. The Sun: import the batch and test a wave **[S]** · **20 min** Seen 6 Oct (d1v's Studio): all 7 are models, coloured, facing forward (line-up through `Models.monster`). No wave of this world was watched in a fight.
 
 ## E. Eggs and mini cannons
 
