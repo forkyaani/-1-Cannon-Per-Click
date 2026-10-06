@@ -19,6 +19,16 @@ twice in parallel. So:
 4. **When done:** tick it, replace the claim with a short note of what was made and where, push.
 5. A claim older than a day with no commits behind it may be taken over, with a note saying so.
 
+### Who has what (split on 7 Oct; d1v has the bigger share because he has more usage)
+
+Every open job carries its owner's name: **[d1v]** or **[Yaani]**. Work only on your own; to swap one, change
+the name on its line and push before starting.
+
+| Owner | Jobs | About |
+|---|---|---|
+| **d1v** | E6 remaining mini cannons · F1 to F5 the marketplace · I2 thumbnails · I5 the phone play-through | 6 h 30 |
+| **Yaani** | J1 Fuse All · J2 the new STORE · I4 refresh the place file · I6 publish | 4 h |
+
 **6 Oct, 06:50:** all 14 model files (5 bases, 4 new islands, 5 creature batches) are imported into the group's place
 with `setup_models.luau` and saved. All five bases were seen in a play test (the base swaps as the world changes); the new monsters
 were seen walking on The Sun. The islands and a proper look at each monster batch still need their test.
@@ -131,16 +141,16 @@ needs a second pass doubles its job.
 - [x] E3. Earth: Basic Egg and Forest Egg models · **20 min** · d1v, 6 Oct: `egg_basic`, `egg_forest` in `assets/models/minis/world_minis.fbx`. Not yet imported (E7)
 - [x] E4. Earth: the mini cannons of those two eggs · **1 h 00** · d1v, 6 Oct: ten, `mini_wooden` to `mini_jade`, same file; photos `world_row_basic.jpg`, `world_row_forest.jpg`. Not yet imported (E7)
 - [x] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min** · d1v, 6 Oct: eight eggs, same file; photo `world_row_mars.jpg` (Moon's and Comet's stand in their own rows). Built with `minis.py -- <folder> full worlds`. Not yet imported (E7)
-- [ ] E6. (for d1v: Yaani's side will not take this) (DECIDED by Yaani, 6 Oct: d1v's style is the one to use, `minis.py ... worlds`. Still to make in that style: Mars, Neptune and The Sun's mini cannons, and the hidden Secrets and Huges of all five worlds. The set from `world_minis.py` (`<world>_minis.fbx`, commit 7680145) is NOT to be imported over d1v's; it is only a stand-in for ids d1v's set does not have yet.) (Moon's ten done by d1v, 6 Oct: `mini_moonrock` to `mini_galaxy` in `world_minis.fbx`, photos `world_row_moon.jpg`, `world_row_comet.jpg`. Mars, Neptune and The Sun's thirty done by d1v, 6 Oct 22:00: all 50 ordinary mini cannons of worlds 1 to 5 are in `world_minis.fbx`, one photo per egg, `world_row_<egg id>.jpg`. Imported 6 Oct 22:01: the place holds 75 mini cannons (all 50 of these and the marketplace's 25) and 15 eggs. Ten of the new ones were built with `Models.mini` in a play test and came out whole and in colour; none has been seen firing from a base. The 20 Secrets and 7 coin-egg Huges are modelled (d1v, 6 Oct 22:25): `mini_glitched<egg>`, `mini_forbidden<egg>`, `mini_huge<name>` in `world_minis.fbx`, photos `world_row_secrets1..4.jpg`, `world_row_huges1..2.jpg`. Not yet imported. No model yet: the Secrets of the Gem and Halloween eggs, and the Gemstone, Pumpkin, Tycoon and Spectre Huges) Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
+- [ ] E6. **[d1v]** (for d1v: Yaani's side will not take this) (DECIDED by Yaani, 6 Oct: d1v's style is the one to use, `minis.py ... worlds`. Still to make in that style: Mars, Neptune and The Sun's mini cannons, and the hidden Secrets and Huges of all five worlds. The set from `world_minis.py` (`<world>_minis.fbx`, commit 7680145) is NOT to be imported over d1v's; it is only a stand-in for ids d1v's set does not have yet.) (Moon's ten done by d1v, 6 Oct: `mini_moonrock` to `mini_galaxy` in `world_minis.fbx`, photos `world_row_moon.jpg`, `world_row_comet.jpg`. Mars, Neptune and The Sun's thirty done by d1v, 6 Oct 22:00: all 50 ordinary mini cannons of worlds 1 to 5 are in `world_minis.fbx`, one photo per egg, `world_row_<egg id>.jpg`. Imported 6 Oct 22:01: the place holds 75 mini cannons (all 50 of these and the marketplace's 25) and 15 eggs. Ten of the new ones were built with `Models.mini` in a play test and came out whole and in colour; none has been seen firing from a base. The 20 Secrets and 7 coin-egg Huges are modelled (d1v, 6 Oct 22:25): `mini_glitched<egg>`, `mini_forbidden<egg>`, `mini_huge<name>` in `world_minis.fbx`, photos `world_row_secrets1..4.jpg`, `world_row_huges1..2.jpg`. Not yet imported. No model yet: the Secrets of the Gem and Halloween eggs, and the Gemstone, Pumpkin, Tycoon and Spectre Huges) Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
 - [x] E7. Import eggs and mini cannons **[S]** · **20 min** · d1v, 6 Oct 21:36: `world_minis.fbx` imported under Astral Crafts and filed (the place now holds 45 mini cannons and 15 eggs; nothing else touched). Seen in a play test: the Basic and Forest eggs stand on Earth's island as models, 15 of the world's eggs are models. The 20 new mini cannons are filed by pet id but not yet seen firing. The eggs first went in as `basic`, `forest`...: the game's ids are `basicegg`, `forestegg`..., so they were renamed in the place and in `minis.py`. For a later import use `tools/studio/add_minis.luau` or `setup_models.luau`. `place/ProjectEgg.rbxl` is NOT refreshed yet (I4)
 
 ## F. Marketplace
 
-- [ ] F1. Finish the marketplace model (final render was interrupted); check all four photos · **30 min**
-- [ ] F2. `Marketplace.wear`: hook that puts it over the part-built town · **40 min**
-- [ ] F3. Halloween dress on while the event runs · **15 min**
-- [ ] F4. Colliders list · **10 min**
-- [ ] F5. Import and test **[S]** · **20 min**
+- [ ] F1. **[d1v]** Finish the marketplace model (final render was interrupted); check all four photos · **30 min**
+- [ ] F2. **[d1v]** `Marketplace.wear`: hook that puts it over the part-built town · **40 min**
+- [ ] F3. **[d1v]** Halloween dress on while the event runs · **15 min**
+- [ ] F4. **[d1v]** Colliders list · **10 min**
+- [ ] F5. **[d1v]** Import and test **[S]** · **20 min**
 
 ## G. Sky, light and sound
 
@@ -154,17 +164,18 @@ needs a second pass doubles its job.
 ## I. Launch
 
 - [x] I1. Game icon (512 px) from `docs/ui-vision/game-icon.png` · **20 min** Done 6 Oct (d1v): `assets/page/game-icon-512.png`, the concept art scaled down. **Not uploaded yet** (it goes through moderation: by Friday morning).
-- [ ] I2. Three thumbnails · **30 min**
+- [ ] I2. **[d1v]** Three thumbnails · **30 min**
 - [x] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min** Done 6 Oct (d1v): six passes on sale in the group's experience at the prices in `Config.Passes`, ids in the config. No icons yet; the six Robux products (Shiny key, Robux crate, four packs) still have id 0.
-- [ ] I4. Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min**
-- [ ] I5. Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
-- [ ] I6. Publish **[S]** · **5 min**
+- [ ] I4. **[Yaani]** Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min**
+- [ ] I5. **[d1v]** Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
+- [ ] I6. **[Yaani]** Publish **[S]** · **5 min**
 
 ## J. Asked for on 7 Oct (Yaani)
 
 - [x] J0. Enchantment keys for gems, no daily limit: 50 gems, Shiny 1,000 gems, in the island shop from The Sun's island on (`Features/IslandShop`). Done 7 Oct (Yaani's side); emulator test passes, not yet seen in Studio.
 - [x] J0b. Keys from more places (7 Oct, Yaani's side): Halloween shop sells them for candy (1,000; Shiny 15,000, `Config.EventShop`, new offer kind `item`); Pumpkin and Cursed Crates drop them; Boss Chest drops them twice as often (`Features/Crates`). Emulator test passes, not yet seen in Studio. These are drop rates: balance may want to tune them.
-- [ ] J1. FUSE window: a **FUSE ALL** button beside FILL / CLEAR / FUSE. One press fuses every set of 3 of the same mini cannon and tier the player has, repeating up the tiers until no set is left; equipped and enchanted ones are kept as the first pick so nothing is lost; a result line says what was made. Server action plus the button (`Features/Fusion`) · **45 min**
+- [ ] J1. **[Yaani]** FUSE window: a **FUSE ALL** button beside FILL / CLEAR / FUSE. One press fuses every set of 3 of the same mini cannon and tier the player has, repeating up the tiers until no set is left; equipped and enchanted ones are kept as the first pick so nothing is lost; a result line says what was made. Server action plus the button (`Features/Fusion`) · **45 min**
+- [ ] J2. **[Yaani]** STORE window redone with three tabs: GEMS (gem packs for Robux), ITEMS (priced in gems: keys, Boss Chests, boosts), PASSES. Gems are the main currency. Waits for Yaani's yes on the product list and prices; the Robux products have to be created in the group's experience (d1v or Yaani) · **3 h 00**
 
 ## After launch
 
