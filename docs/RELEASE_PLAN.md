@@ -90,7 +90,7 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 | B5 | P0 | First join: the level keeps running behind the welcome cards; the cards' and the marker's size on a real phone | checked on a phone with a new save | | open |
 | B19 | P0 | A new player's free cannon stands by the monsters' portal, not by the gate: the starter pad (`Layout.PADS[1]`) and the old twelfth pad swapped places, so the pad by the gate is for sale | a fresh save in a play test has one cannon, at the portal end | Yaani | done 6 Oct in code and tests; not yet seen in Studio |
 | B6 | P0 | Loading screen in `ReplicatedFirst` (not mapped in `default.project.json` today), held until the base has opened, which also hides the "Opening your base..." room (D11, D12, M24) | no grey room and no Roblox default screen on joining | Victor | done 6 Oct. Run in Studio from a place built from `main`: the script runs and takes itself away with no error. Studio loads too fast to see it: how it looks, and whether the grey room ever shows on a slow phone, is still to be seen |
-| B7 | P0 | Sound hooks: `UI.sound` does not exist and the only sounds in the game are six crate sounds with id 0 (D13). The hooks are listed in `docs/UI_VISION.md`, "Sound hooks" | every hook plays what F1 uploads | | open |
+| B7 | P0 | Sound hooks: `UI.sound` does not exist and the only sounds in the game are six crate sounds with id 0 (D13). The hooks are listed in `docs/UI_VISION.md`, "Sound hooks" | every hook plays what F1 uploads | Victor | done 6 Oct: `UI.sound` and `UI.music` in `src/client/UI.luau`, every hook wired. Ids picked by name, not yet listened to |
 | B8 | P1 | Particles with their own texture (D15). The health bar and backpack were switched off on 6 Oct (Yaani) | not Roblox's default sparkle | | open |
 | B9 | P0 | Paid random items: the odds are shown for every egg, crate and enchant roll, and `PolicyService` is asked before each paid roll (it is in Crates and Enchant; check the x3 Luck pass and the eggs) | a restricted test account cannot buy a random item | | open |
 | B10 | P0 | Halloween event end to end: candy drops, the four eggs, the candy shop, the event leaderboard, the top five's rewards paid once on the next join, everything gone after `Config.Halloween.endsAt` (1 November 2026, 00:00 UTC) | played with a test end time five minutes away | | open |
@@ -153,7 +153,7 @@ showcase still build mini cannons from parts (B14).
 | E3 | P1 | Reward moments: hatch reveal, level clear, coin flight (task 7) | seen | | open |
 | E4 | P0 | Icons: 6 pass icons and 6 product icons for Creator Hub (section C); icon sheets C, D and E for boosts, items, crates, world medallions and ammo (task 6) are P1 | uploaded | | open |
 | E5 | P1 | World signs through one kit sign instead of raw white labels (U1 to U4) | the base's and marketplace's signs | | open |
-| E6 | P1 | Skybox, atmosphere and clouds for Earth, the marketplace and the Halloween look (D1, D2, D4); lighting technology set once in Studio (D3) | not Roblox's default sky | | open |
+| E6 | P1 | Skybox, atmosphere and clouds for Earth, the marketplace and the Halloween look (D1, D2, D4); lighting technology set once in Studio (D3) | not Roblox's default sky | Victor | done 6 Oct in code (`Effects.luau`, a look per world, the marketplace and Halloween); seen in Studio on Earth only |
 
 ### F. Sound
 
@@ -161,9 +161,9 @@ The game is silent today.
 
 | # | P | Task | Done when | Owner | Status |
 |---|---|---|---|---|---|
-| F1 | P0 | Effects, uploaded under Astral Crafts or taken from Roblox's licensed library: button, purchase, tower shot (one per look), mini cannon shot, monster death, boss arrives, boss dies, level cleared, level failed, hatch roll and reveal by rarity, crate opening (six ids in `CrateOpening.SOUNDS`), coin pick-up, error | ids in the code, heard on a phone | | open |
-| F2 | P0 | Music: one loop each for the base, the marketplace and an island, and the Halloween one | plays, loops cleanly, lowers in windows | | open |
-| F3 | P0 | A music and a sound switch in settings, saved | both work | | open |
+| F1 | P0 | Effects, uploaded under Astral Crafts or taken from Roblox's licensed library: button, purchase, tower shot (one per look), mini cannon shot, monster death, boss arrives, boss dies, level cleared, level failed, hatch roll and reveal by rarity, crate opening (six ids in `CrateOpening.SOUNDS`), coin pick-up, error | ids in the code, heard on a phone | Victor | done 6 Oct from Roblox's own library (`UI.Sounds`); tower and mini cannon shots are silent on purpose (id 0). Nobody has listened yet |
+| F2 | P0 | Music: one loop each for the base, the marketplace and an island, and the Halloween one | plays, loops cleanly, lowers in windows | Victor | done 6 Oct for base, marketplace and island (`UI.Music`); no Halloween loop, and it does not lower in windows |
+| F3 | P0 | A music and a sound switch in settings, saved | both work | Victor | claimed 6 Oct |
 
 ### G. Roblox: the experience, the group, the accounts
 
