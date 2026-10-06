@@ -2,6 +2,22 @@
 -- together, then starts every feature module in Features (docs/ARCHITECTURE.md).
 -- The player walks everywhere with Roblox's own camera and controls: nothing here listens for taps.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+
+-- Roblox's own health bar and backpack have no use here: nobody takes damage and there are no tools.
+-- The call fails while the core scripts are still loading, so it is tried until it goes through.
+task.spawn(function()
+	for _ = 1, 20 do
+		local done = pcall(function()
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+		end)
+		if done then
+			return
+		end
+		task.wait(0.5)
+	end
+end)
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Format = require(ReplicatedStorage.Shared:WaitForChild("Format"))

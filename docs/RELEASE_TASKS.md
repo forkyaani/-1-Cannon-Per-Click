@@ -134,7 +134,7 @@ needs a second pass doubles its job.
 - [ ] G3. Fight sounds: shot, hit, monster pop, boss arrive, level cleared · **30 min**
 - [ ] G4. Hatch sounds: shake, crack, reveal · **20 min**
 - [ ] G5. One music loop for the base, one for the marketplace · **30 min**
-- [ ] G6. Switch off Roblox's default health bar and backpack · **5 min**
+- [x] G6. Switch off Roblox's default health bar and backpack · **5 min**
 
 ## I. Launch
 
