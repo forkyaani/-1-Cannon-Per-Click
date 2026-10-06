@@ -5,13 +5,15 @@ gets out of them, and how to change them. Nothing here has been played by a pers
 result, and section 5 lists what the simulator does not know.
 
 > **6 October retune, not yet written into the sections below.** Towers deal 4x and mini cannons 5.25x what
-> they did (`Config.Towers`, `Config.PetDps` = 525), and monster health grows 13.1% a level instead of 17.2%
-> (`Config.Level.hpGrowth`). The rule since 6 Oct (Yaani): no world takes longer than 1:30; section 1's 44
-> hours are no longer the target. `sim.py`, ordinary player, at 3x, seed 1: 7, 9, 5, 9, 11, 16, 9, 28, 22, 6
-> and 21 minutes, then 1:11: 3:35 in all (3:30 to 4:00 and a longest world of 0:52 to 1:22 over four seeds).
-> The times are uneven and most worlds are far under the limit: `fit.py` has not been run on the new curve.
-> The edge is sharp: 1.130 is a 2 hour game, 1.133 has a world of 3:51, 1.1365 is a 52 hour game. A player without
-> the 3x Speed pass plays at 2x, so about one and a half times these.
+> they did (`Config.Towers`, `Config.PetDps` = 525), monster health grows 13.1% a level instead of 17.2%
+> (`Config.Level.hpGrowth`), and the coins of every world were fitted again (`Config.Level.worldPay`, and
+> `headStart` for Earth's first 26 levels). The pace is Yaani's (6 Oct): about 30 minutes a world, the last
+> three or four longer, none over 1:30; section 1's 44 hours are no longer the target. `sim.py`, ordinary
+> player at 3x, six seeds: worlds 1 to 8 take 20 to 40 minutes each (a few runs 6 to 48), worlds 9 to 12
+> average 40, 50, 60 and 70 minutes but swing from 5 minutes to 1:52 from one player to the next (3 of 24
+> over 1:30), and the game takes 6 to 8 hours. A player without the 3x Speed pass plays at 2x: about one and
+> a half times these. The fit was a script of this session (the anchors by bisection on `sim.py` with the real
+> `Config.luau`); `fit.py` works on the draft in `model.py`, which no longer agrees with `Config.luau`.
 
 ## 1. Targets and what the simulator measures
 

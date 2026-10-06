@@ -369,11 +369,15 @@ Config.Level = {
 	-- the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
 	-- tools/balance/fit.py sets the anchors, one world at a time, so that every world takes the simulated
 	-- player its target time (docs/BALANCE.md).
-	worldPay = { 15, 5000, 2.553e6, 1.845e9, 1.981e12, 1.268e15, 1.655e18, 1.002e21, 8.768e23, 1.149e27, 6.779e29, 6.504e32 },
+	-- Fitted 6 Oct to Yaani's pace: about 30 minutes a world, the last four 40, 50, 60 and 70 on the average
+	-- of six seeds. One player's world can take twice its average, and none should pass 1:30.
+	worldPay = { 0.453, 868.9, 5.697e5, 1.437e9, 3.442e11, 5.99e14, 5.719e17, 1.002e21, 4.014e23, 6.554e26, 6.779e29, 8.351e32 },
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
 	-- pads and towers come quickly, and the grind sets in as the head start runs out.
-	headStart = {},
+	-- Earth's anchor is 33 times lower than the 15 it was, and this gives the 33 times back at level 1 and
+	-- less each level: the first 26 levels pay about what level 1 always paid, then the curve takes over.
+	headStart = { 33.1, 28.9, 25.2, 22, 19.2, 16.8, 14.7, 12.8, 11.2, 9.75, 8.51, 7.43, 6.49, 5.66, 4.94, 4.32, 3.77, 3.29, 2.87, 2.51, 2.19, 1.91, 1.67, 1.46, 1.27, 1.11 },
 	speed = 18, -- studs per second; the path is Layout.PATH_LENGTH (359) studs long
 	gap = 1.25, -- seconds between two spawns
 	-- HP multipliers of the very first levels. A brand-new player who touches nothing must not be stopped by
