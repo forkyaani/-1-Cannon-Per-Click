@@ -894,7 +894,7 @@ do
 	run(6)
 	eq(events.hugeShot, 0, "nor with no character near the monsters")
 	player.Character = character -- at the top of the plot, by the portal
-	debug("wave", 300)
+	debug("wave", Config.TotalWaves) -- the last level: its monsters outlive the mini cannons long enough to be shot at
 	run(6)
 	check(events.hugeShot > 0, "Huge Shots at monsters near the player")
 	local coinSource
@@ -1328,7 +1328,7 @@ do
 	end
 	local totals = Feature.totals(state)
 	check(totals.frostbite ~= nil and math.abs(totals.frostbite.sum - 2 * 0.15) < 1e-9, "two Frostbite III are worn: 30% of shots chill")
-	debug("wave", 300)
+	debug("wave", Config.TotalWaves) -- the last level: monsters that outlive the strongest mini cannons
 	local chilled, burning = false, false
 	for _ = 1, 16 do
 		run(0.5)
@@ -2412,14 +2412,14 @@ do
 	check(same(saved.coins, coins + twenty.coins), "and only once")
 
 	-- Towers too weak for the best level: they farm the highest level they can clear.
-	saved.bestCleared = 300
+	saved.bestCleared = Config.TotalWaves
 	debug("towers", 1)
 	leave(who)
 	who, saved, session = rejoin(3600)
 	local low = pending(who)
 	local dps = who:GetAttribute("CannonPower")
-	check(Offline.clearSeconds(Config.levelPlan(300), dps, 1, 0) == nil, "level 1 towers cannot clear level 300")
-	check(low.level >= 1 and low.level < 300 and low.coins > 0, `so they farmed level {low.level} for {low.coins} coins`)
+	check(Offline.clearSeconds(Config.levelPlan(Config.TotalWaves), dps, 1, 0) == nil, "level 1 towers cannot clear the last level")
+	check(low.level >= 1 and low.level < Config.TotalWaves and low.coins > 0, `so they farmed level {low.level} for {low.coins} coins`)
 	-- (The margin of 3 is on the towers' half, as it always was. The mini cannons' flat DPS, which is most of
 	-- what level 1 towers have beside them, is counted as it is: that is what farms so high a level.)
 	local reach = who:GetAttribute("TowerDps") * 3 + who:GetAttribute("PetDps")

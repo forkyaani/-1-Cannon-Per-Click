@@ -657,15 +657,18 @@ end
 -- A mini cannon named like the tier of one of the player's towers (Mini Gold Cannon + a Gold tower) gets
 -- SetBonus: the hidden buff.
 --
--- How the bonuses scale: every coin egg is EggCurve.step (2.5x) stronger than the one before it. That was
--- tuned for the multiplier: as flat DPS it falls behind the towers world by world, and docs/BALANCE.md,
--- section 3, says what has to be measured again.
+-- How the bonuses scale: the second coin egg is EggCurve.second (2.5x) stronger than the first, and every egg
+-- after that EggCurve.step (15x) stronger than the one before it. Monsters are about 22x tougher from one egg
+-- to the next; fusing, enchanting and more slots make up the rest. Until 7 Oct every egg was 2.5x the last,
+-- which was tuned for the multiplier: as flat DPS a full team on The Sun dealt 5 million a second beside
+-- towers dealing 2.8 trillion.
 ----------------------------------------------------------------------------------------------------
 Config.SetBonus = 1.5
 Config.PetDps = 525 -- damage per second of a mini cannon per 1 of its bonus (100 until 6 Oct: 3.5x, then 1.5x)
 Config.EggCurve = {
 	base = 0.05, -- the Common of the first egg: +26 DPS
-	step = 2.5, -- every coin egg's mini cannons are this many times as strong as the last egg's
+	second = 2.5, -- the second coin egg's mini cannons are this many times as strong as the first's
+	step = 15, -- and every egg's after that this many times as strong as the last egg's
 	clears = 2.5, -- an egg costs this many clears of the level that unlocks it
 	first = 500, -- except the first
 }
@@ -697,6 +700,13 @@ local function petId(short: string): string
 	return (string.lower(short):gsub("[^%a]", ""))
 end
 
+-- How many times as strong as the first coin egg's the mini cannons of an egg `eggs` eggs up the game are
+-- (0 for the first egg; whole for a coin egg, in between for a bonus set by hand).
+local function eggScale(eggs: number): number
+	local curve = Config.EggCurve
+	return if eggs <= 1 then curve.second ^ eggs else curve.second * curve.step ^ (eggs - 1)
+end
+
 -- Two significant digits, at any size.
 local function round2(n: number): number
 	local magnitude = 10 ^ (math.floor(math.log10(n)) - 1)
@@ -708,7 +718,7 @@ end
 -- on today's curve: as many eggs up the game as it was then.
 local function onCurve(old: number): number
 	local eggs = math.log(old / 4) / math.log(16)
-	return round2(Config.EggCurve.base * SLOT_BONUS[#SLOT_BONUS] * Config.EggCurve.step ^ eggs)
+	return round2(Config.EggCurve.base * SLOT_BONUS[#SLOT_BONUS] * eggScale(eggs))
 end
 
 local function definePet(short: string, rarity: string, bonus: number, color: Color3): string
@@ -905,7 +915,7 @@ for worldIndex, def in WORLD_EGGS do
 			cost = if step == 0 then Config.EggCurve.first else nice(Config.EggCurve.clears * levelCoins(unlock + 1)),
 			unlock = unlock,
 			color = if half == 1 then world.floor else world.backdrop,
-		}, pets, Config.EggCurve.base * Config.EggCurve.step ^ step)
+		}, pets, Config.EggCurve.base * eggScale(step))
 	end
 end
 
