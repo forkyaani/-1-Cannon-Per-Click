@@ -146,11 +146,11 @@ needs a second pass doubles its job.
 
 ## F. Marketplace
 
-- [ ] F1. **[d1v]** (taken: d1v, 6 Oct 22:35) Finish the marketplace model (final render was interrupted); check all four photos · **30 min**
-- [ ] F2. **[d1v]** (taken: d1v, 6 Oct 22:35) `Marketplace.wear`: hook that puts it over the part-built town · **40 min**
-- [ ] F3. **[d1v]** (taken: d1v, 6 Oct 22:35) Halloween dress on while the event runs · **15 min**
-- [ ] F4. **[d1v]** (taken: d1v, 6 Oct 22:35) Colliders list · **10 min**
-- [ ] F5. **[d1v]** Import and test **[S]** · **20 min**
+- [x] F1. **[d1v]** Finish the marketplace model (final render was interrupted); check all four photos · **30 min** · d1v, 6 Oct 22:50: `marketplace.py` now runs to the end here (Blender 5.2.2, two minutes): all four photos, `marketplace.fbx` (36 meshes, mesh for mesh the one that was in git), `marketplace.blend` and a fresh `market_manifest.json` (the old one was from an earlier run of the script). Both hero photos looked at: the town is whole
+- [x] F2. **[d1v]** `Marketplace.wear`: hook that puts it over the part-built town · **40 min** · d1v, 6 Oct 22:50, in code: `Marketplace.wear` in `src/server/Marketplace.luau`, and `Marketplace.cover()` after the features start. Test `market_wear.luau` (run with `--real-marketplace`, a new switch of the emulator). Not seen in Studio yet (F5)
+- [x] F3. **[d1v]** Halloween dress on while the event runs · **15 min** · d1v, 6 Oct 22:50, in code: the season's meshes are kept (`SEASONAL`), the Halloween stall's shell and the event board's shell stand while the event runs. Not seen in Studio yet (F5)
+- [x] F4. **[d1v]** Colliders list · **10 min** · d1v, 6 Oct 22:50, in code: the manifest's six Halloween pumpkins are unseen solid boxes (`HALLOWEEN_SOLIDS`); everything else stands on a part of the game's that still collides. Not seen in Studio yet (F5)
+- [ ] F5. **[d1v]** (taken: d1v, 6 Oct 22:50) Import and test **[S]** · **20 min**
 
 ## G. Sky, light and sound
 
