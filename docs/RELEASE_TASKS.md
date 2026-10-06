@@ -117,8 +117,8 @@ needs a second pass doubles its job.
 - [x] E2. Check the "what's inside" window on an egg; fix what looks poor · **30 min**
 - [x] E3. Earth: Basic Egg and Forest Egg models · **20 min** · d1v, 6 Oct: `egg_basic`, `egg_forest` in `assets/models/minis/world_minis.fbx`. Not yet imported (E7)
 - [x] E4. Earth: the mini cannons of those two eggs · **1 h 00** · d1v, 6 Oct: ten, `mini_wooden` to `mini_jade`, same file; photos `world_row_basic.jpg`, `world_row_forest.jpg`. Not yet imported (E7)
-- [x] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min** · d1v, 6 Oct: eight eggs, same file; photos `world_row_moon.jpg`, `world_row_frost.jpg`. Built with `minis.py -- <folder> full worlds`. Not yet imported (E7)
-- [ ] E6. (d1v, 6 Oct 21:25: doing Moon's ten; Mars, Neptune and The Sun are free) Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
+- [x] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min** · d1v, 6 Oct: eight eggs, same file; photo `world_row_mars.jpg` (Moon's and Comet's stand in their own rows). Built with `minis.py -- <folder> full worlds`. Not yet imported (E7)
+- [ ] E6. (Moon's ten done by d1v, 6 Oct: `mini_moonrock` to `mini_galaxy` in `world_minis.fbx`, photos `world_row_moon.jpg`, `world_row_comet.jpg`. Mars, Neptune and The Sun are free) Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
 - [ ] E7. (d1v, 6 Oct 21:25: stopped at Studio's file chooser, which needs Victor to approve screen control; still d1v's) Import eggs and mini cannons **[S]** · **20 min** · import `assets/models/minis/world_minis.fbx`, then run `tools/studio/add_minis.luau` (it only adds; `organize_imports.luau` would empty the islands and creatures)
 
 ## F. Marketplace

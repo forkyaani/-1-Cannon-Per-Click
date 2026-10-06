@@ -1,8 +1,8 @@
 """Mini cannons ("cannon critters") and eggs. Two sets:
   marketplace   the Gem Egg and the four Halloween eggs, with their 25 mini cannons (marketplace_minis.fbx)
-  worlds        the two coin eggs of each of the first five worlds, and the 10 mini cannons of Earth's two
-                (world_minis.fbx). The mini cannons of worlds 2 to 5 have no model yet: the game builds
-                those from parts.
+  worlds        the two coin eggs of each of the first five worlds, and the 20 mini cannons of Earth's
+                and the Moon's two (world_minis.fbx). The mini cannons of worlds 3 to 5 have no model
+                yet: the game builds those from parts.
 
 Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds]
 
@@ -676,6 +676,114 @@ def jade():  # a little jade dragon
 
 
 # ---------------------------------------------------------------------------------------------------
+# The Moon's mini cannons. The Moon Egg's five are in the materials of the Moon's towers (an alien, a
+# rock, a moon bat, an astronaut, a star); the Comet Egg's are things that fly past it.
+# ---------------------------------------------------------------------------------------------------
+def antennae(colour, tip, top=2.0, spread=0.55):
+    for side in (-1, 1):
+        tube(0.05, 0.6, (side * spread, -0.35, top - 0.05), (side * 0.35, -0.1, 1), colour, vertices=6)
+        ball(0.13, (side * (spread + 0.2), -0.41, top + 0.52), tip, emission=2)
+
+
+def pits(colour, places):
+    """Craters on a body: (x, y, z, radius), each a dark dish."""
+    for x, y, z, radius in places:
+        ball(radius, (x, y, z), colour, scale=(1, 1, 0.35) if abs(y) < 0.8 else (1, 0.35, 1), roughness=0.8)
+
+
+def helmet(top=2.0):
+    """An astronaut's: a glass bowl round the eyes would hide them, so it is a visor band and a pack."""
+    box((2.02, 1.82, 0.2), (0, 0, top - 0.02), "E6EAF2", bevel=0.08)
+    box((2.02, 1.82, 0.2), (0, 0, 0.62), "E6EAF2", bevel=0.08)
+    box((1.0, 0.5, 1.0), (0, 1.0, 1.2), "E6EAF2", bevel=0.15)  # the pack on its back
+    for x in (-0.25, 0.25):
+        tube(0.12, 0.3, (x, 1.0, 0.72), (0, 0, -1), "FF7A2E", tip=0.02, vertices=6, emission=2)
+
+
+def star_points(colour, height=1.25, **look):
+    for side in (-1, 1):
+        tube(0.42, 0.75, (side * 0.9, 0.1, height), (side, 0, 0.15), colour, tip=0.0, vertices=5, **look)
+    tube(0.36, 0.6, (-0.75, 0.1, 0.55), (-0.8, 0, -0.6), colour, tip=0.0, vertices=5, **look)
+    tube(0.36, 0.6, (0.75, 0.1, 0.55), (0.8, 0, -0.6), colour, tip=0.0, vertices=5, **look)
+
+
+def streak(colour, **look):
+    """A tail of light behind it."""
+    for index, (z, length, radius) in enumerate(((1.6, 1.3, 0.26), (1.2, 1.0, 0.2), (0.85, 0.75, 0.16))):
+        tube(radius, length, (0.35 - index * 0.35, 0.8, z), (0, 1, 0.25), colour, tip=0.0, vertices=5, roughness=0.15, **look)
+
+
+# -- Moon Egg --
+def moonrock():  # a lump of the Moon
+    standard("AAAABA", "FFE23A", shape="round")
+    pits("8E8CA0", ((-0.55, 0.1, 2.02, 0.26), (0.6, -0.2, 1.98, 0.18), (-0.98, 0.2, 1.3, 0.2), (0.98, -0.1, 1.5, 0.24)))
+
+
+def crater():  # an alien out of one
+    standard("6E6E82", "9CFF3A")
+    antennae("4E4E60", "9CFF3A")
+    pits("4E4E60", ((-0.98, 0.2, 1.2, 0.24), (0.98, -0.1, 1.5, 0.2)))
+
+
+def lunar():  # a moon bat in a scarf
+    standard("D7DCF0", "9B6BFF")
+    ears("D7DCF0", "bat", inner="9B6BFF")
+    scarf("5A78DC")
+    ball(0.34, (0.55, -0.9, 1.98), "FFE97A", scale=(1, 0.25, 1), emission=1.5)  # a crescent on its brow
+    ball(0.3, (0.67, -0.95, 2.04), "D7DCF0", scale=(1, 0.3, 1))
+
+
+def astro():  # an astronaut with a jet pack
+    standard("5A78DC", "FFFFFF", barrel_colour="E6EAF2")
+    helmet()
+    antennae("E6EAF2", "FF3355", spread=0.75)
+
+
+def stellar():  # a star, crowned
+    standard("FAF0AA", "FF96FF", shape="round", barrel_colour="E0A81C")
+    star_points("FFE23A", emission=1.0)
+    crown(top=3.02, y=0.1, radius=0.34, gems="9B6BFF")
+    halo(top=3.55, colour="FFFFFF", radius=0.5)
+
+
+# -- Comet Egg --
+def dust():  # a dust bunny
+    standard("BEB9AF", "8A5A2B", shape="round")
+    ears("BEB9AF", "bunny", inner="E8E2D6")
+    for x, y, z in ((-0.95, 0.4, 0.75), (0.95, 0.3, 0.8), (0.3, 0.95, 0.8)):
+        ball(0.26, (x, y, z), "D8D3C8")
+
+
+def comet():
+    standard("96D2FF", "FFFFFF", shape="round", barrel_colour="5FA8F0")
+    streak("C9F0FF", emission=1.0)
+    ears("96D2FF", "cat", inner="C9F0FF")
+
+
+def meteor():  # hot rock
+    standard("82645A", "FF7A2E", mood="fierce")
+    pits("5A4038", ((-0.55, 0.1, 2.02, 0.24), (-0.98, 0.2, 1.3, 0.22), (0.98, -0.1, 1.5, 0.22)))
+    horns("FF7A2E", size=1.1)
+    streak("FF7A2E", emission=2.0)
+
+
+def star():
+    standard("FFEB82", "FF8FB8", barrel_colour="E0A81C")
+    star_points("FFD23A", emission=0.8)
+    wings("FFF7C9", "crystal", height=1.5)
+
+
+def galaxy():  # a whole one, with a ring round it
+    standard("6E50D2", "3FE0FF", mood="fierce", shape="round", barrel_colour="3A2A8C")
+    bpy.ops.mesh.primitive_torus_add(location=(0, 0, 0.95), rotation=(0, math.radians(12), 0), major_radius=1.55, minor_radius=0.1, major_segments=24, minor_segments=6)
+    finish(bpy.context.object, "FF96FF", emission=2)
+    for x, y, z in ((-0.6, -0.5, 2.05), (0.7, 0.3, 2.0), (-0.9, 0.5, 1.6), (0.95, -0.3, 0.9)):
+        ball(0.09, (x, y, z), "FFFFFF", emission=4)  # stars in it
+    crown(top=3.02, y=0.1, radius=0.34, gems="3FE0FF")
+    halo(top=3.55, colour="C9B8FF", radius=0.5)
+
+
+# ---------------------------------------------------------------------------------------------------
 # Eggs: one design per egg, about 3.6 tall, standing on the ground.
 # ---------------------------------------------------------------------------------------------------
 TAPER = 0.3  # how much narrower an egg is at its top than at its middle
@@ -897,8 +1005,9 @@ MARKETPLACE = [
 WORLDS = [
     ("basic", egg_basic, [("wooden", wooden), ("iron", iron), ("steel", steel), ("gold", gold), ("diamond", diamond)]),
     ("forest", egg_forest, [("leaf", leaf), ("vine", vine), ("mushroom", mushroom), ("honey", honey), ("jade", jade)]),
-    ("moon", egg_moon, [("egg_comet", egg_comet), ("egg_mars", egg_mars), ("egg_dune", egg_dune)]),
-    ("frost", egg_frost, [("egg_blizzard", egg_blizzard), ("egg_ember", egg_ember), ("egg_solar", egg_solar)]),
+    ("moon", egg_moon, [("moonrock", moonrock), ("crater", crater), ("lunar", lunar), ("astro", astro), ("stellar", stellar)]),
+    ("comet", egg_comet, [("dust", dust), ("comet", comet), ("meteor", meteor), ("star", star), ("galaxy", galaxy)]),
+    ("mars", egg_mars, [("egg_dune", egg_dune), ("egg_frost", egg_frost), ("egg_blizzard", egg_blizzard), ("egg_ember", egg_ember), ("egg_solar", egg_solar)]),
 ]
 EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS}[SET]
 FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis"}[SET]
