@@ -142,7 +142,7 @@ needs a second pass doubles its job.
 
 - [ ] I1. Game icon (512 px) from `docs/ui-vision/game-icon.png` · **20 min**
 - [ ] I2. Three thumbnails · **30 min**
-- [ ] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min** · **d1v is on this (6 Oct evening)**
+- [x] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min** Done 6 Oct (d1v): six passes on sale in the group's experience at the prices in `Config.Passes`, ids in the config. No icons yet; the six Robux products (Shiny key, Robux crate, four packs) still have id 0.
 - [ ] I4. Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min**
 - [ ] I5. Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
 - [ ] I6. Publish **[S]** · **5 min**

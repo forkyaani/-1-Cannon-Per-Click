@@ -112,12 +112,12 @@ experience, given an icon (E4), and its id pasted into the file named.
 
 | # | P | Task | Robux | Where the id goes | Owner | Status |
 |---|---|---|---|---|---|---|
-| C1 | P0 | Pass: x3 Egg Opener | 349 | `Config.Passes.tripleHatch` | | open |
-| C2 | P0 | Pass: x3 Luck | 449 | `Config.Passes.tripleLuck` | | open |
-| C3 | P0 | Pass: +3 Mini Cannon Slots | 299 | `Config.Passes.slots3` | | open |
-| C4 | P0 | Pass: +5 Mini Cannon Slots | 549 | `Config.Passes.slots5` | | open |
-| C5 | P0 | Pass: +500 Mini Cannon Storage | 249 | `Config.Passes.storage500` | | open |
-| C6 | P0 | Pass: 3x Speed (2x is free for everyone since 6 Oct; the code and `tests/smoke.luau` are done, the pass still has to be created) | 99 | `Config.Passes.gameSpeed` | | open |
+| C1 | P0 | Pass: x3 Egg Opener | 349 | `Config.Passes.tripleHatch` | Victor | done 6 Oct |
+| C2 | P0 | Pass: x3 Luck | 449 | `Config.Passes.tripleLuck` | Victor | done 6 Oct |
+| C3 | P0 | Pass: +3 Mini Cannon Slots | 299 | `Config.Passes.slots3` | Victor | done 6 Oct |
+| C4 | P0 | Pass: +5 Mini Cannon Slots | 549 | `Config.Passes.slots5` | Victor | done 6 Oct |
+| C5 | P0 | Pass: +500 Mini Cannon Storage | 249 | `Config.Passes.storage500` | Victor | done 6 Oct |
+| C6 | P0 | Pass: 3x Speed (2x is free for everyone since 6 Oct; the code and `tests/smoke.luau` are done, the pass still has to be created) | 99 | `Config.Passes.gameSpeed` | Victor | done 6 Oct |
 | C7 | P0 | Product: Shiny Enchantment Key | 149 | `Enchant.ShinyProduct` (`src/shared/Features/Enchant.luau`) | | open |
 | C8 | P0 | Product: the Robux crate | 99 | `src/shared/Features/Crates.luau`, the `robux` price | | open |
 | C9 | P0 | Product: Boost Pack | 49 | `src/shared/Features/Powerups.luau` | | open |

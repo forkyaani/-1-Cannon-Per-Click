@@ -1256,18 +1256,18 @@ Config.WeeklyFixed = {
 -- and State.meta.passes on the client.
 ----------------------------------------------------------------------------------------------------
 Config.Passes = {
-	tripleHatch = { id = 0, order = 1, name = "x3 Egg Opener", desc = "Hatch 3 eggs at once", price = 349 },
-	tripleLuck = { id = 0, order = 2, name = "x3 Luck", desc = "Rare mini cannons hatch 3x more often", price = 449 },
+	tripleHatch = { id = 2005905917, order = 1, name = "x3 Egg Opener", desc = "Hatch 3 eggs at once", price = 349 },
+	tripleLuck = { id = 2009312265, order = 2, name = "x3 Luck", desc = "Rare mini cannons hatch 3x more often", price = 449 },
 	-- slots = extra mini cannon equip slots while owned; these stack with each other and with the weekly shop's.
-	slots3 = { id = 0, order = 3, name = "+3 Mini Cannon Slots", desc = "Equip 3 more mini cannons", price = 299, slots = 3 },
-	slots5 = { id = 0, order = 4, name = "+5 Mini Cannon Slots", desc = "Equip 5 more mini cannons", price = 549, slots = 5 },
+	slots3 = { id = 2008730460, order = 3, name = "+3 Mini Cannon Slots", desc = "Equip 3 more mini cannons", price = 299, slots = 3 },
+	slots5 = { id = 2005569870, order = 4, name = "+5 Mini Cannon Slots", desc = "Equip 5 more mini cannons", price = 549, slots = 5 },
 	-- Order 5 was Auto Rebirth. Rebirth is back as a rare prestige, but nothing does it for the player:
 	-- offline earnings is the candidate for the place.
 	-- storage = extra mini cannon storage on top of MaxPets while owned.
-	storage500 = { id = 0, order = 6, name = "+500 Mini Cannon Storage", desc = "Store 500 more mini cannons", price = 249, storage = 500 },
+	storage500 = { id = 2006505926, order = 6, name = "+500 Mini Cannon Storage", desc = "Store 500 more mini cannons", price = 249, storage = 500 },
 	-- The game speed button (Game.luau's setSpeed): 2x is free for everyone, 3x is this pass. Without it a plot
 	-- runs at 2x at most, whatever the save says.
-	gameSpeed = { id = 0, order = 7, name = "3x Speed", desc = "Run your plot at 3x game speed", price = 99 },
+	gameSpeed = { id = 2006547762, order = 7, name = "3x Speed", desc = "Run your plot at 3x game speed", price = 99 },
 }
 
 ----------------------------------------------------------------------------------------------------

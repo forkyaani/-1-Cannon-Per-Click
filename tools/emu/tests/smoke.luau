@@ -1563,7 +1563,7 @@ do
 	local fast = state.clock - before
 	check(fast > slow * 2.5 and fast < slow * 3.5, `at 3x the plot's fight runs three times as fast ({slow} against {fast})`)
 	-- 2x is free; 3x is the 3x Speed pass (the prelude gave this player every pass).
-	check(Config.Passes.gameSpeed ~= nil and Config.Passes.gameSpeed.price == 99 and Config.Passes.gameSpeed.id == 0, "the speed pass is in Config.Passes: 99 Robux, not on sale yet")
+	check(Config.Passes.gameSpeed ~= nil and Config.Passes.gameSpeed.price == 99 and Config.Passes.gameSpeed.id > 0, "the speed pass is in Config.Passes: 99 Robux, with its pass id")
 	eq(Config.Passes.gameSpeed.name, "3x Speed", "and it is the 3x Speed pass")
 	check(T.meta().passes.gameSpeed == true, "the client is told the pass is owned")
 	debug("pass:gameSpeed", 0)
@@ -1575,6 +1575,10 @@ do
 	run(2)
 	local free = state.clock - before
 	check(free > slow * 1.6 and free < slow * 2.4, `without the pass the plot runs at 2x ({free} against {slow})`)
+	-- The pass is on sale (its id is set since 6 Oct). What a pass with no id says is still checked: put the
+	-- id back to 0 for these presses.
+	local speedPassId = Config.Passes.gameSpeed.id
+	Config.Passes.gameSpeed.id = 0
 	T.toasts = {}
 	act("setSpeed", 3)
 	eq(data.speed, 3, "asking for 3x without the pass changes nothing")
@@ -1586,6 +1590,7 @@ do
 	act("setSpeed")
 	eq(data.speed, 1, "a press at 2x without the pass steps back to 1x")
 	check(string.find(T.lastToast(), "not on sale yet", 1, true) ~= nil, "and offers the pass: " .. T.lastToast())
+	Config.Passes.gameSpeed.id = speedPassId
 	T.toasts = {}
 	act("setSpeed")
 	eq(data.speed, 2, "the next press is 2x again, free")
