@@ -14,6 +14,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Rules = require(ReplicatedStorage.Shared.Features.Visit)
 
 local Visit = {}
@@ -71,6 +72,12 @@ local function hostOf(player: Player): Player?
 	return Game.owner(state.visit)
 end
 
+-- The world this owner's base is fighting in right now: the sky their guests are shown (client Effects).
+local function worldOf(host: Player): number
+	local data = Game.data(host)
+	return (Config.worldOf(if data then data.wave else 1))
+end
+
 -- This player's guests, by name.
 local function guestsOf(player: Player): { Player }
 	local slot = ownSlot(player)
@@ -91,7 +98,8 @@ local function standing(player: Player): string
 		table.insert(ids, tostring(guest.UserId))
 	end
 	local host = hostOf(player)
-	return `{if host then host.UserId else 0}|{table.concat(ids, ",")}`
+	-- The host's world is part of it: a guest's sky follows the host into the next world.
+	return `{if host then host.UserId else 0}|{if host then worldOf(host) else 0}|{table.concat(ids, ",")}`
 end
 
 local function publish(player: Player)
@@ -104,7 +112,7 @@ local function publish(player: Player)
 		sent = {}, -- [user id] = when this player's own invitation to them runs out
 		later = {}, -- [user id] = when this player may invite them again
 		guests = {}, -- who is on this player's base: { id, name }
-		-- host = { id, name }: whose base this player is on, while they are a guest
+		-- host = { id, name, world }: whose base this player is on, while they are a guest, and its world
 	}
 	for _, invite in invites do
 		if invite.to == player then
@@ -124,7 +132,7 @@ local function publish(player: Player)
 	end
 	local host = hostOf(player)
 	if host then
-		(view :: any).host = { id = host.UserId, name = host.DisplayName }
+		(view :: any).host = { id = host.UserId, name = host.DisplayName, world = worldOf(host) }
 	end
 	shown[player] = standing(player)
 	Game.setMeta(player, "visit", view)
