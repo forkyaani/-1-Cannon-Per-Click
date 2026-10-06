@@ -92,17 +92,22 @@ end
 T.section("walking view")
 frames(3)
 check(camera.CameraType ~= Enum.CameraType.Scriptable, "the camera is left to Roblox")
-check(shown(Hud.backButton), "the travel button is on screen on the plot")
-check(string.find(Hud.backButton.Text, "MARKET") ~= nil, "on the plot it goes to the marketplace: " .. string.gsub(Hud.backButton.Text, "\n", " "))
+-- The big travel button of the old HUD is hidden for good: two pinned menu buttons travel instead, MARKET on
+-- the plot and BASE in the marketplace (PLOT_PINS and MARKET_PINS in init.client.luau).
+check(not shown(Hud.backButton), "the old big travel button stays hidden")
+check(Hud.menu.MARKET ~= nil and shown(Hud.menu.MARKET), "the MARKET button is pinned on the plot")
+check(not shown(Hud.menu.BASE), "and BASE is not")
 harness.advance(0.2)
-harness.click(Hud.backButton)
+harness.click(Hud.menu.MARKET)
 frames(3)
 eq(player:GetAttribute("InMarket"), true, "pressing it travels to the marketplace")
-check(string.find(Hud.backButton.Text, "BASE") ~= nil, "in the marketplace it goes back: " .. string.gsub(Hud.backButton.Text, "\n", " "))
+check(shown(Hud.menu.BASE), "in the marketplace the BASE button is pinned")
+check(not shown(Hud.menu.MARKET), "and MARKET is not")
+check(not shown(Hud.backButton), "the big travel button is hidden there too")
 harness.advance(0.2)
-harness.click(Hud.backButton)
+harness.click(Hud.menu.BASE)
 frames(3)
-eq(player:GetAttribute("InMarket"), false, "pressing it again travels home")
+eq(player:GetAttribute("InMarket"), false, "pressing it travels home")
 noErrors("travelling both ways")
 
 T.section("level HUD")
@@ -115,18 +120,25 @@ check(player:GetAttribute("MonstersLeft") > 0, "the server says how many monster
 check(string.find(clusterText, `{player:GetAttribute("MonstersLeft")} LEFT`, 1, true) ~= nil, "it shows the monsters left")
 check(player:GetAttribute("Dps") > 0, "the server publishes Dps")
 check(string.find(clusterText, Format.abbreviate(player:GetAttribute("Dps")), 1, true) ~= nil, "it shows the towers' damage per second")
+-- Level news goes to the notification stack in the top right corner, never over the fight: the old banner in
+-- the middle of the screen stays hidden.
 local banner = UI.gui:FindFirstChild("DefenseBanner", true)
+local notices = UI.gui:FindFirstChild("Notifications", true)
+check(notices ~= nil and shown(notices), "the notification stack is on screen")
 Game.send(player, "defense", "cleared", 1, 250)
 harness.flush()
-check(banner.Visible and string.find(textOf(banner), "CLEARED", 1, true) ~= nil, "the cleared banner: " .. textOf(banner))
+check(string.find(textOf(notices), "LEVEL 1 CLEARED", 1, true) ~= nil and string.find(textOf(notices), "250", 1, true) ~= nil, "a cleared level is a notification, with its coins: " .. textOf(notices))
 Game.send(player, "defense", "failed", 3)
 harness.flush()
-check(string.find(textOf(banner), "FAILED", 1, true) ~= nil, "the failed banner: " .. textOf(banner))
+check(string.find(textOf(notices), "LEVEL 3 FAILED", 1, true) ~= nil, "and so is a failed one: " .. textOf(notices))
+check(banner == nil or not banner.Visible, "nothing opens in the middle of the screen")
 Game.send(player, "defense", "leak", 7)
 harness.flush()
-harness.advance(3)
+harness.advance(6)
 harness.flush()
-check(not banner.Visible, "a banner goes away by itself")
+harness.advance(0.2) -- a dismissed notification shrinks for a moment before it is destroyed
+harness.flush()
+check(string.find(textOf(notices), "CLEARED", 1, true) == nil and string.find(textOf(notices), "FAILED", 1, true) == nil, "a notification goes away by itself")
 -- The speed button: 1x, 2x, 3x and round again.
 local speedButton = buttonWith(cluster, "1x")
 check(speedButton ~= nil, "the level cluster has the speed button")
@@ -180,8 +192,9 @@ eq(seen[2].tint, 1, "a slowed monster is tinted")
 eq(seen[3].tint, 2, "a burning monster is tinted")
 check(seen[1].position ~= nil and math.abs(seen[1].position.X - Layout.plotCFrame(slot).X) < Layout.PLOT_WIDTH, "it stands on the player's plot")
 -- What the server does to every tower of a player (the `towerRange` and `towerRate` modifiers: mastery,
--- enchants, powerups) reaches the show: with the range cut to a quarter the starter cannon no longer reaches
--- monster 3 at the gate, and stops firing.
+-- enchants, powerups) reaches the show. The starter cannon stands on the pad by the monsters' portal
+-- (Layout.PADS[1]), some 20 studs from monsters 1 and 2 walking in: with the range cut to a quarter (7.5
+-- studs) it reaches neither, and stops firing. Monster 3, at the gate, is far out of its range either way.
 local reachMult, rateMult = 1, 1
 Game.modify("towerRange", function(_player, _data, _state, value: number): number
 	return value * reachMult
@@ -207,7 +220,8 @@ playFor(12) -- the client looks twice a second; what was in the air lands and fa
 eq(playFor(8), 0, "a tower whose range was cut no longer fires at a monster outside it")
 reachMult = 1
 Game.sync(player)
--- Monster 3 is at the gate, inside the starter cannon's range. The messages keep coming while it is shot at.
+-- Monsters 1 and 2 are by the portal, inside the starter cannon's range. The messages keep coming while they
+-- are shot at.
 local fired = 0
 for _ = 1, 10 do
 	send(10, { 1, d[1], 1, 0, 2, d[2], 0.6, 1, 3, d[3], 1, 2 })
@@ -414,6 +428,15 @@ noErrors("a long fight")
 T.section("the level panel's boss line")
 do
 	-- The server's own field this time: a real boss level, and the panel reads the boss's health off it.
+	-- The starter cannon was bought up to MAX above and stands by the portal, and the tester's mini cannon (the
+	-- Huge that comes with the passes) alone out-damages this boss since the retune: either would kill it as it
+	-- steps out. The cannon's range is cut so it reaches no path, and the mini cannons deal nothing, so the boss
+	-- is still walking when the panel is read.
+	reachMult = 0.25
+	Game.modify("petDps", function(_player, _data, _state, _value: number): number
+		return 0
+	end, "Test mini cannons")
+	Game.sync(player)
 	T.debug("wave", 5)
 	T.run(3)
 	local line = nil
