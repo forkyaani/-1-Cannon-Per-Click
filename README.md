@@ -112,7 +112,7 @@ Roughly in order. Pick one, tell Yaani, and note it in `docs/BUILD_QUEUE.md` whe
 3. **Phones.** Check every window and the HUD on a phone-sized screen (Studio's device emulator).
 4. **Two players.** Trading, visits and leaderboards need a real two-player test (Test, Server and Clients).
 5. **Loose ends in code:** Mastery "Rapid" and the Silver fuse tier's "Rapid Fire" do nothing now that mini
-   cannon damage is flat; one stale emulator test (`defense_client.luau`); dead clicker pieces still hidden
+   cannon damage is flat; dead clicker pieces still hidden
    in `Hud.luau`. (The Mastery "Slots" track is sold and works: +1 equip slot at levels 3, 6 and 9.)
 6. **Visuals.** `docs/VISUAL_AUDIT.md` lists the placeholder models; Earth's island and monsters are done.
 7. **Robux.** The game passes and developer products exist in `Config` with id 0. Yaani creates them on
