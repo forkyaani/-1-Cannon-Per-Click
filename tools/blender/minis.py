@@ -1,6 +1,10 @@
-"""Mini cannons ("cannon critters") and eggs for the marketplace: the Gem Egg and the four Halloween eggs.
+"""Mini cannons ("cannon critters") and eggs. Two sets:
+  marketplace   the Gem Egg and the four Halloween eggs, with their 25 mini cannons (marketplace_minis.fbx)
+  worlds        the two coin eggs of each of the first five worlds, and the 10 mini cannons of Earth's two
+                (world_minis.fbx). The mini cannons of worlds 2 to 5 have no model yet: the game builds
+                those from parts.
 
-Run: blender --background --python tools/blender/minis.py -- <output folder>
+Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds]
 
 A mini cannon is a rounded creature with big eyes that is still a cannon: wheels, a barrel on its head, a fuse
 for a tail. Each one is a short recipe that picks pieces from the kit below. Every model is joined into one
@@ -16,6 +20,7 @@ from mathutils import Matrix, Vector
 
 OUT = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "."
 MODE = sys.argv[sys.argv.index("--") + 2] if "--" in sys.argv and len(sys.argv) > sys.argv.index("--") + 2 else "full"
+SET = sys.argv[sys.argv.index("--") + 3] if "--" in sys.argv and len(sys.argv) > sys.argv.index("--") + 3 else "marketplace"
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
@@ -190,6 +195,13 @@ def ears(colour, kind="cat", inner="FFB3C7", top=2.0):
         elif kind == "round":
             ball(0.36, (side * 0.78, 0.1, top + 0.05), colour, scale=(1, 0.6, 1))
             ball(0.2, (side * 0.78, -0.08, top + 0.05), inner, scale=(1, 0.5, 1))
+        elif kind == "floppy":  # a dog's: they hang down the sides of the head
+            ball(0.4, (side * 1.02, -0.05, top - 0.5), colour, scale=(0.45, 0.8, 1.45), rotation=(0, side * math.radians(12), 0))
+        elif kind == "bunny":
+            ball(0.3, (side * 0.6, 0.15, top + 0.62), colour, scale=(0.8, 0.5, 2.4), rotation=(0, side * math.radians(10), 0))
+            ball(0.17, (side * 0.6, 0.02, top + 0.62), inner, scale=(0.8, 0.4, 2.2), rotation=(0, side * math.radians(10), 0))
+        elif kind == "leaf":
+            ball(0.42, (side * 0.95, 0.1, top + 0.12), colour, scale=(1.3, 0.25, 0.7), rotation=(0, side * math.radians(-35), 0))
 
 
 def horns(colour="FFF3D6", top=2.0, spread=0.72, size=1.0):
@@ -549,6 +561,121 @@ def blood_moon():
 
 
 # ---------------------------------------------------------------------------------------------------
+# Earth's mini cannons. The Basic Egg's five are the animals of the design note (cat, dog, bunny, bear, fox)
+# in the materials of Earth's five towers; the Forest Egg's are things that grow there. The rarer, the more
+# it wears: nothing, a little, a scarf or a hat, wings, a crown and a halo.
+# ---------------------------------------------------------------------------------------------------
+def snout(colour, nose=INK, height=1.0, front=FRONT):
+    ball(0.3, (0, front - 0.05, height), colour, scale=(1.2, 0.5, 0.8))
+    ball(0.1, (0, front - 0.2, height + 0.1), nose, scale=(1.2, 0.6, 0.8))
+
+
+def tail(colour, tip=None, bushy=False):
+    """Beside the fuse, so both show from behind."""
+    if bushy:
+        ball(0.36, (0.55, 1.05, 1.0), colour, scale=(0.8, 1.5, 0.8), rotation=(math.radians(-30), 0, 0))
+        ball(0.22, (0.55, 1.5, 1.28), tip or colour, scale=(0.8, 1.2, 0.8), rotation=(math.radians(-30), 0, 0))
+    else:
+        ball(0.26, (0.55, 0.98, 0.95), tip or colour)
+
+
+def scarf(colour):
+    box((2.0, 1.8, 0.24), (0, 0, 0.72), colour, bevel=0.1)
+    box((0.3, 0.14, 0.62), (0.55, FRONT - 0.08, 0.45), colour, bevel=0.05, rotation=(0, math.radians(-12), 0))
+
+
+def rivets(colour, height=1.9):
+    for x in (-0.75, -0.25, 0.25, 0.75):
+        ball(0.08, (x, FRONT - 0.02, height), colour, scale=(1, 0.5, 1), roughness=0.2)
+
+
+# -- Basic Egg --
+def wooden():  # a cat made of planks
+    standard("855E42", "FFC61A")
+    bands("6B4A2B", ((0.72, 0), (1.22, 0)), thickness=0.08)
+    ears("855E42", "cat", inner="E8C49A")
+    tail("855E42", bushy=False)
+
+
+def iron():  # a dog, riveted
+    standard("787C82", "9FDCFF")
+    ears("5A5E66", "floppy")
+    snout("A9ADB3", height=0.98)
+    rivets("C9CDD3")
+    tail("5A5E66")
+
+
+def steel():  # a bunny in a scarf
+    standard("B0BECC", "FF8FB8", shape="round")
+    ears("B0BECC", "bunny", inner="FFB3C7", top=2.0)
+    scarf("E6463C")
+    tail(WHITE)
+
+
+def gold():  # a bear with wings
+    standard("FFC828", "8A5A2B", barrel_colour="C98A12")
+    ears("FFC828", "round", inner="FFF1B0")
+    snout("FFF1B0", nose="8A5A2B", height=0.98)
+    wings("FFF1B0", "crystal", height=1.35)
+    tail("E0A81C")
+
+
+def diamond():  # a fox, crowned
+    standard("50DCFF", "FF96FF", mood="fierce", barrel_colour="2FA8FF")
+    ears("50DCFF", "cat", inner=WHITE)
+    tail("50DCFF", tip=WHITE, bushy=True)
+    crystals("C9F9FF", ((-1.0, 0.3, 1.25, 0.18, 0.6, -0.9), (1.0, 0.3, 1.25, 0.18, 0.6, 0.9)), emission=0.8)
+    crown(top=3.02, y=0.1, radius=0.34, gems="FF96FF")
+    halo(top=3.55, colour="FFFFFF", radius=0.5)
+
+
+# -- Forest Egg --
+def leaf():  # a sprout
+    standard("6EBE5A", "FFE23A", shape="round")
+    stem(top=2.1, colour="4E9A3A")
+    ball(0.3, (-0.38, 0.05, 2.3), "8FDB6E", scale=(1.2, 0.7, 0.22), rotation=(0, math.radians(20), 0))
+
+
+def vine():  # wrapped in creepers
+    standard("3C8C46", "C8FFD9")
+    bands("2A6B34", ((0.8, 12), (1.6, -10)), thickness=0.12)
+    ears("5FB86A", "leaf")
+    for x, z in ((-0.6, 0.85), (0.7, 1.72)):
+        ball(0.12, (x, FRONT - 0.04, z), "FF8FB8", scale=(1, 0.5, 1))  # two flowers on the vine
+
+
+def mushroom():  # a toadstool: the cap is its hat
+    body("F2E6D0", "tall")
+    wheels()
+    ball(1.35, (0, 0.05, 2.5), "D2463C", scale=(1, 1, 0.5))
+    for x, y, z, radius in ((-0.7, -0.7, 2.75, 0.2), (0.6, -0.85, 2.68, 0.24), (0.0, -0.2, 3.1, 0.22), (0.85, 0.3, 2.85, 0.18), (-0.8, 0.4, 2.85, 0.2)):
+        ball(radius, (x, y, z), WHITE, scale=(1, 1, 0.45))
+    barrel("8A2E28", top=2.95)
+    fuse()
+    face("FF5A4D", height=1.5)
+
+
+def honey():  # a bee of a bear
+    standard("F5BE3C", "6B4A2B", barrel_colour="6B4A2B")
+    bands("6B4A2B", ((0.7, 0), (1.25, 0)), thickness=0.2)
+    ears("F5BE3C", "round", inner="6B4A2B")
+    for side in (-1, 1):  # bee wings
+        ball(0.6, (side * 1.3, 0.5, 1.9), "EAF7FF", scale=(1.2, 0.15, 0.7), rotation=(0, side * math.radians(-25), side * math.radians(20)), roughness=0.15)
+    for side in (-1, 1):  # feelers
+        tube(0.05, 0.5, (side * 0.3, -0.5, 2.0), (side * 0.4, -0.3, 1), INK, vertices=6)
+        ball(0.1, (side * 0.47, -0.63, 2.44), INK)
+
+
+def jade():  # a little jade dragon
+    standard("3CC896", "FFE23A", mood="fierce", barrel_colour="1E8A62")
+    horns("E6FFF4", size=1.2)
+    wings("9BF0CE", "crystal")
+    tail("3CC896", tip="E6FFF4", bushy=True)
+    crown(top=3.02, y=0.1, radius=0.34, gems="3CC896")
+    halo(top=3.55, colour="C8FFE6", radius=0.5)
+
+
+# ---------------------------------------------------------------------------------------------------
 # Eggs: one design per egg, about 3.6 tall, standing on the ground.
 # ---------------------------------------------------------------------------------------------------
 TAPER = 0.3  # how much narrower an egg is at its top than at its middle
@@ -638,18 +765,153 @@ def egg_bloodmoon():
     halo(top=4.25, colour="FF5A5A", radius=0.7)
 
 
-EGGS = [
+# -- The coin eggs: one design, dressed for its world. --
+def world_egg(colour, spot, **look):
+    shell(colour, **look)
+    spots(spot, ((-0.5, 2.5, 0.28), (0.6, 1.4, 0.32), (0.25, 2.95, 0.18), (-0.3, 1.1, 0.2)), **look)
+
+
+def ring(colour, z, tilt=0.0, thickness=0.09, **look):
+    """A band round an egg at height z."""
+    bpy.ops.mesh.primitive_torus_add(location=(0, 0, z), rotation=(0, math.radians(tilt), 0), major_radius=1.35 * narrow(z) * math.sqrt(max(0.1, 1 - ((z - 1.8) / 1.78) ** 2)), minor_radius=thickness, major_segments=20, minor_segments=6)
+    finish(bpy.context.object, colour, **look)
+
+
+def tufts(colour, places):
+    """Things growing (or lying) round an egg's foot: (x, y, size)."""
+    for x, y, size in places:
+        for lean in (-0.5, 0, 0.5):
+            tube(0.14 * size, 0.7 * size, (x, y, 0), (lean, 0, 1), colour, tip=0.0, vertices=5)
+
+
+FOOT = ((-1.0, -0.6, 1.0), (1.05, -0.4, 1.2), (0.3, -1.15, 0.8), (-0.4, 1.0, 1.1), (0.9, 0.8, 0.9))
+
+
+def egg_basic():  # a grass egg with a leaf
+    world_egg("A8E07A", "6EBE5A")
+    stem(top=3.52)
+    tufts("4E9A3A", FOOT)
+
+
+def egg_forest():
+    world_egg("3E9B57", "2A6B34")
+    stem(top=3.52)
+    ball(0.3, (-0.38, 0.05, 3.72), "8FDB6E", scale=(1.2, 0.7, 0.22), rotation=(0, math.radians(20), 0))
+    ring("2A6B34", 1.75, tilt=14)  # a vine round it
+    for x, z in ((-0.7, 1.95), (0.5, 1.62)):
+        ball(0.13, (x, -1.28, z), "FF8FB8", scale=(1, 0.5, 1))  # and its flowers
+    for x, y, size in ((-1.1, -0.5, 1.0), (1.15, -0.3, 0.75), (0.3, -1.2, 0.6)):  # toadstools at its foot
+        tube(0.12 * size, 0.45 * size, (x, y, 0), (0, 0, 1), "F2E6D0", vertices=8)
+        ball(0.36 * size, (x, y, 0.45 * size), "D2463C", scale=(1, 1, 0.55))
+
+
+def craters(colour, places):
+    for x, z, radius in places:
+        width = 1.35 * narrow(z)
+        depth = math.sqrt(max(0.05, 1 - (x / width) ** 2 - ((z - 1.8) / 1.78) ** 2)) * width
+        bpy.ops.mesh.primitive_torus_add(location=(x, -depth + 0.02, z), rotation=(math.radians(90), 0, 0), major_radius=radius, minor_radius=radius * 0.3, major_segments=12, minor_segments=5)
+        finish(bpy.context.object, colour, roughness=0.8)
+
+
+def egg_moon():  # cratered
+    world_egg("C9C7D6", "A7A5B8", roughness=0.8)
+    craters("8E8CA0", ((0.1, 2.0, 0.3), (-0.6, 1.3, 0.2), (0.65, 2.7, 0.16)))
+    for x, y, size in ((-1.1, -0.5, 0.4), (1.2, -0.3, 0.5), (0.4, -1.2, 0.3)):  # moon rocks
+        ball(size, (x, y, size * 0.5), "A7A5B8", scale=(1.2, 1, 0.7), roughness=0.8)
+
+
+def egg_comet():
+    world_egg("8FD0FF", "5FA8F0", roughness=0.2)
+    craters("C9F0FF", ((-0.1, 1.9, 0.26), (0.6, 2.7, 0.16)))
+    # A comet's tail streaming off its top.
+    crystals("C9F0FF", ((0.1, 0.2, 3.3, 0.3, 1.3, 0.5), (0.35, 0.3, 3.2, 0.2, 0.95, 1.0), (-0.1, 0.3, 3.3, 0.18, 0.8, 0.15)), emission=1.2)
+    for x, z in ((-0.95, 2.8), (1.0, 1.5)):
+        ball(0.12, (x, -0.75, z), WHITE, scale=(1, 1, 2.2), emission=4)
+        ball(0.12, (x, -0.75, z), WHITE, scale=(2.2, 1, 1), emission=4)
+
+
+def egg_mars():  # rust and rock
+    world_egg("D9643A", "A8431F", roughness=0.8)
+    craters("8A3518", ((0.15, 2.1, 0.26),))
+    for x, y, size in ((-1.1, -0.5, 0.5), (1.15, -0.4, 0.4), (0.3, -1.2, 0.3), (-0.5, 1.0, 0.45)):
+        ball(size, (x, y, size * 0.5), "A8431F", scale=(1.2, 1, 0.7), roughness=0.8)
+
+
+def egg_dune():  # sand, with a cactus beside it
+    shell("E8C078", roughness=0.8)
+    for z, tilt in ((1.2, 8), (1.9, -6), (2.6, 8)):  # wind lines
+        ring("CFA35A", z, tilt=tilt, thickness=0.07, roughness=0.8)
+    tube(0.26, 1.3, (1.5, -0.4, 0), (0, 0, 1), "46A050", vertices=8)
+    ball(0.26, (1.5, -0.4, 1.3), "46A050")
+    tube(0.15, 0.5, (1.5, -0.4, 0.6), (1, 0, 0.2), "46A050", vertices=8)
+    tube(0.15, 0.45, (1.92, -0.4, 0.66), (0, 0, 1), "46A050", vertices=8)
+    ball(0.1, (1.5, -0.4, 1.58), "FF8FB8")
+    ball(1.5, (0, 0, 0.02), "E0B468", scale=(1.2, 1.1, 0.1), roughness=0.9)  # the dune it stands on
+
+
+def snow_cap(colour=WHITE):
+    ball(0.98, (0, 0, 3.32), colour, scale=(1, 1, 0.5), roughness=0.3)
+    for index in range(7):
+        angle = math.radians(index * 51 + 10)
+        ball(0.3, (math.cos(angle) * 0.82, math.sin(angle) * 0.82, 3.12 - (index % 2) * 0.14), colour, scale=(1, 1, 1.3), roughness=0.3)
+
+
+def egg_frost():
+    world_egg("BFE8FF", "8FCBF5", roughness=0.2)
+    snow_cap()
+    for x, y, size in ((-1.1, -0.5, 0.5), (1.15, -0.4, 0.42), (0.3, -1.2, 0.34), (-0.4, 1.0, 0.5)):  # snow at its foot
+        ball(size, (x, y, size * 0.35), WHITE, scale=(1.2, 1, 0.6), roughness=0.3)
+
+
+def egg_blizzard():
+    world_egg("7FB4F5", "4E86DC", roughness=0.2)
+    snow_cap()
+    crystals("DDF4FF", ((-1.1, 0.2, 0.0, 0.28, 1.2, -0.5), (1.15, 0.1, 0.0, 0.32, 1.4, 0.45), (0.6, -0.9, 0.0, 0.2, 0.8, 0.3), (-0.5, -1.0, 0.0, 0.2, 0.7, -0.3)), emission=0.6)
+    crystals("DDF4FF", ((0, 0, 3.6, 0.2, 0.7, 0),), emission=0.6)
+
+
+def egg_ember():  # cooling lava: dark rock, glowing cracks
+    shell("5A2A1E", roughness=0.8)
+    spots("FF7A2E", ((-0.5, 2.5, 0.26), (0.6, 1.4, 0.3), (0.25, 2.95, 0.16), (-0.3, 1.1, 0.2)), emission=3)
+    for x, z, lean in ((-0.05, 2.2, 25), (0.2, 1.95, -35), (0.05, 1.7, 30), (0.3, 1.45, -25)):
+        box((0.1, 0.1, 0.42), (x, -1.33 * narrow(z), z), "FFC83A", bevel=0.02, rotation=(0, math.radians(lean), 0), emission=4)
+    tufts("FF7A2E", ((-1.0, -0.6, 0.8), (1.05, -0.4, 1.0), (0.3, -1.15, 0.6)))  # flames
+
+
+def egg_solar():  # a little sun
+    world_egg("FFD23A", "FFA51E", emission=0.6)
+    for index in range(10):  # rays
+        angle = math.radians(index * 36)
+        tube(0.2, 0.7, (math.cos(angle) * 1.4, 0.3, 1.9 + math.sin(angle) * 1.75), (math.cos(angle), 0, math.sin(angle) * 1.2), "FFA51E", tip=0.0, vertices=5, emission=2)
+    halo(top=4.0, colour="FFF1B0", radius=0.7)
+
+
+MARKETPLACE = [
     ("gem", egg_gem, [("gem", gem), ("ruby", ruby), ("sapphire", sapphire), ("emerald", emerald), ("prismatic", prismatic)]),
     ("pumpkin", egg_pumpkin, [("pumpkin", pumpkin), ("bat", bat), ("ghost", ghost), ("witch", witch), ("jackolantern", jack_o_lantern)]),
     ("haunted", egg_haunted, [("skeleton", skeleton), ("zombie", zombie), ("vampire", vampire), ("reaper", reaper), ("headlesshorseman", headless_horseman)]),
     ("crypt", egg_crypt, [("tombstone", tombstone), ("spider", spider), ("mummy", mummy), ("gargoyle", gargoyle), ("lich", lich)]),
     ("bloodmoon", egg_bloodmoon, [("crow", crow), ("scarecrow", scarecrow), ("werewolf", werewolf), ("banshee", banshee), ("bloodmoon", blood_moon)]),
 ]
+# A row is photographed together. An entry named egg_... is another egg standing in the row, not a mini cannon.
+WORLDS = [
+    ("basic", egg_basic, [("wooden", wooden), ("iron", iron), ("steel", steel), ("gold", gold), ("diamond", diamond)]),
+    ("forest", egg_forest, [("leaf", leaf), ("vine", vine), ("mushroom", mushroom), ("honey", honey), ("jade", jade)]),
+    ("moon", egg_moon, [("egg_comet", egg_comet), ("egg_mars", egg_mars), ("egg_dune", egg_dune)]),
+    ("frost", egg_frost, [("egg_blizzard", egg_blizzard), ("egg_ember", egg_ember), ("egg_solar", egg_solar)]),
+]
+EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS}[SET]
+FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis"}[SET]
+
+
+def model_name(name):
+    return name if name.startswith("egg_") else "mini_" + name
+
 
 ROW_GAP = 60  # each egg's line-up is far enough from the next to be photographed alone
 models = {}  # name -> list of parts
 for row, (egg_id, egg_build, minis) in enumerate(EGGS):
-    line = [("egg_" + egg_id, egg_build, -9.6)] + [("mini_" + name, build, -5.2 + index * 3.9) for index, (name, build) in enumerate(minis)]
+    line = [("egg_" + egg_id, egg_build, -9.6)] + [(model_name(name), build, -5.2 + index * 3.9) for index, (name, build) in enumerate(minis)]
     for name, build, x in line:
         parts = []
         origin = Vector((x, row * ROW_GAP, 0))
@@ -695,7 +957,7 @@ def turn(model_parts, at, angle):
 # Photographed turned a little to one side, so the barrel and the fuse show, one egg's line-up at a time.
 POSE = math.radians(-34)
 if MODE == "eggs":
-    egg_names = ["egg_" + egg_id for egg_id, _, _ in EGGS]
+    egg_names = [name for name in models if name.startswith("egg_")]
     for name, (model_parts, at) in models.items():
         for obj in model_parts:
             obj.hide_render = name not in egg_names
@@ -713,7 +975,7 @@ if MODE == "eggs":
     bpy.ops.render.render(write_still=True)
     raise SystemExit
 for row, (egg_id, _, minis) in enumerate(EGGS if MODE == "full" else []):
-    in_row = {"egg_" + egg_id} | {"mini_" + name for name, _ in minis}
+    in_row = {"egg_" + egg_id} | {model_name(name) for name, _ in minis}
     for name, (model_parts, at) in models.items():
         for obj in model_parts:
             obj.hide_render = name not in in_row
@@ -755,5 +1017,5 @@ for name, (model_parts, at) in models.items():
 bpy.ops.object.select_all(action="DESELECT")
 for name in models:
     bpy.data.objects[name].select_set(True)
-bpy.ops.export_scene.fbx(filepath=f"{OUT}/marketplace_minis.fbx", use_selection=True, apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE", colors_type="SRGB")
-bpy.ops.wm.save_as_mainfile(filepath=f"{OUT}/marketplace_minis.blend")
+bpy.ops.export_scene.fbx(filepath=f"{OUT}/{FILE}.fbx", use_selection=True, apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE", colors_type="SRGB")
+bpy.ops.wm.save_as_mainfile(filepath=f"{OUT}/{FILE}.blend")
