@@ -361,8 +361,10 @@ Config.Defense = {
 ----------------------------------------------------------------------------------------------------
 Config.Level = {
 	-- hpGrowth was 1.172 until 6 Oct: monsters outgrew the towers from the second world on (the Moon 12 hours,
-	-- Mars 92). At 1.1365 sim.py gives 52 hours for the twelve worlds; 1.1355 gives 32 and 1.1375 gives 80.
-	hp = 10, hpPower = 0.5, hpGrowth = 1.1365,
+	-- Mars 92). Yaani's rule (6 Oct): no world longer than 1:30. At 1.131 sim.py gives 3:30 to 4:00 for the
+	-- twelve worlds and 1:22 for the longest (four seeds); 1.130 gives 2 hours in all, 1.133 a world of 3:51,
+	-- 1.1365 a game of 52 hours.
+	hp = 10, hpPower = 0.5, hpGrowth = 1.131,
 	-- Coins. Every world has an anchor of its own: what an ordinary monster of its first level pays. Inside
 	-- the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
 	-- tools/balance/fit.py sets the anchors, one world at a time, so that every world takes the simulated

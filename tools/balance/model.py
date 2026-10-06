@@ -359,7 +359,7 @@ KNOBS = {
         {"hp": 5, "regen": 0.01, "coins": 10, "speed": 1.2},
     ],
     # levels: an ordinary monster has hp * level^hpPower * hpGrowth^(level - 1) health
-    "hp": 10.0, "hpPower": 0.5, "hpGrowth": 1.1365,
+    "hp": 10.0, "hpPower": 0.5, "hpGrowth": 1.131,
     # coins: every world has an anchor of its own, what an ordinary monster of its first level pays (worldPay).
     # Inside the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
     # fit.py sets the anchors, one world at a time, so that every world takes its target time.
