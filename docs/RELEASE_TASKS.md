@@ -146,10 +146,10 @@ needs a second pass doubles its job.
 
 ## F. Marketplace
 
-- [ ] F1. **[d1v]** Finish the marketplace model (final render was interrupted); check all four photos · **30 min**
-- [ ] F2. **[d1v]** `Marketplace.wear`: hook that puts it over the part-built town · **40 min**
-- [ ] F3. **[d1v]** Halloween dress on while the event runs · **15 min**
-- [ ] F4. **[d1v]** Colliders list · **10 min**
+- [ ] F1. **[d1v]** (taken: d1v, 6 Oct 22:35) Finish the marketplace model (final render was interrupted); check all four photos · **30 min**
+- [ ] F2. **[d1v]** (taken: d1v, 6 Oct 22:35) `Marketplace.wear`: hook that puts it over the part-built town · **40 min**
+- [ ] F3. **[d1v]** (taken: d1v, 6 Oct 22:35) Halloween dress on while the event runs · **15 min**
+- [ ] F4. **[d1v]** (taken: d1v, 6 Oct 22:35) Colliders list · **10 min**
 - [ ] F5. **[d1v]** Import and test **[S]** · **20 min**
 
 ## G. Sky, light and sound
