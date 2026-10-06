@@ -83,7 +83,8 @@ function Feature.start(Game)
 		Feature.prompt = buildShrine(spot, folder)
 	end
 
-	-- Tracks the core cannot apply in this build: [track id] = true. They are shown, and not sold.
+	-- Tracks the core cannot apply in this build: [track id] = true. They are shown, and not sold. None today:
+	-- every track, Slots included, has its modifier in the core (tests/mastery.luau checks it).
 	local off = {}
 
 	-- One modifier per track. It reads the saved level directly: a modifier runs for every shot.
