@@ -1824,6 +1824,9 @@ local function purchase(player: Player, data, items, itemId: unknown, bought, cu
 		refreshPets(player)
 	elseif item.kind == "diamonds" then
 		data.diamonds += item.amount
+	elseif item.kind == "item" then
+		-- A backpack item of some feature (an enchantment key).
+		Game.items.give(player, item.item, item.amount or 1)
 	end
 	notify(player, `Bought {item.name}!`, "good")
 end

@@ -765,11 +765,13 @@ do
 	check(not window.frame.Visible, "and closes when the player leaves")
 	data.coins, data.cleared = savedCoins, savedCleared
 
-	-- The Enchantment Key: for gems, from The Sun's island on, a few a day in all.
-	local key = Shop.Key
-	check(table.find(Shop.ROWS, "key") ~= nil and Shop.currency("key") == "diamonds" and Shop.currency("chest") == "coins", "the key row is the one paid in gems")
-	check(Shop.stock(key.from - 1, day).key == nil and Shop.stock(key.from, day).key == key.item and Shop.stock(#Config.Worlds, day).key == key.item, "sold on The Sun's island and every later one")
-	eq(Shop.price("key", key.item, key.from, 0), key.gems, "its price in gems")
+	-- The two enchantment keys: for gems, from The Sun's island on, as many as the player can pay for.
+	local key, shiny = Shop.Key, Shop.ShinyKey
+	check(table.find(Shop.ROWS, "key") ~= nil and table.find(Shop.ROWS, "shiny") ~= nil, "both keys have a row")
+	check(Shop.currency("key") == "diamonds" and Shop.currency("shiny") == "diamonds" and Shop.currency("chest") == "coins", "the key rows are the ones paid in gems")
+	check(Shop.stock(key.from - 1, day).key == nil and Shop.stock(key.from, day).key == key.item and Shop.stock(#Config.Worlds, day).shiny == shiny.item, "sold from the enchanting island on")
+	eq(Shop.price("key", key.item, key.from, 0), 50, "a key is 50 gems")
+	eq(Shop.price("shiny", shiny.item, key.from, 0), 1_000, "a shiny key is 1,000 gems")
 	local best, gems, coins = data.bestCleared, data.diamonds, data.coins
 	data.bestCleared = Config.TotalWaves
 	act("goIsland", 1)
@@ -781,20 +783,21 @@ do
 	buy(key.from, "key")
 	eq(Game.items.count(data, key.item), 0, "no gems, no key")
 	data.diamonds = 10_000
-	for _ = 1, key.perDay + 2 do
+	local hadShiny = Game.items.count(data, shiny.item)
+	for _ = 1, 6 do
 		buy(key.from, "key")
 	end
-	eq(Game.items.count(data, key.item), key.perDay, `{key.perDay} keys a day`)
-	eq(data.diamonds, 10_000 - key.perDay * key.gems, "paid in gems")
+	buy(key.from, "shiny")
+	eq(Game.items.count(data, key.item), 6, "no daily limit on keys")
+	eq(Game.items.count(data, shiny.item), hadShiny + 1, "a shiny key for gems")
+	eq(data.diamonds, 10_000 - 6 * key.gems - shiny.gems, "paid in gems")
 	eq(data.coins, coins, "not in coins")
-	check(Shop.soldOut("key", key.item, key.from, meta(), day), "the client is told the keys are sold out")
-	act("goIsland", key.from + 1)
-	buy(key.from + 1, "key")
-	eq(Game.items.count(data, key.item), key.perDay, "the limit is for all islands together")
+	check(not Shop.soldOut("key", key.item, key.from, meta(), day), "keys never sell out")
 	window.open()
 	run(1)
 	window.close()
-	Game.items.take(player, key.item, key.perDay)
+	Game.items.take(player, key.item, 6)
+	Game.items.take(player, shiny.item, 1)
 	act("goHome")
 	data.bestCleared, data.diamonds = best, gems
 end

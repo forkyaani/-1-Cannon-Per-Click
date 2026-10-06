@@ -25,7 +25,7 @@ local IslandShop = {}
 
 IslandShop.WINDOW = "ISLAND SHOP"
 IslandShop.KINDS = { "ammo", "powerup", "chest" } -- the three rows every island sells for coins
-IslandShop.ROWS = { "ammo", "powerup", "chest", "key" } -- every row there is, in the window's order
+IslandShop.ROWS = { "ammo", "powerup", "chest", "key", "shiny" } -- every row there is, in the window's order
 
 -- Coin prices are in clears: what clearing one ordinary level pays (Config.levelCoins), the measure pads,
 -- eggs and crates are priced in.
@@ -63,14 +63,16 @@ IslandShop.PowerupClears = { Common = 20, Uncommon = 20, Rare = 20, Epic = 4 }
 IslandShop.Chest = "bosschest"
 IslandShop.ChestClears = 4
 
--- The Enchantment Key (src/shared/Features/Enchant.luau): the one row sold for gems, on the islands from
--- `from` on (the enchanting table's island and every later one). `perDay` a day in all, on whichever
--- islands the player buys them. The Shiny key is not sold here.
-IslandShop.Key = { item = "enchantkey", gems = 40, perDay = 3, from = Config.EnchantIsland }
+-- The two enchantment keys (src/shared/Features/Enchant.luau): the rows sold for gems, on the islands from
+-- `from` on (the enchanting table's island and every later one), as many as the player has gems for. Gems
+-- are the game's main currency and this is one of the things they are for (Yaani, 7 Oct 2026).
+IslandShop.Key = { item = "enchantkey", gems = 50, from = Config.EnchantIsland }
+IslandShop.ShinyKey = { item = "shinykey", gems = 1_000, from = Config.EnchantIsland }
+local GEM_ROWS = { key = IslandShop.Key, shiny = IslandShop.ShinyKey }
 
 -- What a row is paid in: the save's own name for it ("diamonds" are the gems).
 function IslandShop.currency(kind: string): string
-	return if kind == "key" then "diamonds" else "coins"
+	return if GEM_ROWS[kind] then "diamonds" else "coins"
 end
 
 -- Rounds to two significant digits so generated prices look hand-picked (as Config does).
@@ -122,8 +124,10 @@ function IslandShop.stock(index: number, day: number): { [string]: string }
 	if Items.get(IslandShop.Chest) then
 		stock.chest = IslandShop.Chest
 	end
-	if index >= IslandShop.Key.from and Items.get(IslandShop.Key.item) then
-		stock.key = IslandShop.Key.item
+	for kind, row in GEM_ROWS do
+		if index >= row.from and Items.get(row.item) then
+			stock[kind] = row.item
+		end
 	end
 	return stock
 end
@@ -149,8 +153,8 @@ function IslandShop.price(kind: string, id: string, index: number, cleared: numb
 		return nice(clears * Config.levelCoins(buyerLevel(index, cleared)))
 	elseif kind == "chest" then
 		return nice(IslandShop.ChestClears * Config.levelCoins(buyerLevel(index, cleared)))
-	elseif kind == "key" then
-		return IslandShop.Key.gems
+	elseif GEM_ROWS[kind] then
+		return GEM_ROWS[kind].gems
 	end
 	return nil
 end
@@ -167,8 +171,8 @@ function IslandShop.soldOut(kind: string, id: string, index: number, bought, day
 		return typeof(bought.ammo) == "table" and bought.ammo[id] == true
 	elseif kind == "powerup" then
 		return typeof(bought.powerups) == "table" and bought.powerups[tostring(index)] == true
-	elseif kind == "key" then
-		return typeof(bought.keys) == "number" and bought.keys >= IslandShop.Key.perDay
+	elseif GEM_ROWS[kind] then
+		return false -- keys never sell out
 	end
 	return bought.chest == true
 end

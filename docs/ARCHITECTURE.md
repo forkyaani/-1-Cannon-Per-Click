@@ -626,7 +626,7 @@ part-built island plus one unseen pillar per trunk, lamp and prop (`SOLIDS`, a l
   rows for coins, all in `src/shared/Features/IslandShop.luau`: the world's ammo (`IslandShop.Ammo`; sold
   to a player who owns none of it, once a day), one powerup that changes every day and differs per island (one
   a day on each island) and a Boss Chest (one a day in all). From The Sun's island on there is a fourth row,
-  for gems: the Enchantment Key (`IslandShop.Key`: 40 gems, 3 a day in all). The action is
+  for gems: the Enchantment Key (`IslandShop.Key`: 50 gems) and the Shiny one (`IslandShop.ShinyKey`: 1,000 gems), no daily limit. The action is
   `islandBuy { island, kind }`; the player must be standing on that island. The day's purchases are
   `State.feature("islandShop")`.
 - Mini cannons follow the player on an island and are not drawn shooting from there; their damage still

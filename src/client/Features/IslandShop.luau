@@ -8,12 +8,13 @@ local Shop = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Feat
 
 local ROW_HEIGHT = 92
 local HEADER_HEIGHT = 50
-local ROW_TITLES = { ammo = "AMMO", powerup = "TODAY'S POWERUP", chest = "BOSS CHEST", key = "ENCHANTMENT KEY" }
+local ROW_TITLES = { ammo = "AMMO", powerup = "TODAY'S POWERUP", chest = "BOSS CHEST", key = "ENCHANTMENT KEY", shiny = "SHINY ENCHANTMENT KEY" }
 local ROW_NOTES = {
 	ammo = "Yours to keep: load it in the AMMO window",
 	powerup = "One a day on every island. It goes to your BACKPACK",
 	chest = "One a day. Open it from your BACKPACK",
-	key = `{Shop.Key.perDay} a day, for gems. Use it at the Enchanting Table`,
+	key = "For gems, as many as you like. Use it at the Enchanting Table",
+	shiny = "For gems, as many as you like. Use it at the Enchanting Table",
 }
 local CURRENCY_ICON = { coins = "💰", diamonds = "💎" }
 local CURRENCY_ATTRIBUTE = { coins = "Coins", diamonds = "Diamonds" }

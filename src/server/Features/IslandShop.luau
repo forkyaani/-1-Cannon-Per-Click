@@ -90,16 +90,14 @@ function Feature.start(Game)
 			saved.ammo[id] = true
 		elseif kind == "powerup" then
 			saved.powerups[tostring(index)] = true
-		elseif kind == "key" then
-			saved.keys += 1
-		else
+		elseif kind == "chest" then
 			saved.chest = true
 		end
 		Game.items.give(player, id, 1)
 		publish(player, data)
 		local how = if kind == "ammo"
 			then "Load it in the AMMO window"
-			elseif kind == "key" then "Use it at the Enchanting Table"
+			elseif kind == "key" or kind == "shiny" then "Use it at the Enchanting Table"
 			else "It is in your BACKPACK"
 		Game.notify(player, `Bought {item.name}! {how}`, "good")
 	end
