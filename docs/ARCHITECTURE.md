@@ -269,7 +269,10 @@ Thirteen tracks bought level by level with gems at the shrine on the Mars island
 (`bestCleared`, so it stays open after a rebirth) and be standing on that island; the server works out the level
 and the price. Saved as `data.features.mastery = { levels = { [trackId] = level }, spent }` and published as
 `Meta_mastery` (`levels`, `spent`, `off`: tracks the core cannot apply, none today). Each track is one labelled
-modifier ("Mastery: Attack IV"), so it shows in STATS. Lives count from the next level started. The Offline
+modifier ("Mastery: Attack IV"), so it shows in STATS. Every track is sold, Slots included: it adds to the
+core's `equipSlots` modifier (+1 at levels 3, 6 and 9, `Mastery.slots`) and calls `Game.refreshPets`, so a mini
+cannon is equipped into the new slot at once. `off` only fills in on a core without a modifier of a track's
+kind; the window then reads COMING SOON for it. Lives count from the next level started. The Offline
 track (Survival) adds an hour to the offline earnings cap per level (`offlineCap`; 4 levels, 8 hours to 12),
 counted from the next time the player is away.
 

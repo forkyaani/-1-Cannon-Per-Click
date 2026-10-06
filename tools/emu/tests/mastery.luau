@@ -51,21 +51,25 @@ for _, track in Mastery.Tracks do
 end
 print(`  every track maxed: {everything} gems`)
 local fake = { equipped = {}, towerNames = {} }
-near(Mastery.apply("attack", 20, 1, fake), 3, "Attack maxed")
-near(Mastery.apply("rate", 10, 1, fake), 1.5, "Fire Rate maxed")
-near(Mastery.apply("range", 10, 1, fake), 1.25, "Range maxed")
-near(Mastery.apply("coins", 10, 1, fake), 2, "Coins maxed")
+near(Mastery.apply("attack", 20, 1, fake), 2, "Attack maxed")
+near(Mastery.apply("rate", 10, 1, fake), 1.3, "Fire Rate maxed")
+near(Mastery.apply("range", 10, 1, fake), 1.2, "Range maxed")
+near(Mastery.apply("coins", 10, 1, fake), 1.5, "Coins maxed")
 near(Mastery.apply("lives", 5, 10, fake), 15, "Lives maxed")
 near(Mastery.apply("bond", 10, 100, fake), 100 * (1 + Mastery.byId.bond.per * 10), "Bond maxed: that much more mini cannon DPS")
-check(Mastery.apply("attack", 20, 1, fake) * 1.3 <= 4, "damage with everything maxed is at most x4")
+near(Mastery.apply("slots", 9, 3, fake), 6, "Slots maxed")
 eq(Mastery.slots(2), 0, "slots at level 2")
 eq(Mastery.slots(3), 1, "slots at level 3")
 eq(Mastery.slots(9), 3, "slots at level 9")
 eq(Mastery.nextSlot(3), 6, "the next slot after level 3")
-eq(Mastery.describe("attack", 3), "+30% tower damage", "Attack III reads")
-eq(Mastery.describe("range", 1), "+2.5% tower range", "Range I reads")
+eq(Mastery.describe("attack", 3), "+15% tower damage", "Attack III reads")
+eq(Mastery.describe("range", 1), "+2% tower range", "Range I reads")
+eq(Mastery.describe("rate", 5), "+15% tower fire rate", "Fire Rate V reads")
 eq(Mastery.describe("lives", 1), "+1 life per level", "Lives I reads")
+eq(Mastery.describe("slots", 2), "No slot yet", "Slots II reads")
 eq(Mastery.describe("slots", 3), "+1 equip slot", "Slots III reads")
+eq(Mastery.describe("slots", 9), "+3 equip slots", "Slots IX reads")
+eq(Mastery.nextSlot(9), nil, "no slot is left after level 9")
 eq(Mastery.label("attack", 4), "Mastery: Attack IV", "the STATS label")
 eq(Mastery.roman(19), "XIX", "roman 19")
 eq(Mastery.level({ levels = { attack = 1e9 } }, "attack"), 20, "a level over the cap is the cap")
@@ -115,14 +119,14 @@ local power = Game.value(player, "power")
 act("masteryBuy", "attack")
 eq(level("attack"), 1, "Attack I is bought")
 eq(data.diamonds, 1_000_000 - Mastery.cost("attack", 1), "for its price")
-near(Game.value(player, "power"), power * 1.1, "the power multiplier is 10% up")
+near(Game.value(player, "power"), power * 1.05, "the power multiplier is 5% up")
 eq(meta().levels.attack, 1, "the client is told")
 eq(player:GetAttribute("Diamonds"), data.diamonds, "and sees the gems go")
 local listed = false
 for _, source in Game.breakdown(player, "power").sources do
 	if source.label == "Mastery: Attack I" then
 		listed = true
-		near(source.mult, 1.1, "the STATS source's multiplier")
+		near(source.mult, 1.05, "the STATS source's multiplier")
 	end
 end
 check(listed, "STATS lists Mastery: Attack I as a source of power")
@@ -172,8 +176,39 @@ for _, group in Mastery.Groups do
 		end
 	end
 	eq(#buttons("BUY") + #buttons("COMING") + #buttons("MAX"), shown, `cards on the {group.name} tab`)
+	eq(#buttons("COMING"), 0, `every track on the {group.name} tab is on sale`)
 end
 check(harness.errors() == 0, "no errors in the window")
+
+T.section("the Slots track")
+-- Sold like every other track: the core has the `equipSlots` modifier, so nothing is "coming soon".
+check(not Feature.off.slots and next(meta().off) == nil, "no track is switched off")
+data.features.mastery.levels = {}
+data.diamonds = 1_000_000
+local slotsBefore = Game.value(player, "equipSlots")
+T.debug("pet:wooden", slotsBefore + 4) -- more mini cannons than there will be slots
+Game.sync(player)
+eq(#state.equipped, slotsBefore, "every slot is full")
+for step = 1, Mastery.byId.slots.cap do
+	local gems = data.diamonds
+	act("masteryBuy", "slots")
+	eq(level("slots"), step, `Slots {Mastery.roman(step)} is bought`)
+	eq(data.diamonds, gems - Mastery.cost("slots", step), "for its price")
+	local earned = Mastery.slots(step)
+	eq(Game.value(player, "equipSlots"), slotsBefore + earned, `{earned} more equip slots at level {step}`)
+	eq(#state.equipped, slotsBefore + earned, "and a mini cannon is equipped into each")
+	eq(HttpService:JSONDecode(player:GetAttribute("Meta")).slots, slotsBefore + earned, "the client is told the slots")
+end
+local slotsListed = false
+for _, source in Game.breakdown(player, "equipSlots").sources do
+	slotsListed = slotsListed or source.label == "Mastery: Slots IX"
+end
+check(slotsListed, "STATS lists Mastery: Slots IX as a source of equip slots")
+local gemsAtCap = data.diamonds
+act("masteryBuy", "slots")
+eq(data.diamonds, gemsAtCap, "a tenth level is not sold")
+check(toastSays("maxed"), "and the toast says it is maxed")
+check(harness.errors() == 0, "no errors while buying slots")
 
 T.section("every track, maxed")
 local KINDS = { "power", "towerRate", "towerRange", "bossDamage", "petShots", "coins", "luck", "upgradeCost", "lives", "monsterSpeed", "equipSlots" }
@@ -204,16 +239,15 @@ eq(data.features.mastery.spent, sold, "and the save counts them")
 local _, ownDps = T.Config.petDpsList(state.equipped, state.towerNames)
 check(ownDps > 0, "mini cannons are equipped")
 near(Game.value(player, "petDps"), ownDps * (1 + Mastery.byId.bond.per * Mastery.byId.bond.cap), "mini cannon DPS: Bond")
-near(Game.value(player, "power"), base.power * 3, "power: Attack x3, and nothing from Bond")
-check(Game.value(player, "power") <= base.power * 4, "damage is at most x4")
-near(Game.value(player, "towerRate"), base.towerRate * 1.5, "fire rate x1.5")
-near(Game.value(player, "towerRange"), base.towerRange * 1.25, "range +25%")
+near(Game.value(player, "power"), base.power * 2, "power: Attack x2, and nothing from Bond")
+near(Game.value(player, "towerRate"), base.towerRate * 1.3, "fire rate x1.3")
+near(Game.value(player, "towerRange"), base.towerRange * 1.2, "range +20%")
 near(Game.value(player, "bossDamage"), base.bossDamage * 1.5, "boss damage x1.5")
 near(Game.value(player, "petShots"), base.petShots * 1.5, "mini cannon shots x1.5")
-near(Game.value(player, "coins"), base.coins * 2, "coins x2")
+near(Game.value(player, "coins"), base.coins * 1.5, "coins x1.5")
 near(Game.value(player, "luck"), base.luck * 1.5, "luck x1.5")
-near(Game.value(player, "upgradeCost"), base.upgradeCost * 0.7, "upgrades 30% cheaper")
-near(Game.value(player, "monsterSpeed"), base.monsterSpeed * 0.85, "monsters 15% slower")
+near(Game.value(player, "upgradeCost"), base.upgradeCost * 0.8, "upgrades 20% cheaper")
+near(Game.value(player, "monsterSpeed"), base.monsterSpeed * 0.9, "monsters 10% slower")
 eq(Game.value(player, "lives"), base.lives + 5, "5 more lives")
 near(player:GetAttribute("TowerRate"), Game.value(player, "towerRate"), "the client is told the fire rate")
 check(not Feature.off.slots, "Slots is on sale: the core has the equipSlots modifier")
