@@ -49,7 +49,8 @@ end
 
 ----------------------------------------------------------------------------------------------------
 -- Lighting: local to this client. Each world has its own sky, on the plot (the world being fought) and on
--- that world's island; the marketplace has a bright afternoon of its own.
+-- that world's island; the marketplace has a bright afternoon of its own. A guest on somebody's base gets
+-- the sky of the world that base is fighting in: the server says which (State.feature("visit").host.world).
 -- A sky is the time of day, brightness and ambient colour (Config.Worlds[world].sky) and a look: the
 -- atmosphere's haze and its colour at the horizon and high up, how many stars, and a tint over the picture.
 -- The looks of the first five worlds use the sky colours of their Blender themes (tools/blender/themes.py);
@@ -91,9 +92,23 @@ local function lit(class: string, name: string): Instance
 	return found
 end
 
+-- The world of the base this player is a guest on, or nil while the server has not said (then: the marketplace's).
+local function hostWorld(): number?
+	local host = State.feature("visit").host
+	local world = if typeof(host) == "table" then host.world else nil
+	return if typeof(world) == "number" and Config.Worlds[world] then world else nil
+end
+
 local litKey = nil
 local function updateLighting()
-	local world = if island > 0 then island elseif inMarket then nil else Config.worldOf(State.get("Wave", 1))
+	local world
+	if island > 0 then
+		world = island
+	elseif visiting > 0 then
+		world = hostWorld()
+	elseif not inMarket then
+		world = Config.worldOf(State.get("Wave", 1))
+	end
 	local halloween = not world and Config.halloweenActive(State.now())
 	local key = world or (if halloween then "halloween" else "market")
 	UI.music(if island > 0 then "island" elseif inMarket then "market" else "base")

@@ -2159,6 +2159,7 @@ do
 	run(1)
 	eq(view(player).guests[1].id, 2, "the owner's window lists the guest")
 	eq(view(guest).host.id, 1, "and the guest's says whose base it is")
+	eq(view(guest).host.world, (Config.worldOf(data.wave)), "and which world that base is fighting in")
 	eq(invited(guest), 0, "the invitation is used up")
 	local together = hostFields(4)
 	check(together >= alone * 1.8, `the guest is sent the owner's field too ({alone} messages alone, {together} with a guest)`)
@@ -2245,6 +2246,30 @@ do
 	local clock, shots = state.clock, hooked.towerShots
 	run(20)
 	check(state.clock > clock + 15 and hooked.towerShots > shots, "and their own base keeps fighting")
+	-- The guest's sky is the host's world's, not the marketplace's nor the guest's own, and follows the host.
+	do
+		local Lighting = game:GetService("Lighting")
+		local RunService = game:GetService("RunService")
+		local function skyClock(): number
+			run(1)
+			harness.fire(RunService, "RenderStepped", 1 / 30)
+			return Lighting.ClockTime
+		end
+		local own = Config.worldOf(data.wave)
+		local theirs = if own == 2 then 3 else 2
+		guestData.wave = (theirs - 1) * Config.WavesPerWorld + 1
+		check(Config.Worlds[theirs].sky.clock ~= Config.Worlds[own].sky.clock and Config.Worlds[theirs].sky.clock ~= 13.5, "the three skies differ")
+		eq(skyClock(), Config.Worlds[theirs].sky.clock, "a guest sees the sky of the host's world")
+		eq(view(player).host.world, theirs, "which the server told them")
+		guestData.wave = theirs * Config.WavesPerWorld + 1
+		eq(skyClock(), Config.Worlds[theirs + 1].sky.clock, "and it follows the host into the next world")
+		as(player, "goHome")
+		eq(skyClock(), Config.Worlds[own].sky.clock, "home again, the guest has their own sky back")
+		as(guest, "visitInvite", 1)
+		as(player, "visitJoin", 2)
+		eq(state.place, "visit", "and back for the rest")
+		eq(skyClock(), Config.Worlds[theirs + 1].sky.clock, "with the host's sky again")
+	end
 	from = #T.toasts
 	harness.removePlayer(guest)
 	run(1)
