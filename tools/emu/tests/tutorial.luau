@@ -3,6 +3,7 @@
 -- A new save sees the welcome once; the fan bonus is paid once and only for the group; every walkthrough step
 -- ends when the thing is really done, in order, and pays once (the story's quest for the same thing pays
 -- nothing more); steps that are done already are passed; a rejoin carries on; a failed level says what to do.
+-- The plot stands still behind the welcome cards and starts when they close; nobody stays paused after them.
 -- tutorial.pre.luau stores the save of an old player (user 3) the walkthrough has nothing to teach.
 local T = harness.load("_prelude.luau")
 local HttpService = game:GetService("HttpService")
@@ -29,6 +30,14 @@ local function story(who: Player?)
 end
 local function step(who: Player?): string
 	return meta(who).step
+end
+-- Where every living monster of a plot is and what it has left, and how many were sent: for "nothing moved".
+local function field(session): string
+	local parts = { `spawned {session.spawned}`, `phase {session.phase}` }
+	for _, monster in session.monsters do
+		table.insert(parts, `{monster.id}@{monster.d}:{monster.hp}`)
+	end
+	return table.concat(parts, " ")
 end
 local function toasted(text: string, from: number?): boolean
 	for index = from or 1, #T.toasts do
@@ -141,9 +150,15 @@ T.section("a new save: the welcome, once")
 eq(meta().welcomed, false, "a new save has not been welcomed")
 eq(step(), "pad", "and its walkthrough waits at the first step")
 eq(meta().group, false, "no group yet (Config.Fan.groupId is 0)")
+check(T.held == true, "the join paused the new player's plot")
+eq(state.paused, true, "and it is still paused")
+eq(player:GetAttribute("Paused"), true, "the client is told")
+local stood = { field = field(state), coins = data.coins, kills = data.totalKills, wave = data.wave }
 local root = body(player, Layout.padPosition(state.slot, 1) + Vector3.new(3, 3, 3))
 run(2)
 eq(step(), "pad", "nothing of the walkthrough runs before the welcome is over, even at the pad")
+eq(state.spawned, 0, "no monster is sent while the cards are up")
+eq(#state.monsters, 0, "so none is on the path")
 root.Position = Layout.plotSpawn(state.slot).Position
 
 harness.runClient()
@@ -254,6 +269,11 @@ for _, junk in { 1, true, "yes", { "start" }, "START" } do
 	act("tutorialWelcome", junk)
 end
 eq(meta().welcomed, false, "a junk answer does not end the welcome")
+-- All of the above took a good half minute of game time.
+eq(state.paused, true, "the plot is still waiting on the last card")
+eq(field(state), stood.field, "nothing spawned and nothing moved in all that time")
+eq(data.totalKills, stood.kills, "nothing was shot")
+eq(data.wave, stood.wave, "and the level is the one the player joined on")
 act("tutorialAck", "lives")
 act("tutorialAck", "finish")
 eq(step(), "pad", "and no step can be acknowledged before the walkthrough runs")
@@ -264,6 +284,10 @@ eq(meta().welcomed, true, "START TUTORIAL ends the welcome")
 eq(data.diamonds, gems, "the like card paid nothing")
 check(view.cardGui.Enabled == false, "the card is gone")
 check(view.banner.Visible == true, "and the banner is up")
+eq(state.paused, false, "the plot starts when the cards close")
+eq(player:GetAttribute("Paused"), false, "and the client is told")
+run(2)
+check(state.spawned > 0 or data.totalKills > stood.kills, "the first monsters are on their way")
 act("tutorialWelcome", "skip")
 eq(step(), "pad", "the welcome cannot be answered twice")
 
@@ -390,6 +414,8 @@ do
 	assert(saved and Game.state(again), "the player did not load again")
 	eq(meta(again).welcomed, true, "the welcome is not shown a second time")
 	eq(step(again), "lives", "the walkthrough is where it was left")
+	eq(Game.state(again).paused, false, "and a rejoin after the welcome is not paused")
+	eq(again:GetAttribute("Paused"), false, "nor told it is")
 	eq(meta(again).fanPaid, true, "the fan bonus is still theirs")
 	local had = saved.diamonds
 	run(2)
@@ -456,17 +482,48 @@ end
 T.section("replaying it in Studio")
 check(Game.actions.tutorialReset ~= nil, "Studio has the tutorialReset action")
 gems = data.diamonds
+-- With a monster on the path, so that standing still shows. In short frames: two cannons make short work
+-- of these levels.
+for _ = 1, 1200 do
+	local first = state.monsters[1]
+	if state.phase == "fight" and first and not first.dead and first.d > 0 then
+		break
+	end
+	harness.step(0.05)
+end
+check(#state.monsters >= 1 and state.monsters[1].d > 0, "a monster is walking the path")
 act("tutorialReset")
 eq(meta().welcomed, false, "it brings the welcome back")
 eq(step(), "pad", "and the first step")
+eq(state.paused, true, "and the plot waits behind the cards again")
+do
+	local frozen, kills, coins = field(state), data.totalKills, data.coins
+	run(3)
+	eq(field(state), frozen, "the monsters on the path stand where they were, unhurt, and no more come")
+	eq(data.totalKills, kills, "nothing is shot")
+	eq(data.coins, coins, "and nothing is earned")
+end
 act("tutorialWelcome", "start")
-run(1)
+eq(state.paused, false, "START lets it go")
+do
+	local frozen = field(state)
+	run(1)
+	check(field(state) ~= frozen, "and the fight carries on from where it stood")
+end
 eq(step(), "clear", "a replay passes what is done already, up to the first thing to watch")
 eq(data.diamonds, gems, "and a replay pays nothing again")
 act("tutorialReset")
+eq(state.paused, true, "the welcome is back and the plot waits")
 act("tutorialWelcome", "skip")
 eq(step(), Tutorial.DONE, "SKIP TUTORIAL ends it before it begins")
 eq(meta().welcomed, true, "and counts as welcomed")
+eq(state.paused, false, "a player who skips is not left paused")
+eq(player:GetAttribute("Paused"), false, "nor told so")
+-- A pause of the player's own, after the welcome, is theirs: nothing of the tutorial takes it back.
+act("setPaused", true)
+run(2)
+eq(state.paused, true, "the pause button still pauses after the welcome")
+act("setPaused", false)
 harness.removePlayer(player)
 run(1)
 
@@ -488,7 +545,10 @@ do
 	act("upgradeTower", { pad = 1, levels = 1 })
 	act("buyPad", 2)
 	eq(step(rookie), "pad", "playing behind the welcome moves nothing")
+	eq(session.paused, true, "their plot waited all the while: building and upgrading go on, the fight does not")
+	eq(session.spawned, 0, "no monster was sent")
 	act("tutorialWelcome", "start")
+	eq(session.paused, false, "START lets it go")
 	eq(step(rookie), "clear", "START passes the steps that are done already and stops at the first that is not")
 	-- Thrown far ahead: the level cannot be cleared. With coins for an upgrade the line says to upgrade.
 	local function failHint(): string
@@ -545,6 +605,48 @@ do
 end
 
 ----------------------------------------------------------------------------------------------------
+T.section("leaving in the middle of the welcome")
+do
+	local quitter = harness.addPlayer("Quitter", 4)
+	harness.flush()
+	Players.LocalPlayer = quitter
+	local saved, session = Game.data(quitter), Game.state(quitter)
+	assert(saved and session, "the fourth player did not load")
+	eq(session.paused, true, "a new save waits behind the cards")
+	harness.removePlayer(quitter)
+	run(1)
+	quitter = harness.addPlayer("Quitter", 4)
+	harness.flush()
+	Players.LocalPlayer = quitter
+	saved, session = Game.data(quitter), Game.state(quitter)
+	eq(meta(quitter).welcomed, false, "they come back to the cards they left")
+	eq(session.paused, true, "so the plot waits again")
+	run(2)
+	eq(session.spawned, 0, "and nothing is sent")
+	-- The pause is the core's own, so its PAUSED banner can always let the plot go: nobody can be stuck
+	-- behind a card that failed to draw. The tutorial does not pause it a second time.
+	act("setPaused", false)
+	run(2)
+	eq(session.paused, false, "the player's own resume holds")
+	check(session.spawned > 0, "and the level runs")
+	act("tutorialWelcome", "skip")
+	eq(session.paused, false, "the cards closing changes nothing then")
+	harness.removePlayer(quitter)
+	run(1)
+	quitter = harness.addPlayer("Quitter", 4)
+	harness.flush()
+	Players.LocalPlayer = quitter
+	saved, session = Game.data(quitter), Game.state(quitter)
+	eq(meta(quitter).welcomed, true, "the next join has no cards")
+	eq(session.paused, false, "and is not paused")
+	local sent = session.spawned
+	run(2)
+	check(session.spawned > sent or saved.totalKills > 0, "its level runs from the start")
+	harness.removePlayer(quitter)
+	run(1)
+end
+
+----------------------------------------------------------------------------------------------------
 T.section("an old save: nothing is paid twice, nothing is taught twice")
 do
 	local veteran = harness.addPlayer("Veteran", 3)
@@ -554,12 +656,14 @@ do
 	assert(saved and Game.state(veteran), "the old save did not load")
 	eq(saved.bestCleared, 60, "the stored save loaded")
 	eq(meta(veteran).welcomed, false, "an old save sees the welcome once too")
+	eq(Game.state(veteran).paused, true, "and its plot waits behind it like anyone's")
 	for _, id in { "pad", "upgrade", "clear", "pad2", "build", "hatch" } do
 		eq(meta(veteran).paid[id], true, `the story paid for "{id}" long ago: it is marked paid`)
 	end
 	local coins, diamonds = saved.coins, saved.diamonds
 	act("tutorialWelcome", "start")
 	eq(step(veteran), "finish", "START takes them straight to the last card")
+	eq(Game.state(veteran).paused, false, "and lets the plot go")
 	local paidNow = (saved.coins - coins) - 0
 	eq(paidNow, Tutorial.ById.island.reward.coins, "only the one step the story never had pays: no step is paid twice")
 	eq(meta(veteran).member, "failed", "a check that threw is a check that failed")

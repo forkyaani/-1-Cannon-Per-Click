@@ -27,6 +27,19 @@ end
 harness.flush()
 T.state = T.Game.state(T.player)
 assert(T.data and T.state, "the player did not load")
+-- The tests were written when a new save's level ran behind the welcome cards. The plot now waits for them
+-- (Features/Tutorial.luau): let it go, the way the PAUSED banner can. tutorial.luau keeps the wait, its .pre
+-- file says so. `T.held` is whether the join paused the plot.
+T.held = T.state.paused == true
+function T.release(who: Player)
+	local state = T.Game.state(who)
+	if state and state.paused then
+		T.Game.actions.setPaused(who, T.Game.data(who), state, false)
+	end
+end
+if not harness.keepWelcomeHold then
+	T.release(T.player)
+end
 
 T.toasts = {}
 T.Remotes.Notify.OnClientEvent:Connect(function(text: string, kind: string)

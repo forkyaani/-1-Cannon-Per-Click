@@ -11,6 +11,9 @@
 -- A step's reward is paid once ever (Tutorial.take). Chapter 1 of the story asks for some of the same things:
 -- those quests carry `tutorial = <step id>` and share the payment, so whichever notices first pays, the other
 -- pays nothing.
+--
+-- Until the welcome is over the player's plot stands still (the core's own pause, `setPaused`): nothing spawns
+-- or walks behind the cards, and the first level starts when they close.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -33,7 +36,7 @@ local DONE = Tutorial.DONE
 local Feature = {}
 
 local Game -- the plug-in API, handed to start
-local sessions = {} -- [player] = { save, acks, sawClear, group, checking, checkedAt, hint, hintAt, dirty }
+local sessions = {} -- [player] = { save, acks, sawClear, group, checking, checkedAt, hint, hintAt, dirty, held }
 
 -- A whole, finite, non-negative number out of Config, or 0: a typo there must not corrupt a save.
 local function amount(value: any): number
@@ -296,6 +299,22 @@ local function running(session): boolean
 end
 
 ----------------------------------------------------------------------------------------------------
+-- The plot waits behind the welcome cards
+----------------------------------------------------------------------------------------------------
+-- Pauses the plot while the cards are up and lets it go when they close, with the core's pause (session
+-- state, never saved: somebody who leaves in the middle of the welcome is not paused next time by anything
+-- but the cards coming up again). Only a pause this file made is taken back, and it is made once, when the
+-- cards come up: if a client never draws them, the HUD's own PAUSED banner still resumes the plot for good.
+local function hold(player: Player, data, state, session, on: boolean)
+	if on == session.held then
+		return
+	end
+	session.held = on
+	Game.actions.setPaused(player, data, state, on)
+	Game.sync(player)
+end
+
+----------------------------------------------------------------------------------------------------
 -- What the client asks for. Every argument is whatever a client chose to send.
 ----------------------------------------------------------------------------------------------------
 -- The last welcome card: "start" begins the walkthrough, "skip" ends it before it begins.
@@ -311,6 +330,7 @@ local function welcome(player: Player, data, state, choice: unknown)
 	elseif not Tutorial.Index[save.step] then
 		save.step = FIRST
 	end
+	hold(player, data, state, session, false)
 	advance(player, data, state)
 	publish(player, session)
 end
@@ -383,8 +403,13 @@ local function onReady(player: Player, data, state)
 		hint = nil,
 		hintAt = 0,
 		dirty = false,
+		held = false, -- this file paused the plot for the welcome cards
 	}
 	sessions[player] = session
+	-- Only a save that still has the cards to see: a rejoin after the welcome starts running, as always.
+	if not save.welcomed then
+		hold(player, data, state, session, true)
+	end
 	-- A rejoin carries on where the save says, past whatever got done in the meantime.
 	advance(player, data, state)
 	publish(player, session)
@@ -439,7 +464,7 @@ function Feature.start(core)
 	--   Remotes.Action:FireServer("tutorialReset")          the cards and the walkthrough; rewards stay paid
 	--   Remotes.Action:FireServer("tutorialReset", "all")   also forgets the paid rewards and the fan bonus
 	if RunService:IsStudio() then
-		Game.actions.tutorialReset = function(player: Player, _data, _state, what: unknown)
+		Game.actions.tutorialReset = function(player: Player, data, state, what: unknown)
 			local session = sessions[player]
 			if not session then
 				return
@@ -455,6 +480,7 @@ function Feature.start(core)
 			session.acks = {}
 			session.sawClear = false
 			session.hint = nil
+			hold(player, data, state, session, true)
 			publish(player, session)
 		end
 	end

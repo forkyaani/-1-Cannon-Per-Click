@@ -16,3 +16,6 @@ store:SetAsync("u_3", {
 
 -- The test starts from "no group yet" and sets its own id later, whatever the real Config.Fan.groupId is.
 require(game:GetService("ReplicatedStorage").Shared.Config).Fan.groupId = 0
+
+-- This test watches the plot wait behind the welcome cards: the prelude must not let it go.
+harness.keepWelcomeHold = true
