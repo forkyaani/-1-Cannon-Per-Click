@@ -38,6 +38,8 @@ local rng = Random.new(2026) -- fixed seed: the town looks the same on every ser
 local folder: Folder
 local halloween = false
 local boardLabels = {}
+local marketShells: Instance? = nil -- the Blender town's landmark meshes, when the place has them (see `wear`)
+local cover: (() -> ())? = nil -- hides every part the Blender town covers; set by `wear`
 
 -- A frame in the marketplace's own space: x east, z south, the statue at (0, 0).
 local function at(x: number, y: number, z: number): CFrame
@@ -242,6 +244,7 @@ end
 -- its EggId shows): src/client/Market.luau. What the egg can hatch, with every chance, is in the loot viewer
 -- (src/client/Loot.luau), which the stand's third prompt opens on this egg.
 local EGG_FIT = 1.25 -- a modelled egg is made this much bigger than it was modelled
+local PEDESTAL_TOP = 3 -- how high an egg stands on the Blender town's pedestal (market_manifest.json, heights)
 
 -- Where the spots sit on an egg: directions from its centre.
 local EGG_SPOTS = {
@@ -385,7 +388,12 @@ local function buildHatchery()
 		-- A lone egg (the Gem Egg, outside the event) stands in the middle of the arc.
 		local angle = if #eggs == 1 then 0 else math.rad(-78 + 156 * (index - 1) / (#eggs - 1))
 		local position = Vector3.new(math.sin(angle) * radius, 0, -math.cos(angle) * radius)
-		buildEggStand(egg, origin * CFrame.lookAt(position, Vector3.zero), eggFolder)
+		local pedestal = marketShells and marketShells:FindFirstChild("EggPedestal")
+		if pedestal and pedestal:IsA("MeshPart") then
+			buildEggStand(egg, origin * CFrame.lookAt(position, Vector3.zero), eggFolder, pedestal, PEDESTAL_TOP)
+		else
+			buildEggStand(egg, origin * CFrame.lookAt(position, Vector3.zero), eggFolder)
+		end
 	end
 
 	local board = block("HatcherySign", Vector3.new(44, 7, 1), at(0, 18, -70) * CFrame.Angles(0, math.pi, 0), DARK)
@@ -580,10 +588,178 @@ end
 -- src/server/Features/Fuse.luau.)
 
 ----------------------------------------------------------------------------------------------------
+-- The Blender town (tools/blender/marketplace.py, imported with tools/studio/setup_models.luau as
+-- ReplicatedStorage.MarketModels): a model "Market" whose pivot is the middle of the square on the ground,
+-- and a folder "MarketShells" of landmark meshes, each with the middle of its own base as pivot and its front
+-- towards -Z. Every number below is from assets/models/marketplace/market_manifest.json.
+--
+-- What is built from parts stays, unseen, as the floor, the walls, the lamps' light and the carrier of every
+-- prompt, sign and board face, so nothing that looks for those parts has to know. Still the game's own, and
+-- seen: the lamp bulbs, the trading lanterns and orb, the eggs, the Huge, the crates, the forge's shells, the
+-- guide, and every BillboardGui and SurfaceGui.
+----------------------------------------------------------------------------------------------------
+-- Parts of the square itself (children of its folder) that the town covers.
+local UNSEEN = {
+	Lawn = true, Ground = true, Plaza = true, ArrivalPad = true,
+	House = true, Roof = true, Door = true, WindowFrame = true, Window = true, Tower = true, TowerRoof = true,
+	LampPost = true, Trunk = true, Leaves = true,
+	Fountain = true, Water = true, Pedestal = true, -- the fountain's: an egg stand's is inside its own model
+	StatueBase = true, StatueWheel = true, StatueBarrel = true, StatueRing = true,
+	HatcherySign = true, SignPost = true,
+	Counter = true, StallPost = true, Awning = true, StallSign = true, Gem = true, Star = true,
+	BoardPost = true, Leaderboard = true,
+	DailyChest = true, ChestLid = true, ChestBand = true, ChestLock = true, NoticePost = true, NoticeBoard = true,
+	PortalPillar = true, PortalBeam = true, Portal = true,
+	TradingRug = true, TradingRugRing = true, TradingRugCentre = true, TradingSpot = true, TradingTableLeg = true,
+	TradingTable = true, TradingCannon = true, TradingGem = true, TradingPost = true,
+	-- What features stand on the square (Huge, Crates, Event):
+	HugePedestal = true, HugePedestalTop = true, HugePlate = true,
+	CrateRug = true, CrateSignPost = true, CrateSign = true, CratePrices = true,
+	EventBoardPost = true, EventBoardRim = true,
+	-- Build.pumpkin's pieces: the town's Halloween dress brings a few big pumpkins instead.
+	Pumpkin = true, Stem = true, Glow = true,
+}
+-- And inside the models two features parent here (Ammo, Story).
+local UNSEEN_INSIDE = {
+	AmmoForge = { ForgeFloor = true, Furnace = true, ForgeFire = true, ForgeChimney = true, AnvilFoot = true, Anvil = true, ForgeRack = true },
+	StoryGuide = { Plinth = true },
+}
+-- The seasonal meshes of the model, by the end of their names: true is worn while the Halloween event is on.
+local SEASONAL = { Leaves = false, Bunting = false, LeavesAutumn = true, Halloween = true }
+local BOARD_HEIGHT = 10.5 -- a board's middle above its foot (buildLeaderboard, Features/Event.luau)
+local EVENT_TRIM = rgb(255, 130, 30)
+-- Where each landmark stands: { shell, x, z, yaw, tints }. `tints` colours the white meshes named in it.
+local function landmarks()
+	local white = rgb(240, 245, 255)
+	local list = {
+		{ "Stall", 58, 8, 90, { StallStripesA = rgb(70, 150, 255), StallStripesB = white } },
+		{ "Stall", 58, 48, 90, { StallStripesA = GOLD, StallStripesB = white } },
+		{ "Leaderboard", -58, -10, -90, { LeaderboardTrim = rgb(90, 225, 255) } },
+		{ "Leaderboard", -58, 10, -90, { LeaderboardTrim = rgb(170, 90, 255) } },
+		{ "Leaderboard", -58, 30, -90, { LeaderboardTrim = GOLD } },
+		{ "NoticeBoard", -14, 42, 180 },
+		{ "NoticeBoard", -44, 62, 0 },
+		{ "Chest", 14, 42, 180 },
+		{ "Portal", 0, 70, 0, { PortalSheet = false } },
+		{ "HatcherySign", 0, -70, 180 },
+		{ "TradePlaza", -44, 52, 0 },
+		{ "HugePedestal", 24, -32, 143.13 },
+		{ "CrateStand", -24, -32, -143.13 },
+		{ "AmmoForge", 34, 26, 52.59 },
+		{ "GuidePlinth", -30, 26, -49.09 },
+	}
+	if halloween then
+		table.insert(list, { "Stall", 58, 28, 90, { StallStripesA = rgb(255, 130, 30), StallStripesB = rgb(110, 60, 160) } })
+	end
+	return list
+end
+-- Unseen boxes for the new solid things of the Halloween dress: { x, y, z, size x, y, z } (colliders).
+local HALLOWEEN_SOLIDS = {
+	{ 24.2, 1.84, -70.4, 4.6, 3.68, 4.6 }, { -24.2, 1.6, -70.4, 4.0, 3.2, 4.0 }, { 9.6, 1.52, 70.2, 3.8, 3.04, 3.8 },
+	{ -9.4, 1.2, 70.4, 3.0, 2.4, 3.0 }, { 58.4, 1.44, 35.3, 3.6, 2.88, 3.6 }, { 19.4, 1.04, 42.2, 2.6, 2.08, 2.6 },
+}
+
+local function dressFor(): (Model?, Instance?)
+	local models = ReplicatedStorage:FindFirstChild("MarketModels")
+	local scenery = models and models:FindFirstChild("Market")
+	local shells = models and models:FindFirstChild("MarketShells")
+	if scenery and scenery:IsA("Model") and shells then
+		return scenery, shells
+	end
+	return nil, nil
+end
+
+local function covered(item: Instance): boolean
+	if not item:IsA("BasePart") then
+		return false
+	end
+	local parent = item.Parent
+	if parent == folder then
+		return UNSEEN[item.Name] == true or string.sub(item.Name, 1, 11) == "EventBoard_"
+	end
+	local inside = parent and parent.Parent == folder and UNSEEN_INSIDE[parent.Name]
+	return inside ~= nil and inside ~= false and inside[item.Name] == true
+end
+
+-- Stands a copy of a shell, and of the tinted meshes that go with it, on a frame. Copies are named
+-- "Shell_<name>", so nothing takes them for the game's own part of that name.
+local function standShell(shells: Instance, name: string, frame: CFrame, tints: { [string]: Color3 | boolean }?)
+	local names = { [name] = true }
+	for extra in tints or {} do
+		names[extra] = true
+	end
+	for piece in names do
+		local shell = shells:FindFirstChild(piece)
+		if shell and (shell:IsA("BasePart") or shell:IsA("Model")) then
+			local copy = shell:Clone()
+			copy.Name = "Shell_" .. piece
+			local tint = tints and tints[piece]
+			if typeof(tint) == "Color3" and copy:IsA("BasePart") then
+				copy.Color = tint
+			end
+			copy:PivotTo(frame)
+			copy.Parent = folder
+		end
+	end
+end
+
+local function wear(scenery: Model, shells: Instance)
+	local function hide(item: Instance)
+		if not covered(item) or item:GetAttribute("Unseen") then
+			return
+		end
+		local part = item :: BasePart
+		part:SetAttribute("Unseen", true)
+		part.Transparency = 1
+		part.CastShadow = false
+		-- A feature's event board gets the town's board behind its face, like the three built here.
+		if string.sub(part.Name, 1, 11) == "EventBoard_" then
+			standShell(shells, "Leaderboard", part.CFrame * CFrame.new(0, -BOARD_HEIGHT, 0), { LeaderboardTrim = EVENT_TRIM })
+		end
+	end
+	-- Features build on the square after this (src/server/init.server.luau calls Marketplace.cover when they
+	-- have started). Anything added later still is covered as it comes: a part is named and parented in no
+	-- fixed order (Build.part), so it is looked at a moment after it arrives.
+	cover = function()
+		for _, item in folder:GetDescendants() do
+			hide(item)
+		end
+	end
+	cover()
+	folder.DescendantAdded:Connect(function(item: Instance)
+		task.defer(hide, item)
+	end)
+
+	local dress = scenery:Clone()
+	dress.Name = "Scenery"
+	for _, mesh in dress:GetChildren() do
+		local season = SEASONAL[string.match(mesh.Name, "([^_]+)$") or ""]
+		if season ~= nil and season ~= halloween then
+			mesh:Destroy()
+		end
+	end
+	dress:PivotTo(origin)
+	dress.Parent = folder
+
+	for _, landmark in landmarks() do
+		standShell(shells, landmark[1], at(landmark[2], 0, landmark[3]) * CFrame.Angles(0, math.rad(landmark[4]), 0), landmark[5])
+	end
+	if halloween then
+		for _, solid in HALLOWEEN_SOLIDS do
+			local box = block("Solid", Vector3.new(solid[4], solid[5], solid[6]), at(solid[1], solid[2], solid[3]), STONE)
+			box.Transparency = 1
+			box.CastShadow = false
+		end
+	end
+end
+
+----------------------------------------------------------------------------------------------------
 function Marketplace.build()
 	halloween = Config.halloweenActive(os.time())
 	folder = Instance.new("Folder")
 	folder.Name = "Marketplace"
+	local scenery, shells = dressFor()
+	marketShells = shells
 
 	buildGround()
 	buildTown()
@@ -602,8 +778,19 @@ function Marketplace.build()
 	buildNoticeBoard(at(-14, 0, 42) * south, "📜 MISSIONS\nEarn gems every day", "MISSIONS")
 	buildPortal(at(0, 0, 70))
 	buildTradingPlaza(at(-44, 0, 52))
+	if scenery and shells then
+		wear(scenery, shells)
+	end
 
 	folder.Parent = workspace
+end
+
+-- Called once every feature has built its part of the square: on a square dressed in the Blender town, what
+-- they built is covered like the rest. Does nothing on a part-built square.
+function Marketplace.cover()
+	if cover then
+		cover()
+	end
 end
 
 -- For features that add something to the square: a frame in marketplace space (x east, z south, the statue

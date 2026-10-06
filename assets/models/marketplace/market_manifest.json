@@ -364,15 +364,15 @@
     {
      "x": 0.0,
      "z": -52.0,
-     "faces": 180.0,
-     "yaw": -180.0,
+     "facing": 180.0,
+     "yaw": 180.0,
      "when": "everyday",
      "note": "gem egg, at 0 degrees on the arc of 52"
     },
     {
      "x": -50.864,
      "z": -10.811,
-     "faces": 102.0,
+     "facing": 102.0,
      "yaw": -102.0,
      "when": "halloween",
      "note": "gem egg, at -78 degrees on the arc of 52"
@@ -380,7 +380,7 @@
     {
      "x": -32.725,
      "z": -40.412,
-     "faces": 141.0,
+     "facing": 141.0,
      "yaw": -141.0,
      "when": "halloween",
      "note": "pumpkin egg, at -39 degrees on the arc of 52"
@@ -388,15 +388,15 @@
     {
      "x": 0.0,
      "z": -52.0,
-     "faces": 180.0,
-     "yaw": -180.0,
+     "facing": 180.0,
+     "yaw": 180.0,
      "when": "halloween",
      "note": "haunted egg, at 0 degrees on the arc of 52"
     },
     {
      "x": 32.725,
      "z": -40.412,
-     "faces": 219.0,
+     "facing": 219.0,
      "yaw": 141.0,
      "when": "halloween",
      "note": "crypt egg, at 39 degrees on the arc of 52"
@@ -404,7 +404,7 @@
     {
      "x": 50.864,
      "z": -10.811,
-     "faces": 258.0,
+     "facing": 258.0,
      "yaw": 102.0,
      "when": "halloween",
      "note": "bloodmoon egg, at 78 degrees on the arc of 52"
@@ -427,7 +427,7 @@
      13.87
     ]
    },
-   "faces": {
+   "boards": {
     "sign": {
      "x": 0,
      "z": 11.8,
@@ -441,7 +441,7 @@
     {
      "x": 58,
      "z": 8,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "always",
      "note": "WEEKLY SHOP"
@@ -449,7 +449,7 @@
     {
      "x": 58,
      "z": 28,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "halloween",
      "note": "HALLOWEEN SHOP"
@@ -457,7 +457,7 @@
     {
      "x": 58,
      "z": 48,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "always",
      "note": "GAME PASSES"
@@ -485,7 +485,7 @@
     {
      "x": 58,
      "z": 8,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "always",
      "note": "WEEKLY SHOP"
@@ -493,7 +493,7 @@
     {
      "x": 58,
      "z": 28,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "halloween",
      "note": "HALLOWEEN SHOP"
@@ -501,7 +501,7 @@
     {
      "x": 58,
      "z": 48,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "always",
      "note": "GAME PASSES"
@@ -529,7 +529,7 @@
     {
      "x": 58,
      "z": 8,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "always",
      "note": "WEEKLY SHOP"
@@ -537,7 +537,7 @@
     {
      "x": 58,
      "z": 28,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "halloween",
      "note": "HALLOWEEN SHOP"
@@ -545,7 +545,7 @@
     {
      "x": 58,
      "z": 48,
-     "faces": 270,
+     "facing": 270,
      "yaw": 90,
      "when": "always",
      "note": "GAME PASSES"
@@ -568,7 +568,7 @@
      21.25
     ]
    },
-   "faces": {
+   "boards": {
     "board": {
      "x": 0,
      "z": 10.5,
@@ -582,7 +582,7 @@
     {
      "x": -58,
      "z": -10,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "always",
      "note": "Gems"
@@ -590,7 +590,7 @@
     {
      "x": -58,
      "z": 10,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "always",
      "note": "Rebirths"
@@ -598,7 +598,7 @@
     {
      "x": -58,
      "z": 30,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "always",
      "note": "Power"
@@ -606,7 +606,7 @@
     {
      "x": -58,
      "z": -30,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "halloween",
      "note": "Event board 1 (Features/Event.luau); a second event's stands at x -58, z -50"
@@ -634,7 +634,7 @@
     {
      "x": -58,
      "z": -10,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "always",
      "note": "Gems"
@@ -642,7 +642,7 @@
     {
      "x": -58,
      "z": 10,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "always",
      "note": "Rebirths"
@@ -650,7 +650,7 @@
     {
      "x": -58,
      "z": 30,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "always",
      "note": "Power"
@@ -658,7 +658,7 @@
     {
      "x": -58,
      "z": -30,
-     "faces": 90,
+     "facing": 90,
      "yaw": -90,
      "when": "halloween",
      "note": "Event board 1 (Features/Event.luau); a second event's stands at x -58, z -50"
@@ -681,7 +681,7 @@
      11.56
     ]
    },
-   "faces": {
+   "boards": {
     "board": {
      "x": 0,
      "z": 6.0,
@@ -694,15 +694,15 @@
     {
      "x": -14,
      "z": 42,
-     "faces": 180,
-     "yaw": -180,
+     "facing": 180,
+     "yaw": 180,
      "when": "always",
      "note": "Missions"
     },
     {
      "x": -44,
      "z": 62,
-     "faces": 0,
+     "facing": 0,
      "yaw": 0,
      "when": "always",
      "note": "How to trade (the trading plaza's)"
@@ -730,8 +730,8 @@
     {
      "x": 14,
      "z": 42,
-     "faces": 180,
-     "yaw": -180,
+     "facing": 180,
+     "yaw": 180,
      "when": "always"
     }
    ]
@@ -757,7 +757,7 @@
     {
      "x": 0,
      "z": 70,
-     "faces": 0,
+     "facing": 0,
      "yaw": 0,
      "when": "always"
     }
@@ -784,7 +784,7 @@
     {
      "x": 0,
      "z": 70,
-     "faces": 0,
+     "facing": 0,
      "yaw": 0,
      "when": "always"
     }
@@ -806,7 +806,7 @@
      29.13
     ]
    },
-   "faces": {
+   "boards": {
     "board": {
      "x": 0,
      "z": 18.0,
@@ -819,8 +819,8 @@
     {
      "x": 0,
      "z": -70,
-     "faces": 180,
-     "yaw": -180,
+     "facing": 180,
+     "yaw": 180,
      "when": "always"
     }
    ]
@@ -846,7 +846,7 @@
     {
      "x": -44,
      "z": 52,
-     "faces": 0,
+     "facing": 0,
      "yaw": 0,
      "when": "always"
     }
@@ -869,7 +869,7 @@
     ]
    },
    "top": 1.6,
-   "faces": {
+   "boards": {
     "plate": {
      "x": 0,
      "z": 1.65,
@@ -883,7 +883,7 @@
     {
      "x": 24,
      "z": -32,
-     "faces": 216.87,
+     "facing": 216.87,
      "yaw": 143.13,
      "when": "always"
     }
@@ -905,7 +905,7 @@
      13.5
     ]
    },
-   "faces": {
+   "boards": {
     "sign": {
      "x": 0,
      "z": 11.0,
@@ -926,7 +926,7 @@
     {
      "x": -24,
      "z": -32,
-     "faces": 143.13,
+     "facing": 143.13,
      "yaw": -143.13,
      "when": "always"
     }
@@ -953,7 +953,7 @@
     {
      "x": 34,
      "z": 26,
-     "faces": 307.41,
+     "facing": 307.41,
      "yaw": 52.59,
      "when": "always"
     }
@@ -981,7 +981,7 @@
     {
      "x": -30,
      "z": 26,
-     "faces": 49.09,
+     "facing": 49.09,
      "yaw": -49.09,
      "when": "always"
     }
@@ -993,8 +993,9 @@
   "seasonal": 19228,
   "shell": 13386
  },
- "spots": "A shell's spot is in the game's marketplace space (x east, z SOUTH). `faces` is the compass direction its front looks (0 north, 90 east, 180 south, 270 west); `yaw` is the same as the angle of Marketplace.frame(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0), whose -Z is the front.",
- "faces": "A board's face is flat and empty: x and z are its middle in the shell's space, width x height its size, y the plane of the GAME's own board face (where its SurfaceGui draws). The mesh's face lies 0.05 behind that plane, so the words stay in front of it.",
+ "origin": "Market_Ground is 280 x 280 and its middle is the origin (its lowest point is 0.08 under the ground's top). Every mesh's `bounds` are its box in the file: centre and size as [x, y, z], from the origin for scenery and seasonal meshes, from its own base for a shell.",
+ "spots": "A shell's spot is in the game's marketplace space (x east, z SOUTH). `facing` is the compass direction its front looks (0 north, 90 east, 180 south, 270 west); `yaw` is the same as the angle of Marketplace.frame(x, 0, z) * CFrame.Angles(0, math.rad(yaw), 0), whose -Z is the front.",
+ "boards": "A board's face is flat and empty: x and z are its middle in the shell's space, width x height its size, y the plane of the GAME's own board face (where its SurfaceGui draws). The mesh's face lies 0.05 behind that plane, so the words stay in front of it.",
  "seasons": {
   "everyday": {
    "show": [
@@ -1015,7 +1016,8 @@
     "Market_Leaves",
     "Market_Bunting"
    ]
-  }
+  },
+  "note": "Market_Halloween brings its own bunting (orange and purple, on the same strings as Market_Bunting), six big pumpkins, the Halloween stall's two pumpkins, ghosts, bats, webs and a witch's hat."
  },
  "materials": {
   "Market_Glow": "Neon",
@@ -1106,140 +1108,140 @@
    {
     "x": -60,
     "z": -84,
-    "faces": 180,
+    "facing": 180,
     "kind": "turret",
     "height": 33
    },
    {
     "x": -30,
     "z": -84,
-    "faces": 180,
+    "facing": 180,
     "kind": "shop",
     "height": 30
    },
    {
     "x": 0,
     "z": -84,
-    "faces": 180,
+    "facing": 180,
     "kind": "hall",
     "height": 34
    },
    {
     "x": 30,
     "z": -84,
-    "faces": 180,
+    "facing": 180,
     "kind": "inn",
     "height": 31
    },
    {
     "x": 60,
     "z": -84,
-    "faces": 180,
+    "facing": 180,
     "kind": "twin",
     "height": 35
    },
    {
     "x": 84,
     "z": 60,
-    "faces": 270,
+    "facing": 270,
     "kind": "cottage",
     "height": 24
    },
    {
     "x": 84,
     "z": 30,
-    "faces": 270,
+    "facing": 270,
     "kind": "twin",
     "height": 28
    },
    {
     "x": 84,
     "z": 0,
-    "faces": 270,
+    "facing": 270,
     "kind": "hall",
     "height": 30
    },
    {
     "x": 84,
     "z": -30,
-    "faces": 270,
+    "facing": 270,
     "kind": "shop",
     "height": 32
    },
    {
     "x": 84,
     "z": -60,
-    "faces": 270,
+    "facing": 270,
     "kind": "turret",
     "height": 34
    },
    {
     "x": -60,
     "z": 84,
-    "faces": 0,
+    "facing": 0,
     "kind": "twin",
     "height": 24
    },
    {
     "x": -30,
     "z": 84,
-    "faces": 0,
+    "facing": 0,
     "kind": "cottage",
     "height": 22
    },
    {
     "x": 0,
     "z": 84,
-    "faces": 0,
+    "facing": 0,
     "kind": "shop",
     "height": 23
    },
    {
     "x": 30,
     "z": 84,
-    "faces": 0,
+    "facing": 0,
     "kind": "inn",
     "height": 22
    },
    {
     "x": 60,
     "z": 84,
-    "faces": 0,
+    "facing": 0,
     "kind": "cottage",
     "height": 24
    },
    {
     "x": -84,
     "z": 60,
-    "faces": 90,
+    "facing": 90,
     "kind": "inn",
     "height": 25
    },
    {
     "x": -84,
     "z": 30,
-    "faces": 90,
+    "facing": 90,
     "kind": "shop",
     "height": 28
    },
    {
     "x": -84,
     "z": 0,
-    "faces": 90,
+    "facing": 90,
     "kind": "hall",
     "height": 30
    },
    {
     "x": -84,
     "z": -30,
-    "faces": 90,
+    "facing": 90,
     "kind": "cottage",
     "height": 31
    },
    {
     "x": -84,
     "z": -60,
-    "faces": 90,
+    "facing": 90,
     "kind": "twin",
     "height": 34
    }
@@ -1266,7 +1268,7 @@
     },
     "size": {
      "x": 4.6,
-     "y": 3.6799999999999997,
+     "y": 3.68,
      "z": 4.6
     },
     "yaw": 0.0,
@@ -1311,7 +1313,7 @@
     },
     "size": {
      "x": 3.0,
-     "y": 2.4000000000000004,
+     "y": 2.4,
      "z": 3.0
     },
     "yaw": 0.0,
@@ -1326,7 +1328,7 @@
     },
     "size": {
      "x": 3.6,
-     "y": 2.8800000000000003,
+     "y": 2.88,
      "z": 3.6
     },
     "yaw": 0.0,

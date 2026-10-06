@@ -29,5 +29,8 @@ for _, module in features do
 	end
 end
 
+-- What the features built on the marketplace's square is covered by its Blender town, if the place has one.
+Marketplace.cover()
+
 Game.start()
 print("[Server] started")

@@ -4,7 +4,8 @@ Luau test chunks against it:  python3 run.py [--all-features] [--src DIR] test1.
 
 Plots, Marketplace and Leaderboard are replaced by the stand-ins in mocks/ (--real-plots keeps the real
 src/server/Plots.luau, for tests of the client against what the server really builds; --real-leaderboard keeps
-the real src/server/Leaderboard.luau, on emulated OrderedDataStores). By default only this agent's
+the real src/server/Leaderboard.luau, on emulated OrderedDataStores; --real-marketplace keeps the real
+src/server/Marketplace.luau). By default only this agent's
 feature modules are loaded from the Features folders, so other agents' unfinished work cannot fail a run.
 """
 import os
@@ -184,6 +185,10 @@ def main():
         # The real src/server/Leaderboard.luau, on the emulated OrderedDataStores (tests/event_board.luau).
         args.remove("--real-leaderboard")
         real.add("Leaderboard")
+    if "--real-marketplace" in args:
+        # The real src/server/Marketplace.luau: the square as the server builds it (tests/market_wear.luau).
+        args.remove("--real-marketplace")
+        real.add("Marketplace")
     if "--src" in args:
         i = args.index("--src")
         src = args[i + 1]
