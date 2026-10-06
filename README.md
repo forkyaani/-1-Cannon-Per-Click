@@ -39,6 +39,7 @@ The 3D models (monsters, the Earth island, the base) live in the Studio place, n
 | `src/shared/` | Data and maths both sides use. `Config.luau` holds every number; `Layout.luau` the base's geometry |
 | `src/server/` | Server logic. `Game.luau` is the core loop; `Plots.luau`, `Islands.luau`, `Marketplace.luau` build the world |
 | `src/client/` | UI and effects. `UI.luau` is the UI kit; `Hud.luau` the HUD; `Field.luau` draws monsters and tower shots |
+| `src/first/` | The loading screen. Runs from `ReplicatedFirst` before anything else has arrived, so it requires nothing |
 | `src/*/Features/` | One feature per file, loaded automatically: Towers, Mastery, Enchant, Fuse, Crates, Trading, Story, Tutorial ... |
 | `docs/` | Design and technical docs (see section 5) |
 | `tools/` | Checks you can run without Studio (see section 3) |

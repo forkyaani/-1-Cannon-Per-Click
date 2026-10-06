@@ -13,6 +13,7 @@ plugs into the core through the hooks below, so several people can build feature
 
 Every module in the two `Features` folders is required and started automatically, in name order
 (`init.server.luau`, `init.client.luau`). Server features start after the map is built and before any player joins.
+Before either, the client runs `src/first/Loading.client.luau` from `ReplicatedFirst`: the loading screen (see "Private bases, visits and pause").
 Require a shared feature module with `require(ReplicatedStorage.Shared.Features.<Name>)`
 (on the client use `WaitForChild` on the way down).
 
@@ -578,6 +579,14 @@ part-built island plus one unseen pillar per trunk, lamp and prop (`SOLIDS`, a l
   wires both and lets only the base's owner use them; the MARKET menu button stays too.
 - **The lobby** (`workspace.Plots.Lobby`, at `Layout.LOBBY`) is a small closed room with the `SpawnLocation`:
   where a character stands for the moment its save takes to load, before the game moves it to its base.
+  The player never sees it: the loading screen is still up.
+- **The loading screen** (`src/first/Loading.client.luau`, mapped to `ReplicatedFirst.First`) is the first
+  client script to run. It removes Roblox's default loading screen, shows its own (the game's name,
+  "Opening your base..." and three bouncing dots) and fades it out once the game has loaded, the player
+  attribute `Slot` is set and the character stands within 30 studs of that base's `ArrivalPad` part. After 20
+  seconds it goes away whatever happened. It runs before `ReplicatedStorage` has arrived, so it requires
+  nothing: its colours, fonts and text are copies of the kit's and of `Config.GameName`, the one place where
+  that is allowed. Renaming `ArrivalPad`, `Plot_<slot>` or the `Slot` attribute means changing it too.
 - **Visits by invitation** (`Features/Visit.luau` x3; the rules are in the shared module). The VISIT menu
   button (MORE drawer) opens a window listing the other players on the server. INVITE is the action
   `visitInvite(user id)`: it asks that player to come to the asker's base, lasts `Visit.InviteSeconds` (60) and
