@@ -371,7 +371,7 @@ Config.Level = {
 	-- player its target time (docs/BALANCE.md).
 	-- Fitted 7 Oct (after the towers' and mini cannons' buffs of that day) to Yaani's pace: about 30 minutes a world, the last four 40, 50, 60 and 70 on the average
 	-- of six seeds. One player's world can take twice its average, and none should pass 1:30.
-	worldPay = { 0.2748, 193.9, 4.437e+05, 5.286e+08, 2.088e+11, 3.206e+14, 4.454e+17, 5.363e+20, 2.435e+23, 3.096e+26, 5.279e+29, 3.945e+32 },
+	worldPay = { 0.2748, 151, 3.916e+05, 4.665e+08, 4.659e+10, 2.497e+14, 9.938e+16, 1.002e+21, 2.265e+22, 6.096e+25, 4.111e+29, 3.945e+32 },
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
 	-- pads and towers come quickly, and the grind sets in as the head start runs out.
@@ -687,8 +687,10 @@ end
 -- SetBonus: the hidden buff.
 --
 -- How the bonuses scale: the second coin egg is EggCurve.second (2.5x) stronger than the first, and every egg
--- after that EggCurve.step (15x) stronger than the one before it. Monsters are about 22x tougher from one egg
--- to the next; fusing, enchanting and more slots make up the rest. Until 7 Oct every egg was 2.5x the last,
+-- after that EggCurve.step (22x) stronger than the one before it: monsters are about 22x tougher from one egg
+-- to the next, so mini cannons keep their share of the fight to the last world, and fusing, enchanting and
+-- more slots add to it. (At 15x an egg a full fused team of 11 on The Sun dealt under 1% of what the towers
+-- did: 64T beside 7.29Qa, Yaani, 7 Oct. At 22x it is about a sixth.) Until 7 Oct every egg was 2.5x the last,
 -- which was tuned for the multiplier: as flat DPS a full team on The Sun dealt 5 million a second beside
 -- towers dealing 2.8 trillion.
 ----------------------------------------------------------------------------------------------------
@@ -697,7 +699,10 @@ Config.PetDps = 525 -- damage per second of a mini cannon per 1 of its bonus (10
 Config.EggCurve = {
 	base = 0.05, -- the Common of the first egg: +26 DPS
 	second = 2.5, -- the second coin egg's mini cannons are this many times as strong as the first's
-	step = 15, -- and every egg's after that this many times as strong as the last egg's
+	step = 22, -- and every egg's after that this many times as strong as the last egg's (15 for a day)
+	-- On top of that, once, from the third egg on. 1 = nothing. At 5 (tried 7 Oct) a player who hatches the
+	-- newest egg clears every world from The Sun on in five minutes on mini cannons alone, whatever it pays.
+	jump = 1,
 	clears = 2.5, -- an egg costs this many clears of the level that unlocks it
 	first = 500, -- except the first
 }
@@ -733,7 +738,12 @@ end
 -- (0 for the first egg; whole for a coin egg, in between for a bonus set by hand).
 local function eggScale(eggs: number): number
 	local curve = Config.EggCurve
-	return if eggs <= 1 then curve.second ^ eggs else curve.second * curve.step ^ (eggs - 1)
+	if eggs <= 1 then
+		return curve.second ^ eggs
+	end
+	-- The jump comes in over the one egg from the second to the third, so a bonus set by hand between them
+	-- (eggs is not whole) lands between them too.
+	return curve.second * curve.step ^ (eggs - 1) * curve.jump ^ math.min(1, eggs - 1)
 end
 
 -- Two significant digits, at any size.

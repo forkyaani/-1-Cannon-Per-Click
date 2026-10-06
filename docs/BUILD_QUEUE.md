@@ -291,8 +291,10 @@ the middle of the map and its a long walk".
 
 - **Why:** Yaani on The Sun: a full team of 11 mini cannons dealt 5.28M a second beside towers dealing 2.84T.
   Every egg was 2.5x the one before while monsters are about 22x tougher from egg to egg.
-- **Mini cannons:** from the third coin egg on, each egg's are 15x the last egg's (`Config.EggCurve.step`; the
-  first two eggs are as they were). The same team on The Sun now deals about 1.5T.
+- **Mini cannons:** from the third coin egg on, each egg's are 22x the last egg's (`Config.EggCurve.step`; the
+  first two eggs are as they were). At 15x (the first try) Yaani's team still dealt under 1% of his towers'
+  damage (64T beside 7.29Qa); at 22x it is about a sixth. More than that (`EggCurve.jump`) lets mini cannons
+  alone clear worlds in five minutes, so the pace of 30 minutes a world cannot be kept.
 - **Towers:** "sniper is the only good one": it was the only kind worth its coins on a boss. Cannon 36 to 64,
   Gatling 16 to 40, Mortar 168 to 340, Frost 40 to 120, Flame 44 to 110, Tesla 160 to 400, Rocket 680 to 1,400;
   the Sniper stays. Six new kinds from the specials the core already has: Laser (level 35), Venom (80),

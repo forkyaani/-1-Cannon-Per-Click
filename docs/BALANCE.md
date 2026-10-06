@@ -4,11 +4,13 @@ Every number is in `src/shared/Config.luau`. This file says what they are meant 
 gets out of them, and how to change them. Nothing here has been played by a person at these numbers: it is a
 simulator's result, and section 5 lists what the simulator does not know.
 
-> **7 October, after this file was written.** Mini cannons grow 15x an egg from the third egg on (it was
-> 2.5x: `Config.EggCurve.second` and `step`); every tower but the Sniper deals 1.75x to 3x more, and six new
+> **7 October, after this file was written.** Mini cannons grow 22x an egg from the third egg on, as fast as
+> the monsters (it was 2.5x: `Config.EggCurve.second` and `step`; 15x for a few hours); every tower but the Sniper deals 1.75x to 3x more, and six new
 > kinds are on sale (Laser, Venom, Blizzard, Railgun, Storm, Meteor: `Config.Towers`); `worldPay` and
-> `headStart` were fitted again. `sim.py`, four seeds: worlds 1 to 8 take 23 to 38 minutes, worlds 9 to 12
-> from 9 minutes to 1:26, none over 1:30, 6:35 to 8:03 in all. The sections below still give 6 October's
+> `headStart` were fitted again. `sim.py`, four seeds, at 22x: worlds 1 to 4 take 19 to 32 minutes; from The
+> Sun on a world takes anything from 8 minutes to 2:08 (2 of 32 over 1:30), because one lucky hatch now carries
+> a world; 6:01 to 8:27 in all. A one-time 5x on top (`EggCurve.jump`) was tried: every world from The Sun on
+> then takes five minutes whatever it pays, so it is left at 1. The sections below still give 6 October's
 > numbers: the pace is the same, the shares of towers and mini cannons are not.
 
 The 6 October retune, in one paragraph: towers deal 4x what they did (`Config.Towers`: the starter Cannon is

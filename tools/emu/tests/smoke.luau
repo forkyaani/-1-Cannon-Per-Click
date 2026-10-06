@@ -2427,7 +2427,8 @@ do
 	-- what level 1 towers have beside them, is counted as it is: that is what farms so high a level.)
 	local reach = who:GetAttribute("TowerDps") * 3 + who:GetAttribute("PetDps")
 	check(who:GetAttribute("PetDps") > 0 and Offline.clearSeconds(Config.levelPlan(low.level), dps - who:GetAttribute("PetDps"), Game.value(who, "monsterSpeed"), 0) == nil, "the mini cannons' DPS counts while away: the towers alone could not farm that level")
-	check(Offline.clearSeconds(Config.levelPlan(low.level + 1), reach, Game.value(who, "monsterSpeed"), 0) == nil or Config.levelPlan(low.level + 1).kind ~= "normal",
+	-- (With the healing of that level counted: where mini cannons carry the fight the next level up can be one that heals.)
+	check(Offline.clearSeconds(Config.levelPlan(low.level + 1), reach, Game.value(who, "monsterSpeed"), Config.levelPlan(low.level + 1).regen or 0) == nil or Config.levelPlan(low.level + 1).kind ~= "normal",
 		"the next ordinary level is out of their reach")
 	act("offlineClaim")
 
