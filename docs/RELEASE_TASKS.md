@@ -6,6 +6,19 @@ Written 5 Oct 2026. Background: `docs/VISUAL_AUDIT.md`, `docs/UI_VISION.md`, `do
 
 Order of work: A, B, C, D per world (Earth, Moon, Mars, Neptune, The Sun), then E, F, G and I.
 
+## Who is on what (read before starting anything)
+
+Two people and several Claude sessions work from this list. On 6 Oct the same mini cannons were modelled
+twice in parallel. So:
+
+1. **Pull first** (`git pull --rebase origin main`) and read the job's line.
+2. **Claim it before working:** add `(taken: Yaani, 6 Oct 21:40)` or `(taken: d1v, ...)` at the start of the
+   job's text, commit only that line, push. If the push is rejected, pull and look again: somebody may have
+   claimed it in the meantime.
+3. **A claimed job is the claimer's.** Do not start it, extend it or "help" with it; pick another, or ask.
+4. **When done:** tick it, replace the claim with a short note of what was made and where, push.
+5. A claim older than a day with no commits behind it may be taken over, with a note saying so.
+
 **6 Oct, 06:50:** all 14 model files (5 bases, 4 new islands, 5 creature batches) are imported into the group's place
 with `setup_models.luau` and saved. All five bases were seen in a play test (the base swaps as the world changes); the new monsters
 were seen walking on The Sun. The islands and a proper look at each monster batch still need their test.
@@ -118,7 +131,7 @@ needs a second pass doubles its job.
 - [x] E3. Earth: Basic Egg and Forest Egg models · **20 min** · d1v, 6 Oct: `egg_basic`, `egg_forest` in `assets/models/minis/world_minis.fbx`. Not yet imported (E7)
 - [x] E4. Earth: the mini cannons of those two eggs · **1 h 00** · d1v, 6 Oct: ten, `mini_wooden` to `mini_jade`, same file; photos `world_row_basic.jpg`, `world_row_forest.jpg`. Not yet imported (E7)
 - [x] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min** · d1v, 6 Oct: eight eggs, same file; photo `world_row_mars.jpg` (Moon's and Comet's stand in their own rows). Built with `minis.py -- <folder> full worlds`. Not yet imported (E7)
-- [x] E6. (Moon's ten done by d1v, 6 Oct: `mini_moonrock` to `mini_galaxy` in `world_minis.fbx`, photos `world_row_moon.jpg`, `world_row_comet.jpg`. Mars, Neptune and The Sun are free) Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
+- [ ] E6. (DECIDED by Yaani, 6 Oct: d1v's style is the one to use, `minis.py ... worlds`. Still to make in that style: Mars, Neptune and The Sun's mini cannons, and the hidden Secrets and Huges of all five worlds. The set from `world_minis.py` (`<world>_minis.fbx`, commit 7680145) is NOT to be imported over d1v's; it is only a stand-in for ids d1v's set does not have yet.) (Moon's ten done by d1v, 6 Oct: `mini_moonrock` to `mini_galaxy` in `world_minis.fbx`, photos `world_row_moon.jpg`, `world_row_comet.jpg`. Mars, Neptune and The Sun are free) Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
 - [ ] E7. (d1v, 6 Oct 21:25: stopped at Studio's file chooser, which needs Victor to approve screen control; still d1v's) Import eggs and mini cannons **[S]** · **20 min** · import `assets/models/minis/world_minis.fbx`, then run `tools/studio/add_minis.luau` (it only adds; `organize_imports.luau` would empty the islands and creatures)
 
 ## F. Marketplace
