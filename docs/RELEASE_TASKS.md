@@ -166,7 +166,7 @@ needs a second pass doubles its job.
 - [x] I1. Game icon (512 px) from `docs/ui-vision/game-icon.png` · **20 min** Done 6 Oct (d1v): `assets/page/game-icon-512.png`, the concept art scaled down. **Not uploaded yet** (it goes through moderation: by Friday morning).
 - [ ] I2. **[d1v]** Three thumbnails · **30 min**
 - [x] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min** Done 6 Oct (d1v): six passes on sale in the group's experience at the prices in `Config.Passes`, ids in the config. No icons yet; the six Robux products (Shiny key, Robux crate, four packs) still have id 0.
-- [ ] I4. **[Yaani]** Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min**
+- [x] I4. **[Yaani]** Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min** · d1v, 6 Oct 22:31: File, Download a Copy of the group's place, taken right after the import of the 102 mini cannons and 15 eggs (2.8 MB). Refresh it again after the marketplace import (F5)
 - [ ] I5. **[d1v]** Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
 - [ ] I6. **[Yaani]** Publish **[S]** · **5 min**
 
