@@ -115,9 +115,9 @@ needs a second pass doubles its job.
 
 - [x] E1. Test the egg prompts (E / R / F, no popup) **[S]** · **15 min**
 - [x] E2. Check the "what's inside" window on an egg; fix what looks poor · **30 min**
-- [ ] E3. Earth: Basic Egg and Forest Egg models · **20 min**
-- [ ] E4. Earth: the mini cannons of those two eggs · **1 h 00**
-- [ ] E5. Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min**
+- [ ] E3. (d1v, started 6 Oct 21:00) Earth: Basic Egg and Forest Egg models · **20 min**
+- [ ] E4. (d1v, started 6 Oct 21:00) Earth: the mini cannons of those two eggs · **1 h 00**
+- [ ] E5. (d1v, started 6 Oct 21:00) Eggs for worlds 2 to 5 (2 each): recolours of one egg design · **30 min**
 - [ ] E6. Mini cannons for worlds 2 to 5: after launch unless time is left · **3 h 00**
 - [ ] E7. Import eggs and mini cannons **[S]** · **20 min**
 
