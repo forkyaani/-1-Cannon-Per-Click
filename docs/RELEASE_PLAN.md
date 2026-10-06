@@ -169,7 +169,7 @@ The game is silent today.
 
 | # | P | Task | Done when | Owner | Status |
 |---|---|---|---|---|---|
-| G1 | P0 | **Tuesday, not Saturday:** confirm in Creator Hub that the experience can be made public. The maturity and compliance questionnaire, and whatever account verification Roblox asks of the publisher, can take days | Creator Hub shows nothing missing | | open |
+| G1 | P0 | **Tuesday, not Saturday:** confirm in Creator Hub that the experience can be made public. The maturity and compliance questionnaire, and whatever account verification Roblox asks of the publisher, can take days | Creator Hub shows nothing missing | Victor | doing. 6 Oct: the maturity questionnaire is submitted (label Mild; Violence, repeated and mild; paid random items and paid item trading declared, both policy APIs respected; no region excluded). **Still open:** with Public selected, Creator Hub says "Your experience is limited to 16+ users and trusted friends" and offers "Reach more players". Victor has to open that and do what it asks: a game for children that under-16s cannot join is not released |
 | G2 | P0 | The page: name `+1 Cannon Per Click`, description, genre, devices (phone, tablet, computer; console only if E1 was done on one) | filled | | open |
 | G3 | P0 | Icon and three thumbnails uploaded (D15). They are moderated: upload on Friday morning at the latest | approved | | open |
 | G4 | P0 | Settings: maximum players 12 (B2); "Studio Access to API Services" as needed; HTTP requests off; private servers on and free, or off (decide) | set | | open |
