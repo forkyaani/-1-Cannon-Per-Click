@@ -1,8 +1,7 @@
 """Mini cannons ("cannon critters") and eggs. Two sets:
   marketplace   the Gem Egg and the four Halloween eggs, with their 25 mini cannons (marketplace_minis.fbx)
-  worlds        the two coin eggs of each of the first five worlds, and the 20 mini cannons of Earth's
-                and the Moon's two (world_minis.fbx). The mini cannons of worlds 3 to 5 have no model
-                yet: the game builds those from parts.
+  worlds        the two coin eggs of each of the first five worlds, and their 50 mini cannons
+                (world_minis.fbx). The hidden Secrets and Huges have no model yet.
 
 Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds]
 
@@ -784,6 +783,296 @@ def galaxy():  # a whole one, with a ring round it
 
 
 # ---------------------------------------------------------------------------------------------------
+# Mars, Neptune and The Sun. The first egg of a world is in the materials of that world's towers, the
+# second holds what lives there.
+# ---------------------------------------------------------------------------------------------------
+def spikes(colour, top=2.0, **look):
+    """A row down its back."""
+    for index, y in enumerate((0.0, 0.4, 0.75)):
+        tube(0.2, 0.5 - index * 0.08, (0.55, y, top - 0.1 - index * 0.12), (0.3, 0.3, 1), colour, tip=0.0, vertices=5, **look)
+        tube(0.2, 0.5 - index * 0.08, (-0.55, y, top - 0.1 - index * 0.12), (-0.3, 0.3, 1), colour, tip=0.0, vertices=5, **look)
+
+
+def cap(colour, top=2.0, rim=None):
+    """A flat cap of something on its head, round the barrel: snow, sand, ash."""
+    ball(1.0, (0, 0, top - 0.05), colour, scale=(1, 0.9, 0.22), roughness=0.4)
+    if rim:
+        for x in (-0.8, -0.3, 0.3, 0.8):
+            ball(0.2, (x, FRONT + 0.1, top - 0.12 - (0.08 if abs(x) < 0.5 else 0)), rim, scale=(1, 0.6, 1.4), roughness=0.4)
+
+
+def flames(colours, top=2.0, **look):
+    for index, (x, y, size) in enumerate(((-0.7, 0.2, 1.0), (0.7, 0.2, 1.0), (-0.35, 0.75, 0.8), (0.35, 0.75, 0.8), (0, 1.0, 1.1))):
+        tube(0.24 * size, 0.75 * size, (x, y, top - 0.15), (x * 0.25, 0.2, 1), colours[index % len(colours)], tip=0.0, vertices=6, emission=3, **look)
+
+
+def claws(colour):
+    for side in (-1, 1):
+        tube(0.12, 0.7, (side * 0.95, -0.4, 1.0), (side * 0.6, -0.8, 0.2), colour, vertices=6)
+        ball(0.3, (side * 1.4, -1.0, 1.15), colour, scale=(0.7, 1.2, 0.8))
+        ball(0.2, (side * 1.28, -1.25, 1.2), shade(colour, -0.3), scale=(0.5, 1.2, 0.5))
+
+
+def sting(colour, tip):
+    for index in range(4):
+        ball(0.24 - index * 0.03, (0.6, 0.95 + index * 0.12, 1.2 + index * 0.4), colour)
+    tube(0.14, 0.4, (0.6, 1.3, 2.45), (0, -1, 0.3), tip, tip=0.0, vertices=6, emission=1)
+
+
+def headdress(colour, stripe, top=2.0):
+    """A pharaoh's nemes: a striped cloth down both sides of the face."""
+    box((2.2, 1.5, 0.3), (0, 0.2, top), colour, bevel=0.1)
+    for side in (-1, 1):
+        box((0.3, 0.5, 1.5), (side * 1.08, -0.45, 1.3), colour, bevel=0.1)
+        for z in (0.8, 1.2, 1.6):
+            box((0.34, 0.54, 0.12), (side * 1.08, -0.45, z), stripe, bevel=0.03)
+    ball(0.14, (0, FRONT - 0.05, top + 0.05), "3FE0FF", emission=1)
+
+
+def dish(colour, top=2.0):
+    """A rover's: a little dish and a camera mast."""
+    tube(0.06, 0.6, (-0.7, 0.3, top - 0.05), (0, 0, 1), colour, vertices=6)
+    tube(0.34, 0.14, (-0.7, 0.3, top + 0.5), (-0.3, -0.4, 1), colour, tip=0.08, vertices=10)
+    ball(0.08, (-0.74, 0.25, top + 0.68), "FF3355", emission=3)
+    box((0.3, 0.3, 0.24), (0.72, -0.3, top + 0.1), colour, bevel=0.06)
+    ball(0.1, (0.72, -0.47, top + 0.1), "3FE0FF", scale=(1, 0.4, 1), emission=2)
+
+
+def beak(colour="FFA51E", height=1.0, front=FRONT):
+    tube(0.2, 0.34, (0, front, height), (0, -1, -0.1), colour, tip=0.0, vertices=6)
+
+
+# -- Mars Egg --
+def rust():  # a rusty can
+    standard("B45A32", "FFC61A", shape="tall")
+    bands("8A3518", ((0.6, 0), (2.3, 0)), depth=1.66, width=1.76, thickness=0.1)
+    rivets("8A3518", height=2.1)
+
+
+def dune():  # a sand lizard
+    standard("E1B978", "8A5A2B")
+    spikes("C99A52")
+    tail("E1B978", tip="C99A52", bushy=True)
+
+
+def martian():  # the little green one
+    standard("5ABE6E", "FFFFFF", shape="round")
+    antennae("3C8C46", "FF96FF")
+    ears("5ABE6E", "leaf")
+    scarf("B45A32")
+
+
+def rover():
+    standard("C8CDD2", "3FE0FF", barrel_colour="5A5E66")
+    dish("5A5E66")
+    box((2.3, 1.3, 0.1), (0, 0.5, 2.0), "2A4FA8", bevel=0.03)  # a solar panel across its back
+
+
+def warlord():
+    standard("BE2828", "FFE23A", mood="fierce", barrel_colour="5A0F0F")
+    horns("FFF3D6", size=1.3)
+    spikes("5A0F0F")
+    box((2.0, 1.8, 0.2), (0, 0, 0.62), "3A0A0A", bevel=0.08)  # a studded belt
+    for x in (-0.7, -0.25, 0.25, 0.7):
+        tube(0.08, 0.14, (x, FRONT - 0.02, 0.62), (0, -1, 0), GOLD, tip=0.0, vertices=5)
+    crown(top=3.02, y=0.1, radius=0.34, gems="FFE23A")
+    halo(top=3.55, colour="FF7A5A", radius=0.5)
+
+
+# -- Dune Egg --
+def sand():  # a pile of it
+    standard("DCBE8C", "8A5A2B", shape="round")
+    cap("C9A46A")
+    for x, y in ((-0.9, 0.5), (0.9, 0.4)):
+        ball(0.3, (x, y, 0.3), "C9A46A", scale=(1.2, 1, 0.6))
+
+
+def cactus():
+    standard("46A050", "FFE23A", shape="tall")
+    for side in (-1, 1):  # arms
+        tube(0.2, 0.45, (side * 0.85, 0.2, 1.3), (side, 0, 0.1), "46A050", vertices=8)
+        tube(0.2, 0.6, (side * 1.28, 0.2, 1.3), (0, 0, 1), "46A050", vertices=8)
+        ball(0.2, (side * 1.28, 0.2, 1.9), "46A050")
+    ball(0.16, (0.55, -0.5, 2.5), "FF8FB8")  # a flower
+    ball(0.08, (0.55, -0.5, 2.6), "FFE23A")
+
+
+def scorpion():
+    standard("8C3C1E", "FFB01F", mood="fierce")
+    claws("8C3C1E")
+    sting("8C3C1E", "FFE23A")
+
+
+def pharaoh():
+    standard("FAD250", "3FE0FF", barrel_colour="2A4FA8")
+    headdress("FAD250", "2A4FA8")
+    wings("FFF1B0", "crystal", height=1.4)
+    box((0.18, 0.14, 0.5), (0, FRONT - 0.06, 0.52), "2A4FA8", bevel=0.04)  # the little beard
+
+
+def sandstorm():
+    lift = 0.5
+    body("C8965A", "round", lift=lift)
+    for index, (radius, z) in enumerate(((0.95, 0.75), (0.7, 0.45), (0.45, 0.2), (0.22, 0.02))):  # a whirl under it
+        tube(radius, 0.26, (0.1 * (index % 2), 0, z), (0, 0, 1), shade("C8965A", 0.15 * (index % 2)), vertices=12)
+    barrel("8A5A2B", top=2.05 + lift)
+    fuse(height=1.3 + lift)
+    face("FFE23A", height=1.5 + lift, mood="fierce", brow="6B4A2B", front=-0.93)
+    crown(top=3.02 + lift, y=0.1, radius=0.34, gems="C8965A")
+    halo(top=3.55 + lift, colour="FFE9B0", radius=0.5)
+
+
+# -- Frost Egg --
+def frost():
+    standard("AADCFF", "FFFFFF", shape="round")
+    cap(WHITE, rim=WHITE)
+
+
+def glacier():
+    standard("5AA0EB", "C9F0FF", shape="tall")
+    crystals("C9F0FF", ((-0.95, 0.3, 0.2, 0.22, 0.9, -0.5), (0.95, 0.3, 0.2, 0.24, 1.1, 0.5)))
+    cap(WHITE, top=2.42)
+
+
+def crystal():
+    standard("78F0F5", "FF96FF")
+    crystals("C9FBFF", ((-0.66, 0.15, 1.95, 0.24, 0.7, -0.35), (0.66, 0.15, 1.95, 0.24, 0.7, 0.35), (-0.95, 0.3, 1.5, 0.16, 0.5, -1.2), (0.95, 0.3, 1.5, 0.16, 0.5, 1.2)), emission=0.6)
+    scarf("5AA0EB")
+
+
+def blizzard():
+    standard("EBF5FF", "5AA0EB", mood="fierce", shape="round")
+    cap(WHITE, rim=WHITE)
+    wings("C9F0FF", "crystal")
+    horns("AADCFF", size=1.1)
+
+
+def aurora():
+    standard("78FFC8", "FF96FF", barrel_colour="5A78DC")
+    for index, colour in enumerate(("78FFC8", "5AD2FF", "C896FF")):  # ribbons of light behind it
+        ball(0.9, (0, 0.85 + index * 0.16, 1.7 + index * 0.3), colour, scale=(1.5 - index * 0.2, 0.08, 0.3), emission=2)
+    ears("78FFC8", "cat", inner="C896FF")
+    crown(top=3.02, y=0.1, radius=0.34, gems="C896FF")
+    halo(top=3.55, colour="C8FFE6", radius=0.5)
+
+
+# -- Blizzard Egg --
+def snow():  # a snowman
+    standard("F0F8FF", "2B2438", shape="round")
+    tube(0.12, 0.4, (0, FRONT - 0.05, 1.05), (0, -1, 0), "FF8A1F", tip=0.0, vertices=6)  # the carrot
+    for z in (0.55, 0.3):
+        ball(0.1, (0, -1.0 + (0.55 - z) * 0.3, z + 0.1), "2B2438")
+
+
+def icicle():
+    standard("96D7FF", "FFFFFF")
+    for x in (-0.75, -0.25, 0.25, 0.75):  # icicles hang from its brow
+        tube(0.12, 0.3 + (0.15 if abs(x) < 0.5 else 0), (x, FRONT - 0.02, 2.02), (0, 0, -1), "DDF4FF", tip=0.0, vertices=5, roughness=0.15)
+    crystals("DDF4FF", ((-0.62, 0.2, 1.95, 0.2, 0.55, -0.3), (0.62, 0.2, 1.95, 0.2, 0.55, 0.3)))
+
+
+def penguin():
+    standard("282D3C", "FFE23A", shape="tall")
+    ball(0.85, (0, FRONT + 0.25, 1.15), WHITE, scale=(0.85, 0.4, 1.0))  # its white front
+    beak(height=1.2, front=FRONT - 0.1)
+    for side in (-1, 1):
+        ball(0.5, (side * 1.0, 0.1, 1.3), "282D3C", scale=(0.25, 0.8, 1.3), rotation=(0, side * math.radians(-18), 0))
+    scarf("E6463C")
+
+
+def yeti():
+    standard("E1EBF5", "5AA0EB", mood="fierce", shape="tall")
+    horns("8A9BB0", top=2.4, size=1.2)
+    for x, z in ((-0.9, 0.7), (0.9, 0.7), (-0.95, 1.6), (0.95, 1.6), (0, 0.35)):  # shaggy
+        tube(0.3, 0.5, (x, 0.1, z), (x * 0.6, 0, -1), "FFFFFF", tip=0.0, vertices=6)
+
+
+def polar():  # a polar bear, crowned
+    standard("78BEFA", "FFFFFF", barrel_colour="2A6BC8")
+    ears("78BEFA", "round", inner=WHITE)
+    snout(WHITE, height=0.98)
+    tail(WHITE)
+    crystals("DDF4FF", ((-1.0, 0.3, 1.25, 0.18, 0.6, -0.9), (1.0, 0.3, 1.25, 0.18, 0.6, 0.9)), emission=0.6)
+    crown(top=3.02, y=0.1, radius=0.34, gems="DDF4FF")
+    halo(top=3.55, colour="FFFFFF", radius=0.5)
+
+
+# -- Ember Egg --
+def ember():
+    standard("FF8C3C", "FFE23A", shape="round")
+    flames(("FFC83A", "FF5A1E"))
+
+
+def magma():
+    standard("E6501E", "FFE23A")
+    for x, z, lean in ((-0.6, 0.9, 25), (0.65, 1.75, -30), (0.1, 0.6, 40)):  # glowing cracks
+        box((0.5, 0.08, 0.1), (x, FRONT - 0.02, z), "FFC83A", bevel=0.02, rotation=(0, math.radians(lean), 0), emission=4)
+    cap("5A2A1E")
+
+
+def obsidian():
+    standard("2D2337", "C896FF", mood="fierce")
+    crystals("5A4670", ((-0.66, 0.15, 1.95, 0.24, 0.7, -0.35), (0.66, 0.15, 1.95, 0.24, 0.7, 0.35), (-1.0, 0.3, 1.2, 0.2, 0.7, -0.9), (1.0, 0.3, 1.2, 0.2, 0.7, 0.9)))
+    scarf("C896FF")
+
+
+def inferno():
+    standard("FF3C14", "FFE23A", mood="fierce", barrel_colour="5A0F0F")
+    horns("2D2337", size=1.3)
+    flames(("FFC83A", "FF7A1E"))
+    wings("5A0F0F", "bat")
+
+
+def solar():
+    standard("FFD750", "FF7A1E", shape="round", barrel_colour="E0901C")
+    star_points("FFA51E", emission=1.5)
+    flames(("FFE97A", "FFA51E"))
+    crown(top=3.02, y=0.1, radius=0.34, gems="FF5A1E")
+    halo(top=3.55, colour="FFF1B0", radius=0.5)
+
+
+# -- Solar Egg --
+def spark():
+    standard("FFE678", "FF7A1E", shape="round")
+    for side in (-1, 1):  # two bolts
+        tube(0.16, 0.5, (side * 0.6, 0.1, 1.95), (side * 0.5, 0, 1), "FFFFFF", tip=0.0, vertices=4, emission=4)
+
+
+def flame():
+    standard("FF7828", "FFE23A")
+    flames(("FFC83A", "FF5A1E"))
+    ears("FF7828", "cat", inner="FFC83A")
+
+
+def lava():  # a lava blob in a rock crust
+    standard("D23C14", "FFE23A", mood="fierce", shape="round")
+    cap("3A2620")
+    for x, y in ((-0.95, 0.4), (0.95, 0.3), (0.2, 0.95)):
+        ball(0.3, (x, y, 0.3), "FF7A1E", scale=(1.2, 1, 0.5), emission=2)
+    scarf("3A2620")
+
+
+def phoenix():
+    standard("FFAA32", "FF3C14", barrel_colour="B4321E")
+    beak("FFE23A", height=1.0, front=FRONT - 0.05)
+    for side in (-1, 1):  # feathered wings and a crest
+        for index, (reach, up, length) in enumerate(((0.9, 1.0, 1.3), (1.2, 0.45, 1.1), (1.1, -0.05, 0.85))):
+            tube(0.24, length, (side * 0.85, 0.55, 1.5), (side * reach, 0.2, up), ("FFE23A", "FF7A1E", "FF3C14")[index], tip=0.0, vertices=6, emission=1.5)
+    tail("FF3C14", tip="FFE23A", bushy=True)
+    tube(0.14, 0.5, (0.5, -0.4, 1.95), (0.3, -0.2, 1), "FF3C14", tip=0.0, vertices=5, emission=1.5)
+
+
+def supernova():
+    standard("FFFADC", "C896FF", mood="fierce", shape="round", barrel_colour="E0A81C")
+    for index in range(8):  # rays all round it
+        angle = math.radians(index * 45 + 22)
+        tube(0.2, 0.9, (math.cos(angle) * 0.95, 0.35, 1.3 + math.sin(angle) * 0.9), (math.cos(angle), 0, math.sin(angle)), ("FFE23A", "FF96FF")[index % 2], tip=0.0, vertices=5, emission=3)
+    crown(top=3.02, y=0.1, radius=0.34, gems="FF96FF")
+    halo(top=3.55, colour="FFFFFF", radius=0.55)
+    halo(top=3.85, colour="FFE23A", radius=0.35)
+
+
+# ---------------------------------------------------------------------------------------------------
 # Eggs: one design per egg, about 3.6 tall, standing on the ground.
 # ---------------------------------------------------------------------------------------------------
 TAPER = 0.3  # how much narrower an egg is at its top than at its middle
@@ -1008,7 +1297,12 @@ WORLDS = [
     ("forestegg", egg_forest, [("leaf", leaf), ("vine", vine), ("mushroom", mushroom), ("honey", honey), ("jade", jade)]),
     ("moonegg", egg_moon, [("moonrock", moonrock), ("crater", crater), ("lunar", lunar), ("astro", astro), ("stellar", stellar)]),
     ("cometegg", egg_comet, [("dust", dust), ("comet", comet), ("meteor", meteor), ("star", star), ("galaxy", galaxy)]),
-    ("marsegg", egg_mars, [("egg_duneegg", egg_dune), ("egg_frostegg", egg_frost), ("egg_blizzardegg", egg_blizzard), ("egg_emberegg", egg_ember), ("egg_solaregg", egg_solar)]),
+    ("marsegg", egg_mars, [("rust", rust), ("dune", dune), ("martian", martian), ("rover", rover), ("warlord", warlord)]),
+    ("duneegg", egg_dune, [("sand", sand), ("cactus", cactus), ("scorpion", scorpion), ("pharaoh", pharaoh), ("sandstorm", sandstorm)]),
+    ("frostegg", egg_frost, [("frost", frost), ("glacier", glacier), ("crystal", crystal), ("blizzard", blizzard), ("aurora", aurora)]),
+    ("blizzardegg", egg_blizzard, [("snow", snow), ("icicle", icicle), ("penguin", penguin), ("yeti", yeti), ("polar", polar)]),
+    ("emberegg", egg_ember, [("ember", ember), ("magma", magma), ("obsidian", obsidian), ("inferno", inferno), ("solar", solar)]),
+    ("solaregg", egg_solar, [("spark", spark), ("flame", flame), ("lava", lava), ("phoenix", phoenix), ("supernova", supernova)]),
 ]
 EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS}[SET]
 FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis"}[SET]
