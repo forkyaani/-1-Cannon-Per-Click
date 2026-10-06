@@ -1,7 +1,7 @@
 """Mini cannons ("cannon critters") and eggs. Two sets:
   marketplace   the Gem Egg and the four Halloween eggs, with their 25 mini cannons (marketplace_minis.fbx)
   worlds        the two coin eggs of each of the first five worlds, and their 50 mini cannons
-                (world_minis.fbx). The hidden Secrets and Huges have no model yet.
+                and the 20 Secrets and 7 Huges those eggs hide (world_minis.fbx).
 
 Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds]
 
@@ -273,9 +273,9 @@ def scythe(side=1):
     tube(0.16, 1.05, (side * 1.42, -0.15, 2.6), (-side, 0, -0.35), "C9D3E0", tip=0.0, vertices=4, roughness=0.2)
 
 
-def bands(colour, heights, depth=1.76, width=1.96, thickness=0.14):
+def bands(colour, heights, depth=1.76, width=1.96, thickness=0.14, **look):
     for z, tilt in heights:
-        box((width, depth, thickness), (0, 0, z), colour, bevel=0.05, rotation=(0, math.radians(tilt), 0))
+        box((width, depth, thickness), (0, 0, z), colour, bevel=0.05, rotation=(0, math.radians(tilt), 0), **look)
 
 
 def stitches(colour=INK, at=(0.55, 1.9)):
@@ -1073,6 +1073,141 @@ def supernova():
 
 
 # ---------------------------------------------------------------------------------------------------
+# The hidden ones of the coin eggs. Every egg hides a Glitched and a Forbidden mini cannon in a shade of its
+# own (Config's SECRETS) and one of the seven coin Huges. A Secret is one design in the egg's shade, told
+# apart by what it wears; a Huge is a design of its own with its accent colour in glowing bands and a halo.
+# ---------------------------------------------------------------------------------------------------
+WEAR = ("cat", "leaf", "bat", "bunny", "floppy", "round", "cat", "bunny", "bat", "round")  # ears, by egg
+
+
+def glitched(colour, egg):
+    """Half out of the world: slices of it slid sideways, loose pixels, eyes of two colours."""
+    def build():
+        body(colour)
+        wheels(colour="2B2438", hub="3FE0FF")
+        barrel(shade(colour, -0.45), band="FF3CF0")
+        fuse()
+        for z, slide, tint in ((0.78, 0.3, "3FE0FF"), (1.35, -0.34, "FF3CF0"), (1.82, 0.22, "3FE0FF")):
+            box((1.9, 1.74, 0.16), (slide, 0, z), tint, bevel=0.03, emission=2)
+        eyes(1.45, iris="FF3CF0")
+        ball(0.21, (0.46, FRONT - 0.2, 1.35), "3FE0FF", scale=(1, 0.25, 1), emission=2)  # one eye is the other colour
+        smile(0.86)
+        for index, (x, y, z, size) in enumerate(((-1.25, 0.2, 2.2, 0.26), (1.3, -0.1, 1.9, 0.2), (1.15, 0.4, 2.6, 0.16), (-1.1, -0.3, 0.5, 0.18), (-0.5, 0.5, 2.9, 0.14))):
+            box((size, size, size), (x, y, z), ("3FE0FF", "FF3CF0", colour)[index % 3], bevel=0.01, emission=3)
+        ears(colour, WEAR[egg], inner="FF3CF0")
+    return build
+
+
+def forbidden(colour, egg):
+    """Sealed away: dark, chained, horned, winged, with a broken halo."""
+    def build():
+        standard(shade(colour, -0.35), "FF3355", mood="fierce", barrel_colour="16131F")
+        bands("16131F", ((0.72, 14), (1.78, -12)), thickness=0.13)
+        box((0.4, 0.14, 0.46), (0, FRONT - 0.06, 0.62), GOLD, bevel=0.06)  # the lock
+        horns("16131F", size=1.35)
+        wings(shade(colour, -0.6), "bat")
+        ears(shade(colour, -0.35), WEAR[egg], inner="FF3355")
+        for index in range(5):  # a halo in pieces
+            angle = math.radians(index * 72 + egg * 20)
+            ball(0.12, (math.cos(angle) * 0.6, 0.1 + math.sin(angle) * 0.6, 3.55), "FF3355", scale=(1.6, 1.6, 0.7), emission=3)
+    return build
+
+
+def huge(colour, accent, mood="fierce", shape="cube", iris=None, barrel_colour=None):
+    """What every Huge has: the body, glowing bands in its accent, and a halo."""
+    standard(colour, iris or accent, mood=mood, shape=shape, barrel_colour=barrel_colour)
+    if shape != "round":
+        bands(accent, ((0.66, 0),), thickness=0.12, emission=2)
+    halo(top=3.7, colour=accent, radius=0.62)
+
+
+def huge_storm():
+    huge("4696FF", "FFF078")
+    for x, y, r in ((-0.6, 0.2, 0.5), (0.6, 0.2, 0.5), (0, 0.55, 0.55), (-0.95, 0.1, 0.36), (0.95, 0.1, 0.36)):  # a cloud on its head
+        ball(r, (x, y, 2.1), "E6EEFA", scale=(1, 1, 0.75))
+    for side in (-1, 1):  # bolts
+        tube(0.16, 0.55, (side * 1.05, -0.2, 1.9), (side * 0.4, 0, -1), "FFF078", tip=0.0, vertices=4, emission=4)
+        tube(0.12, 0.5, (side * 1.2, -0.2, 1.45), (-side * 0.3, 0, -1), "FFF078", tip=0.0, vertices=4, emission=4)
+
+
+def huge_gatling():
+    huge("96A0AF", "FF463C", barrel_colour="5A5E66")
+    direction = Vector((0, -math.cos(math.radians(16)), math.sin(math.radians(16))))
+    for x, lift in ((-0.5, -0.1), (0.5, -0.1), (-0.25, 0.42), (0.25, 0.42)):  # four more barrels round the first
+        start = Vector((x, 0.72, 2.35 + lift))
+        tube(0.2, 1.5, start, direction, "5A5E66")
+        tube(0.24, 0.14, start + direction * 1.36, direction, "FF463C")
+    rivets("FF463C", height=1.95)
+    box((1.2, 0.5, 0.5), (0, 0.95, 1.2), "5A5E66", bevel=0.1)  # the drum of rounds on its back
+
+
+def huge_hex():
+    huge("8C3CC8", "78FF8C", barrel_colour="4A1FA8")
+    horns("78FF8C", size=1.2)
+    wings("78FF8C", "crystal")
+    for x, z in ((-0.6, 0.95), (0.62, 1.75), (0, 0.4)):  # runes
+        bpy.ops.mesh.primitive_torus_add(location=(x, FRONT - 0.02, z), rotation=(math.radians(90), 0, 0), major_radius=0.15, minor_radius=0.04, major_segments=6, minor_segments=4)
+        finish(bpy.context.object, "78FF8C", emission=4)
+
+
+def huge_slayer():
+    huge("C81E28", "F0EBDC", barrel_colour="5A0F0F")
+    horns("F0EBDC", size=1.4)
+    # A sword at its side, point up.
+    box((0.16, 0.5, 2.3), (1.45, -0.2, 1.9), "E6EAF2", bevel=0.05, roughness=0.15)
+    tube(0.26, 0.5, (1.45, -0.2, 3.05), (0, 0, 1), "E6EAF2", tip=0.0, vertices=4, roughness=0.15)
+    box((0.2, 0.9, 0.16), (1.45, -0.2, 0.8), GOLD, bevel=0.05)
+    tube(0.09, 0.45, (1.45, -0.2, 0.3), (0, 0, 1), "3A0A0A", vertices=8)
+    scarf("3A0A0A")
+
+
+def huge_clover():
+    huge("28C85A", "FFD750", mood="happy", shape="round")
+    tube(0.08, 0.5, (0.6, -0.3, 1.95), (0.2, 0, 1), "1E8A3C", vertices=6)
+    for dx, dz in ((-0.24, 0), (0.24, 0), (0, 0.24), (0, -0.24)):  # four leaves
+        ball(0.26, (0.7 + dx, -0.3, 2.62 + dz), "3CE070", scale=(1, 0.35, 1))
+    ball(0.09, (0.7, -0.38, 2.62), "FFD750", emission=2)
+    ears("28C85A", "leaf")
+    for x, y in ((-1.0, 0.5), (1.0, 0.4), (0.3, 1.0)):  # coins at its wheels
+        tube(0.26, 0.08, (x, y, 0.05), (0, 0, 1), "FFD750", vertices=10)
+
+
+def huge_golden_goose():
+    huge("FFCD3C", "FFFAEB", mood="happy", shape="round", iris="8A5A2B", barrel_colour="E0901C")
+    beak("FF8A1F", height=1.0, front=-0.98)
+    for side in (-1, 1):
+        ball(0.7, (side * 1.1, 0.35, 1.4), "FFFAEB", scale=(0.25, 1.1, 0.8), rotation=(0, side * math.radians(-20), side * math.radians(15)))
+    tail("FFFAEB", bushy=True)
+    crown(top=3.02, y=0.1, radius=0.34, gems="FFFAEB")
+    ball(0.5, (-1.5, -0.4, 0.42), "FFD750", scale=(0.8, 0.8, 1.05), roughness=0.2, emission=0.5)  # its egg
+
+
+def huge_executioner():
+    body("3B3550", "cube")
+    hood("231E28")
+    wheels(colour="16131F", hub="FF323C")
+    barrel("16131F", top=2.3, band="FF323C")
+    fuse()
+    eyes(1.45, iris="FF323C")
+    brows("16131F", 1.97)
+    bands("FF323C", ((0.66, 0),), thickness=0.12, emission=2)
+    halo(top=3.9, colour="FF323C", radius=0.62)
+    # An axe at its side.
+    tube(0.08, 2.6, (-1.45, -0.15, 0.2), (0, 0, 1), WOOD, vertices=8)
+    ball(0.6, (-1.45, -0.15, 2.5), "C9D3E0", scale=(1.3, 0.12, 0.9), roughness=0.2)
+
+
+SECRET_EGGS = (("basic", "3FD79B", "7E3332"), ("forest", "4EE7C8", "8D4260"), ("moon", "57E0B5", "963B4C"), ("comet", "32BB94", "71162B"),
+               ("mars", "63CE94", "A2292B"), ("dune", "70E0A0", "B03B37"), ("frost", "66F8D2", "A55368"), ("blizzard", "39D0C1", "782C58"),
+               ("ember", "4EBE8B", "8D1A22"), ("solar", "76DC91", "B63828"))
+SECRETS = []
+for index, (egg, glitch_colour, forbid_colour) in enumerate(SECRET_EGGS):
+    SECRETS += [("glitched" + egg, glitched(glitch_colour, index)), ("forbidden" + egg, forbidden(forbid_colour, index))]
+HUGES = [("hugestorm", huge_storm), ("hugegatling", huge_gatling), ("hugehex", huge_hex), ("hugeslayer", huge_slayer),
+         ("hugeclover", huge_clover), ("hugegoldengoose", huge_golden_goose), ("hugeexecutioner", huge_executioner)]
+
+
+# ---------------------------------------------------------------------------------------------------
 # Eggs: one design per egg, about 3.6 tall, standing on the ground.
 # ---------------------------------------------------------------------------------------------------
 TAPER = 0.3  # how much narrower an egg is at its top than at its middle
@@ -1303,6 +1438,9 @@ WORLDS = [
     ("blizzardegg", egg_blizzard, [("snow", snow), ("icicle", icicle), ("penguin", penguin), ("yeti", yeti), ("polar", polar)]),
     ("emberegg", egg_ember, [("ember", ember), ("magma", magma), ("obsidian", obsidian), ("inferno", inferno), ("solar", solar)]),
     ("solaregg", egg_solar, [("spark", spark), ("flame", flame), ("lava", lava), ("phoenix", phoenix), ("supernova", supernova)]),
+    # Rows without an egg: the row's name is only its photo's.
+    ("secrets1", None, SECRETS[0:5]), ("secrets2", None, SECRETS[5:10]), ("secrets3", None, SECRETS[10:15]), ("secrets4", None, SECRETS[15:20]),
+    ("huges1", None, HUGES[0:4]), ("huges2", None, HUGES[4:7]),
 ]
 EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS}[SET]
 FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis"}[SET]
@@ -1315,7 +1453,7 @@ def model_name(name):
 ROW_GAP = 60  # each egg's line-up is far enough from the next to be photographed alone
 models = {}  # name -> list of parts
 for row, (egg_id, egg_build, minis) in enumerate(EGGS):
-    line = [("egg_" + egg_id, egg_build, -9.6)] + [(model_name(name), build, -5.2 + index * 3.9) for index, (name, build) in enumerate(minis)]
+    line = ([("egg_" + egg_id, egg_build, -9.6)] if egg_build else []) + [(model_name(name), build, -5.2 + index * 3.9) for index, (name, build) in enumerate(minis)]
     for name, build, x in line:
         parts = []
         origin = Vector((x, row * ROW_GAP, 0))
@@ -1323,7 +1461,7 @@ for row, (egg_id, egg_build, minis) in enumerate(EGGS):
         models[name] = (parts, origin.copy())
 
 # ---- The photos: grass, sky, sun ----
-bpy.ops.mesh.primitive_plane_add(size=1200, location=(0, 0, 0))
+bpy.ops.mesh.primitive_plane_add(size=4000, location=(0, 0, 0))
 ground = bpy.context.object
 ground.data.materials.append(mat("8FDB6E", roughness=0.9))
 world = bpy.data.worlds.new("World")
@@ -1379,7 +1517,7 @@ if MODE == "eggs":
     bpy.ops.render.render(write_still=True)
     raise SystemExit
 for row, (egg_id, _, minis) in enumerate(EGGS if MODE == "full" else []):
-    in_row = {"egg_" + egg_id} | {model_name(name) for name, _ in minis}
+    in_row = ({"egg_" + egg_id} if "egg_" + egg_id in models else set()) | {model_name(name) for name, _ in minis}
     for name, (model_parts, at) in models.items():
         for obj in model_parts:
             obj.hide_render = name not in in_row
