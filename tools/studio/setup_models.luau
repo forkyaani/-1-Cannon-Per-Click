@@ -9,6 +9,8 @@
 --     <world>_base       ->  ReplicatedStorage.BaseModels.<World>    +  <World>Shells
 --     marketplace        ->  ReplicatedStorage.MarketModels.Market   +  MarketShells
 --     <world>_creatures  ->  ReplicatedStorage.Creatures.<monster's name>                (src/shared/Models.luau)
+--     <world>_minis      ->  ReplicatedStorage.MiniCannons.<pet id>  +  EggModels.<egg id>   (Models.mini,
+--     marketplace_minis      the same                                     src/server/Marketplace.luau)
 -- <world> is the world's name in small letters with _ for spaces: earth_island, moon_base, the_sun_island
 -- (-> "The Sun"). Anything else in the Workspace is left alone. A filed import is removed from the Workspace.
 -- Running it again is safe: a template of the same name is replaced, everything else is kept.
@@ -30,6 +32,13 @@
 -- with a PrimaryPart, its pivot under its feet, facing -Z. Its name is the mesh's with spaces for underscores
 -- (Moon_Rockling -> "Moon Rockling") and has to be the monster's name in src/shared/Config.luau, letter for
 -- letter. The Blender front (-Y) is taken to land on -Z, unless the file has a `_North` marker.
+--
+-- MINI CANNONS AND EGGS (tools/blender/world_minis.py, minis.py). Every mesh in the import is one template, a
+-- single MeshPart. A mesh named Egg_<id> (or egg_<id>) is an egg: it goes to EggModels as <id>, its pivot under
+-- its foot, front towards -Z. Every other mesh is a mini cannon: it goes to MiniCannons under its own name (a
+-- leading mini_ is dropped), its pivot in its middle with the pivot's X axis along the barrel, which is how
+-- Models.mini aims it. The Blender front (-Y: the muzzle, an egg's face) is taken to land on -Z. Nothing is
+-- scaled: the game sizes a mini cannon itself, and an egg comes in at 1 Blender unit = 1 stud (about 4 tall).
 --
 -- Every mesh is set to white, because the colours are on the vertices and a part's Color tints them.
 
@@ -382,6 +391,62 @@ local function fileCreatures(import: Model)
 end
 
 ----------------------------------------------------------------------------------------------------
+-- Mini cannons and eggs
+----------------------------------------------------------------------------------------------------
+local function fileMinis(import: Model)
+	local front = -Vector3.zAxis -- where Blender's -Y lands: a mini cannon's muzzle, an egg's face
+	local parts = meshesIn(import)
+	if #parts == 0 then
+		error(`{import.Name}: no meshes inside. Import the .fbx again (File > Import).`, 0)
+	end
+	local remarks = {}
+	local taken = {}
+	local minis, eggs = 0, 0
+	local tallest = 0
+	for _, part in parts do
+		local name = clean(part.Name)
+		local eggId = string.match(name, "^[Ee]gg_(.+)$")
+		local id = eggId or string.match(name, "^mini_(.+)$") or name
+		local key = (if eggId then "egg " else "mini ") .. id
+		if taken[key] then
+			table.insert(remarks, `"{name}" is in the file twice: the last one counts`)
+		end
+		taken[key] = true
+		dress(part)
+		if eggId then
+			-- Pivot under its foot, looking the way its front does (Marketplace.buildEggStand stands it on that).
+			-- The mesh's own origin is its foot; an importer that dropped it leaves the pivot in the middle of
+			-- the mesh, and then the foot is measured.
+			local stand = part:GetPivot().Position
+			if (stand - part.Position).Magnitude < 0.01 then
+				stand = foot({ part })
+			end
+			local low, high = box({ part })
+			tallest = math.max(tallest, high.Y - low.Y)
+			part.PivotOffset = part.CFrame:ToObjectSpace(CFrame.lookAt(stand, stand + front))
+			part.Name = id
+			fileInto("EggModels", part)
+			eggs += 1
+		else
+			-- Pivot in its middle, its X axis along the barrel, upright (Models.mini; the game aims that X axis).
+			part.PivotOffset = part.CFrame:ToObjectSpace(CFrame.fromMatrix(part.Position, front, Vector3.yAxis))
+			part.Name = id
+			fileInto("MiniCannons", part)
+			minis += 1
+		end
+	end
+	if eggs > 0 then
+		table.insert(remarks, string.format("eggs up to %.1f studs tall", tallest))
+		if tallest < 2 or tallest > 8 then
+			table.insert(remarks, "that is NOT the size they were made at (about 4): import again with the file's own scale")
+		end
+	end
+	import:Destroy()
+	print(`{TAG} {import.Name}: {minis} mini cannons, {eggs} eggs`)
+	note(import.Name, "MiniCannons + EggModels", `{minis} + {eggs}`, table.concat(remarks, "; "))
+end
+
+----------------------------------------------------------------------------------------------------
 -- Go through the Workspace
 ----------------------------------------------------------------------------------------------------
 local jobs = {}
@@ -392,6 +457,7 @@ for _, child in workspace:GetChildren() do
 	local name = string.lower(child.Name)
 	local island, base = string.match(name, "^([%l_]+)_island$"), string.match(name, "^([%l_]+)_base$")
 	local herd = string.match(name, "^([%l_]+)_creatures$")
+	local critters = string.match(name, "^([%l_]+)_minis$")
 	if name == "marketplace" then
 		table.insert(jobs, { import = child, kind = "market", world = "Market" })
 	elseif island then
@@ -400,11 +466,13 @@ for _, child in workspace:GetChildren() do
 		table.insert(jobs, { import = child, kind = "base", world = title(base) })
 	elseif herd then
 		table.insert(jobs, { import = child, kind = "creatures", world = title(herd) })
+	elseif critters then
+		table.insert(jobs, { import = child, kind = "minis", world = title(critters) })
 	end
 end
 
 if #jobs == 0 then
-	warn(`{TAG} Nothing to do: the Workspace has no imported model. Import an .fbx first (File > Import); its model must be named <world>_island, <world>_base, <world>_creatures or marketplace, and sit directly in the Workspace.`)
+	warn(`{TAG} Nothing to do: the Workspace has no imported model. Import an .fbx first (File > Import); its model must be named <world>_island, <world>_base, <world>_creatures, <world>_minis or marketplace, and sit directly in the Workspace.`)
 else
 	print(`{TAG} {#jobs} imported model(s) found`)
 	for _, job in jobs do
@@ -412,6 +480,8 @@ else
 		local ok, problem = pcall(function()
 			if job.kind == "creatures" then
 				fileCreatures(job.import)
+			elseif job.kind == "minis" then
+				fileMinis(job.import)
 			else
 				fileScene(job.import, job.kind, job.world)
 			end
