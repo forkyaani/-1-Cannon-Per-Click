@@ -6,6 +6,10 @@ Written 5 Oct 2026. Background: `docs/VISUAL_AUDIT.md`, `docs/UI_VISION.md`, `do
 
 Order of work: A, B, C, D per world (Earth, Moon, Mars, Neptune, The Sun), then E, F, G and I.
 
+**6 Oct, 06:50:** all 14 model files (5 bases, 4 new islands, 5 creature batches) are imported into the group's place
+with `setup_models.luau` and saved. Only the Earth base has been looked at in a play test so far (B4); the
+other "import and test" jobs below still need their test.
+
 ## Time estimates
 
 Working time per job, including checking the result. Studio jobs assume Studio is free. Rough: a model that
@@ -39,7 +43,7 @@ needs a second pass doubles its job.
 - [x] B1. Finish the Earth base model (road, 16 pads, gate, monster portal, teleporters, backdrop) · **40 min**
 - [x] B2. `Plots.wear`: hook that puts a base model over the part-built base (keep pads, prompts, signs, walls) · **40 min**
 - [x] B3. Colliders list for the Earth base · **10 min**
-- [ ] B4. Import and test the Earth base **[S]** · **20 min**
+- [x] B4. Import and test the Earth base **[S]** · **20 min**
 - [x] B5. Moon base: theme, render, check the photo · **20 min**
 - [ ] B6. Moon base: import and test **[S]** · **15 min**
 - [x] B7. Mars base: theme, render, check the photo · **20 min**
