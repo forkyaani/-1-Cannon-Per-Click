@@ -1314,6 +1314,9 @@ Config.EventShop = {
 	{ id = "h_king", name = "Mini Pumpkin King Cannon", desc = "Halloween exclusive", cost = 6_000, kind = "pet", pet = "pumpkinking", limit = 1 },
 	{ id = "h_power", name = "2x Power (15 min)", desc = "Doubles all tower damage", cost = 200, kind = "boost", boost = "power2x", minutes = 15, limit = 99 },
 	{ id = "h_diamonds", name = "25 Gems", desc = "Trade candy for gems", cost = 500, kind = "diamonds", amount = 25, limit = 10 },
+	-- The enchantment keys (Features/Enchant), at about the candy that their price in gems is worth above.
+	{ id = "h_key", name = "Enchantment Key", desc = "Enchants a mini cannon at the table on The Sun's island", cost = 1_000, kind = "item", item = "enchantkey", amount = 1, limit = 99 },
+	{ id = "h_shinykey", name = "Shiny Enchantment Key", desc = "3 enchantments, at least two of them level III", cost = 15_000, kind = "item", item = "shinykey", amount = 1, limit = 10 },
 }
 
 function Config.halloweenActive(now: number): boolean

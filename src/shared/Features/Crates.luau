@@ -179,7 +179,7 @@ Crates.List = {
 			{ item = "power2x", amount = 1, chance = 5 },
 			{ item = "coins2x", amount = 1, chance = 5 },
 			{ item = "autotap", amount = 1, chance = 4 },
-			{ item = "enchantkey", amount = 1, chance = 4 },
+			{ item = "enchantkey", amount = 1, chance = 8 },
 			{ gems = 20, chance = 3 },
 			{ item = "luck2x", amount = 1, chance = 3 },
 			{ item = "ammo_double", amount = 1, chance = 2 },
@@ -192,7 +192,7 @@ Crates.List = {
 			{ item = "ammo_lucky", amount = 1, chance = 0.3 },
 			{ item = "ammo_boss", amount = 1, chance = 0.3 },
 			{ item = "megaluck", amount = 1, chance = 0.2 },
-			{ item = "shinykey", amount = 1, chance = 0.2 },
+			{ item = "shinykey", amount = 1, chance = 0.5 },
 			{ gems = 250, chance = 0.05 },
 			{ pet = "mimic", chance = 0.05 }, -- 1 in 2,000
 			{ item = "ammo_void", amount = 1, chance = 0.01 },
@@ -295,6 +295,7 @@ Crates.List = {
 			{ item = "power2x", amount = 1, chance = 5 },
 			{ item = "coins2x", amount = 1, chance = 5 },
 			{ item = "candy2x", amount = 1, chance = 3 },
+			{ item = "enchantkey", amount = 1, chance = 3 },
 			{ gems = 10, chance = 3 },
 			{ item = "luck2x", amount = 1, chance = 1.5 },
 			{ pet = "candycorn", chance = 1.5 },
@@ -303,6 +304,7 @@ Crates.List = {
 			{ item = "ammo_candy", amount = 1, chance = 0.5 },
 			{ pet = "cauldron", chance = 0.4 },
 			{ pet = "pumpkinking", chance = 0.08 },
+			{ item = "shinykey", amount = 1, chance = 0.05 },
 			{ gems = 250, chance = 0.02 },
 			{ pet = "candyskull", chance = 0.01 }, -- 1 in 10,000
 			{ pet = "bonedragon", chance = 0.0001 }, -- 1 in 1,000,000
@@ -326,6 +328,7 @@ Crates.List = {
 			{ item = "healfreeze", amount = 1, chance = 6 },
 			{ item = "autotap", amount = 1, chance = 5 },
 			{ item = "luck2x", amount = 2, chance = 5 },
+			{ item = "enchantkey", amount = 2, chance = 5 },
 			{ gems = 50, chance = 4 },
 			{ pet = "cauldron", chance = 3 },
 			{ item = "ammo_candy", amount = 1, chance = 2 },
@@ -333,6 +336,7 @@ Crates.List = {
 			{ item = "ammo_poison", amount = 1, chance = 1 },
 			{ pet = "pumpkinking", chance = 1 },
 			{ item = "megaluck", amount = 1, chance = 0.25 },
+			{ item = "shinykey", amount = 1, chance = 0.5 },
 			{ pet = "candyskull", chance = 0.1 }, -- 1 in 1,000
 			{ item = "ammo_lucky", amount = 1, chance = 0.05 },
 			{ gems = 1_000, chance = 0.03 },
