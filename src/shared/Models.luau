@@ -193,6 +193,11 @@ local function creatureFor(def): Model?
 		return nil
 	end
 	local template = folder:FindFirstChild(def.name)
+	if not template then
+		-- A giant ("Giant Slime") is its own monster, bigger.
+		local plain = string.match(def.name, "^Giant (.+)$")
+		template = plain and folder:FindFirstChild(plain)
+	end
 	if not template and def.kind and def.kind ~= "normal" then
 		template = folder:FindFirstChild("Boss")
 	end

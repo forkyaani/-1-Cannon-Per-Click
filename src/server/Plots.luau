@@ -543,6 +543,10 @@ local function dressPad(plot, index: number)
 		part.Color, part.Material = if claimed then rgb(176, 180, 192) else UNCLAIMED, PLASTIC
 		prompt.ActionText, prompt.ObjectText = "Buy", "Cannon Pad"
 	end
+	local trim = plot.dress and plot.dress.padTrims[index]
+	if trim then
+		trim.Color = part.Color -- the band round a worn base's pad shows the pad's state
+	end
 	if forSale and not pad.sale then
 		pad.sale = saleSign(plot, index)
 	elseif not forSale and pad.sale then
@@ -551,8 +555,163 @@ local function dressPad(plot, index: number)
 	end
 end
 
+----------------------------------------------------------------------------------------------------
+-- Blender bases. A world with a model (tools/blender/base.py, imported with tools/studio/setup_models.luau as
+-- ReplicatedStorage.BaseModels: a scenery Model named after the world whose pivot is the plot's origin, and a
+-- folder "<World>Shells" of meshes with the middle of their base as pivot and their front towards -Z) is worn
+-- over the base built here while the plot has an owner. What was built from parts stays, unseen, as the
+-- floor, the walls and the carrier of every prompt, sign and attribute. Other worlds, and plots nobody owns,
+-- look as they always did.
+----------------------------------------------------------------------------------------------------
+-- Parts that keep showing through a worn base: the lamps' bulbs, the teleporters' beams, and the unseen walls.
+local STAYS_SEEN = { Lamp = true, WorldsPortal = true, MarketPortal = true, Barrier = true }
+local TELEPORTER_TINT = { worlds = rgb(70, 220, 140), market = rgb(130, 100, 255) }
+-- What is solid on a worn base besides the game's own parts: { x, y, z of its middle, its size x, y, z, its
+-- turn in degrees }, in plot space. From the "colliders" of assets/models/bases/earth_base_manifest.json (the
+-- five worlds share the layout).
+local BASE_SOLIDS = {
+	{ -49, 5.5, -11, 1.2, 11, 1.2, 0 }, -- lamp
+	{ 49, 5.5, -11, 1.2, 11, 1.2, 0 }, -- lamp
+	{ -16.9, 3.8, 3, 2.1, 7.6, 2.1, 0 }, -- teleporter leg
+	{ -9.1, 3.8, 3, 2.1, 7.6, 2.1, 0 }, -- teleporter leg
+	{ 9.1, 3.8, 3, 2.1, 7.6, 2.1, 0 }, -- teleporter leg
+	{ 16.9, 3.8, 3, 2.1, 7.6, 2.1, 0 }, -- teleporter leg
+	{ -9.45, 5, 147, 4.8, 10, 5, 0 }, -- portal leg
+	{ 9.45, 5, 147, 4.8, 10, 5, 0 }, -- portal leg
+	{ -7.88, 7, 14, 1.75, 14, 3.6, 0 }, -- gate pier
+	{ 7.88, 7, 14, 1.75, 14, 3.6, 0 }, -- gate pier
+	{ -7.91, 6, 19.35, 0.6, 12, 7, -10 }, -- gate door leaf
+	{ 7.91, 6, 19.35, 0.6, 12, 7, 10 }, -- gate door leaf
+	{ -18.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ -27.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ -36.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ -45.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ -53.9, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ 18.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ 27.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ 36.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ 45.6, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+	{ 53.9, 2.95, 14, 2.8, 5.9, 3, 0 }, -- wall post
+}
+
+local function baseModels(worldIndex: number): (Model?, Instance?)
+	local models = ReplicatedStorage:FindFirstChild("BaseModels")
+	local name = Config.Worlds[worldIndex].name
+	local scenery = models and models:FindFirstChild(name)
+	local shells = models and models:FindFirstChild(name .. "Shells")
+	if scenery and scenery:IsA("Model") and shells then
+		return scenery, shells
+	end
+	return nil, nil
+end
+
+-- Everything of a plot that a worn base covers.
+local function coveredParts(plot): { BasePart }
+	local list = {}
+	local function add(holder: Instance?)
+		for _, part in if holder then holder:GetDescendants() else {} do
+			if part:IsA("BasePart") and not STAYS_SEEN[part.Name] then
+				table.insert(list, part)
+			end
+		end
+	end
+	add(plot.scenery)
+	add(plot.decor)
+	add(plot.folder:FindFirstChild("Teleporters"))
+	for _, pad in plot.pads do
+		table.insert(list, pad.part)
+	end
+	return list
+end
+
+local function undress(plot)
+	if not plot.dress then
+		return
+	end
+	plot.dress.folder:Destroy()
+	plot.dress = nil
+	for _, part in coveredParts(plot) do
+		local seen = part:GetAttribute("Seen")
+		if seen ~= nil then
+			part.Transparency = seen
+			part.CastShadow = part:GetAttribute("Shadow") ~= false
+			part:SetAttribute("Seen", nil)
+			part:SetAttribute("Shadow", nil)
+		end
+	end
+end
+
+-- Puts the plot's world's Blender base on, or takes it off: on only while the plot has an owner (twelve bases
+-- are built, and a model is some 40,000 triangles).
+local function dress(plot)
+	local scenery, shells = nil, nil
+	if plot.owner ~= 0 then
+		scenery, shells = baseModels(plot.world)
+	end
+	if plot.dress and (not scenery or plot.dress.world ~= plot.world) then
+		undress(plot)
+	end
+	if not scenery or not shells or plot.dress then
+		return
+	end
+	for _, part in coveredParts(plot) do
+		if part:GetAttribute("Seen") == nil then
+			part:SetAttribute("Seen", part.Transparency)
+			part:SetAttribute("Shadow", part.CastShadow)
+		end
+		part.Transparency = 1
+		part.CastShadow = false
+	end
+
+	local folder = Instance.new("Folder")
+	folder.Name = "Dress"
+	local worn = { folder = folder, world = plot.world, padTrims = {}, ownerTrims = {} }
+	local model = scenery:Clone()
+	model.Name = "Model"
+	model:PivotTo(plot.frame * CFrame.Angles(0, math.pi, 0)) -- its -Z is towards the portal, the plot's +Z
+	model.Parent = folder
+	-- A shell on a spot of the plot, its front looking `face` degrees round from up the plot (+Z).
+	local function shell(name: string, x: number, z: number, face: number): BasePart?
+		local template = shells:FindFirstChild(name)
+		if not template or not template:IsA("BasePart") then
+			return nil
+		end
+		local copy = template:Clone()
+		copy:PivotTo(plot.frame * CFrame.new(x, 0, z) * CFrame.Angles(0, math.rad(face + 180), 0))
+		copy.Parent = folder
+		return copy
+	end
+	for index, spot in Layout.PADS do
+		shell("Pad", spot.X, spot.Y, 0)
+		worn.padTrims[index] = shell("PadTrim", spot.X, spot.Y, 0)
+	end
+	shell("Gate", 0, GATE_Z, 0)
+	table.insert(worn.ownerTrims, shell("GateTrim", 0, GATE_Z, 0))
+	shell("Portal", PORTAL.X, PORTAL.Y + PORTAL_DEPTH, 180)
+	shell("PortalSheet", PORTAL.X, PORTAL.Y + PORTAL_DEPTH, 180)
+	for kind, spot in Layout.TELEPORTERS do
+		shell("Teleporter", spot.X, spot.Y, 180)
+		local trim = shell("TeleporterTrim", spot.X, spot.Y, 180)
+		if trim then
+			trim.Color = TELEPORTER_TINT[kind] or WHITE
+		end
+	end
+	for _, side in { -1, 1 } do
+		shell("Lamp", side * (WIDTH / 2 - 6), -YARD + 5, 0)
+	end
+	for _, solid in BASE_SOLIDS do
+		local cframe = plot.frame * CFrame.new(solid[1], solid[2], solid[3]) * CFrame.Angles(0, math.rad(solid[7]), 0)
+		local part = block(folder, "Solid", Vector3.new(solid[4], solid[5], solid[6]), cframe, STONE, nil, true)
+		part.Transparency = 1
+		part.CastShadow = false
+	end
+	folder.Parent = plot.folder
+	plot.dress = worn
+end
+
 -- The base and the portal, dressed for an owner or for nobody.
 local function dressBase(plot)
+	dress(plot)
 	local claimed = plot.owner ~= 0
 	local color = if claimed then plot.color else UNCLAIMED
 	for _, part in plot.colored do
@@ -571,6 +730,17 @@ local function dressBase(plot)
 	plot.portal.Transparency = if claimed then 0.3 else 0.7
 	plot.portalLight.Enabled = claimed
 	plot.portalLight.Color = glow
+	local worn = plot.dress
+	if worn then
+		-- The model's own sheet glows in the portal, and its roofs, flags and banners take the owner's colour.
+		plot.portal.Transparency = 1
+		for _, trim in worn.ownerTrims do
+			trim.Color = color
+		end
+		for index, trim in worn.padTrims do
+			trim.Color = plot.pads[index].part.Color
+		end
+	end
 end
 
 local function dressWorld(plot, worldIndex: number)
@@ -628,6 +798,7 @@ local function buildPlot(slot: number)
 	local scenery = Instance.new("Folder")
 	scenery.Name = "Scenery"
 	scenery.Parent = folder
+	plot.scenery = scenery
 	buildGround(plot, scenery)
 	buildBase(plot, scenery)
 	buildPortal(plot, scenery)

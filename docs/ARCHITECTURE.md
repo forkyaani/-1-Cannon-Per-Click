@@ -497,6 +497,18 @@ spans -75..75) and `Marketplace.container()` the folder to parent props to. Buil
 A `ProximityPrompt` with the attribute `Window = "<NAME>"` opens that window on the client with no server code.
 One with the attribute `Loot = "<source id>"` opens the loot viewer on that source (see `ctx.Loot`).
 
+### Blender bases
+
+A world whose base has a Blender model (`tools/blender/base.py <World>`, imported with
+`tools/studio/setup_models.luau` as `ReplicatedStorage.BaseModels.<World>` plus `<World>Shells`) wears it over
+the part-built base while the plot has an owner: `dress` / `undress` in `Plots.luau`, called from `dressBase`.
+The parts stay, unseen (their look is kept in the attributes `Seen` and `Shadow`), as the floor, the walls and
+the carriers of every prompt, sign and attribute; the lamps' bulbs, the teleporters' beams and the FOR SALE
+signs stay visible. Shells are placed on the game's own spots: `Pad` + `PadTrim` (tinted with the pad's state
+colour), `Gate` + `GateTrim` (the owner's colour), `Portal` + `PortalSheet`, `Teleporter` + `TeleporterTrim`,
+`Lamp`. `BASE_SOLIDS` adds unseen colliders for the model's solid pieces. Without the folder in the place, or
+on a plot nobody owns, the base looks as before. Not yet run in Studio.
+
 ### The world islands
 
 `Islands.luau` (required by `init.server.luau`, built after the marketplace and before the features start)

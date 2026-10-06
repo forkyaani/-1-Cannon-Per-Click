@@ -37,8 +37,8 @@ needs a second pass doubles its job.
 ## B. Bases (the first thing every player sees)
 
 - [x] B1. Finish the Earth base model (road, 16 pads, gate, monster portal, teleporters, backdrop) · **40 min**
-- [ ] B2. `Plots.wear`: hook that puts a base model over the part-built base (keep pads, prompts, signs, walls) · **40 min**
-- [ ] B3. Colliders list for the Earth base · **10 min**
+- [x] B2. `Plots.wear`: hook that puts a base model over the part-built base (keep pads, prompts, signs, walls) · **40 min**
+- [x] B3. Colliders list for the Earth base · **10 min**
 - [ ] B4. Import and test the Earth base **[S]** · **20 min**
 - [x] B5. Moon base: theme, render, check the photo · **20 min**
 - [ ] B6. Moon base: import and test **[S]** · **15 min**
@@ -53,22 +53,22 @@ needs a second pass doubles its job.
 
 - [x] C1. Earth island (live)
 - [x] C2. Moon island: theme, render, check the photo · **20 min**
-- [ ] C3. Moon island: colliders list in `Islands.SOLIDS` · **10 min**
+- [x] C3. Moon island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C4. Moon island: import and test **[S]** · **15 min**
 - [x] C5. Mars island: theme, render, check the photo · **20 min**
-- [ ] C6. Mars island: colliders list in `Islands.SOLIDS` · **10 min**
+- [x] C6. Mars island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C7. Mars island: import and test **[S]** · **15 min**
 - [x] C8. Neptune island: theme, render, check the photo · **20 min**
-- [ ] C9. Neptune island: colliders list in `Islands.SOLIDS` · **10 min**
+- [x] C9. Neptune island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C10. Neptune island: import and test **[S]** · **15 min**
 - [x] C11. The Sun island: theme, render, check the photo · **20 min**
-- [ ] C12. The Sun island: colliders list in `Islands.SOLIDS` · **10 min**
+- [x] C12. The Sun island: colliders list in `Islands.SOLIDS` · **10 min**
 - [ ] C13. The Sun island: import and test **[S]** · **15 min**
 
 ## D. Monsters and bosses
 
 - [x] D1. Earth's 5 monsters (live)
-- [ ] D2. `Models.creatureFor`: each boss uses its own model, not the shared one · **15 min**
+- [x] D2. `Models.creatureFor`: each boss uses its own model, not the shared one · **15 min**
 - [x] D3. Earth boss: Ogre Chief · **10 min**
 - [x] D4. Earth boss: Earth Titan · **10 min**
 - [ ] D5. Earth: import the batch and test a wave **[S]** · **20 min**
