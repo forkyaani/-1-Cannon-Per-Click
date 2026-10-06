@@ -1002,12 +1002,13 @@ MARKETPLACE = [
     ("bloodmoon", egg_bloodmoon, [("crow", crow), ("scarecrow", scarecrow), ("werewolf", werewolf), ("banshee", banshee), ("bloodmoon", blood_moon)]),
 ]
 # A row is photographed together. An entry named egg_... is another egg standing in the row, not a mini cannon.
+# The ids are the game's: a coin egg's is its name without the space ("Basic Egg" is basicegg).
 WORLDS = [
-    ("basic", egg_basic, [("wooden", wooden), ("iron", iron), ("steel", steel), ("gold", gold), ("diamond", diamond)]),
-    ("forest", egg_forest, [("leaf", leaf), ("vine", vine), ("mushroom", mushroom), ("honey", honey), ("jade", jade)]),
-    ("moon", egg_moon, [("moonrock", moonrock), ("crater", crater), ("lunar", lunar), ("astro", astro), ("stellar", stellar)]),
-    ("comet", egg_comet, [("dust", dust), ("comet", comet), ("meteor", meteor), ("star", star), ("galaxy", galaxy)]),
-    ("mars", egg_mars, [("egg_dune", egg_dune), ("egg_frost", egg_frost), ("egg_blizzard", egg_blizzard), ("egg_ember", egg_ember), ("egg_solar", egg_solar)]),
+    ("basicegg", egg_basic, [("wooden", wooden), ("iron", iron), ("steel", steel), ("gold", gold), ("diamond", diamond)]),
+    ("forestegg", egg_forest, [("leaf", leaf), ("vine", vine), ("mushroom", mushroom), ("honey", honey), ("jade", jade)]),
+    ("moonegg", egg_moon, [("moonrock", moonrock), ("crater", crater), ("lunar", lunar), ("astro", astro), ("stellar", stellar)]),
+    ("cometegg", egg_comet, [("dust", dust), ("comet", comet), ("meteor", meteor), ("star", star), ("galaxy", galaxy)]),
+    ("marsegg", egg_mars, [("egg_duneegg", egg_dune), ("egg_frostegg", egg_frost), ("egg_blizzardegg", egg_blizzard), ("egg_emberegg", egg_ember), ("egg_solaregg", egg_solar)]),
 ]
 EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS}[SET]
 FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis"}[SET]
