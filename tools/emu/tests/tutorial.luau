@@ -285,7 +285,8 @@ local function paidToasts(title: string, from: number): number
 	local count = 0
 	for index = from, #T.toasts do
 		local text = T.toasts[index].text
-		if string.find(text, title, 1, true) and string.find(text, "+", 1, true) then
+		-- The story pays several quests that finish together in one toast ("2 quests done!  +125").
+		if (string.find(text, title, 1, true) or string.find(text, "quests done!", 1, true)) and string.find(text, "+", 1, true) then
 			count += 1
 		end
 	end

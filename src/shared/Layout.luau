@@ -108,9 +108,10 @@ local PATH = {
 }
 Layout.PATH = PATH
 
--- Cannon pads, in the order the game suggests them (the first is the free starter pad, near the gate).
+-- Cannon pads, in the order the game suggests them. The first is the free starter pad: it stands by the
+-- portal, where the monsters come in (until 6 Oct it was the pad by the gate, which is now the twelfth).
 local PADS = {
-	Vector2.new(-14, 26),
+	Vector2.new(4, 113),
 	Vector2.new(14, 26),
 	Vector2.new(-8, 53),
 	Vector2.new(8, 53),
@@ -121,7 +122,7 @@ local PADS = {
 	Vector2.new(-24, 83),
 	Vector2.new(24, 83),
 	Vector2.new(-20, 113),
-	Vector2.new(4, 113),
+	Vector2.new(-14, 26),
 	Vector2.new(24, 113),
 	Vector2.new(-50, 53),
 	Vector2.new(50, 83),

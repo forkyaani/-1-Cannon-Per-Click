@@ -133,11 +133,17 @@ check(data.cleared >= 4, `the starter cannon alone clears the first swarm and th
 check(data.cleared < 10, "but not the whole game")
 check(data.towers["1"].level == 1 and #data.pads == 1, "nothing was upgraded or bought for them")
 check(toasted("New tower unlocked: Gatling! Buy a pad to build it on."), "a tower that unlocks with no pad free says to buy a pad")
-check(events.failed > 0 and failedReward ~= nil, "the first giant stops them")
+check(events.failed > 0 and failedReward ~= nil, "a level stops them")
 do
-	local plan = Config.levelPlan(5)
-	check(failedReward > 0 and failedReward <= plan.coins * Config.Defense.failShare, `a boss that got through paid for its damage ({failedReward} coins)`)
-	check(toasted("got through with"), "and the toast says how close it was")
+	-- Which level stops the starter cannon moves with the balance: a boss that gets through pays for the
+	-- damage it took, an ordinary level pays nothing.
+	local plan = Config.levelPlan(data.cleared + 1)
+	if plan.kind ~= "normal" then
+		check(failedReward > 0 and failedReward <= plan.coins * Config.Defense.failShare, `a boss that got through paid for its damage ({failedReward} coins)`)
+		check(toasted("got through with"), "and the toast says how close it was")
+	else
+		eq(failedReward, 0, "an ordinary level that got through pays nothing")
+	end
 	check(toasted("You have the coins: walk up to a tower and press UPGRADE"), "a player who can afford an upgrade is told to buy it")
 end
 noErrors("idling")
@@ -245,7 +251,7 @@ run(4)
 Game.sync(player)
 local leaf = Config.Pets.leaf
 eq(leaf.dps, leaf.bonus * Config.PetDps, "a mini cannon's dps is its bonus x Config.PetDps")
-eq(Config.PetDps, 350, "Config.PetDps")
+eq(Config.PetDps, 525, "Config.PetDps")
 eq(T.Format.petPower(leaf), `+{math.floor(leaf.bonus * Config.PetDps + 0.5)} DPS`, "and that is how it reads")
 eq(T.Format.petPower({ dps = 129 }), "+129 DPS", "bonus 1.29 reads +129 DPS")
 eq(T.Format.petPower(Config.Pets.hugestorm), "x3", "a Huge still reads x3")

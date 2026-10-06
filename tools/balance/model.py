@@ -338,8 +338,8 @@ def features(src=None):
 # The draft: the same game from a table of knobs. Keep the formulas in step with Config.luau.
 # ---------------------------------------------------------------------------------------------------
 PATH = [(0, 145), (0, 128), (-38, 128), (-38, 98), (38, 98), (38, 68), (-38, 68), (-38, 38), (0, 38), (0, 14)]
-PADS = [(-14, 26), (14, 26), (-8, 53), (8, 53), (-24, 53), (24, 53), (-8, 83), (8, 83), (-24, 83), (24, 83),
-        (-20, 113), (4, 113), (24, 113), (-50, 53), (50, 83), (-50, 113)]
+PADS = [(4, 113), (14, 26), (-8, 53), (8, 53), (-24, 53), (24, 53), (-8, 83), (8, 83), (-24, 83), (24, 83),
+        (-20, 113), (-14, 26), (24, 113), (-50, 53), (50, 83), (-50, 113)]
 
 
 KNOBS = {
@@ -385,14 +385,14 @@ KNOBS = {
     # towers
     "dmgStep": 1.10, "tierStep": 1.3, "costStep": 1.15, "upgradeShare": 0.5,
     "towers": {
-        "cannon": {"cost": 50, "damage": 18, "rate": 1, "range": 30, "unlock": 0},
-        "gatling": {"cost": 100, "damage": 8, "rate": 5, "range": 22, "unlock": 3},
-        "mortar": {"cost": 150, "damage": 84, "rate": 0.3, "range": 45, "unlock": 8, "splash": 10},
-        "sniper": {"cost": 250, "damage": 120, "rate": 0.2, "range": 90, "unlock": 14, "boss": 2.5},
-        "frost": {"cost": 300, "damage": 20, "rate": 1, "range": 28, "unlock": 22, "slow": 0.4, "slowSeconds": 2.5},
-        "flame": {"cost": 400, "damage": 22, "rate": 4, "range": 20, "unlock": 55, "burn": 0.25, "burnSeconds": 3},
-        "tesla": {"cost": 600, "damage": 80, "rate": 1.2, "range": 30, "unlock": 105, "chain": 3},
-        "rocket": {"cost": 1000, "damage": 340, "rate": 0.4, "range": 60, "unlock": 160, "splash": 12,
+        "cannon": {"cost": 50, "damage": 36, "rate": 1, "range": 30, "unlock": 0},
+        "gatling": {"cost": 100, "damage": 16, "rate": 5, "range": 22, "unlock": 3},
+        "mortar": {"cost": 150, "damage": 168, "rate": 0.3, "range": 45, "unlock": 8, "splash": 10},
+        "sniper": {"cost": 250, "damage": 240, "rate": 0.2, "range": 90, "unlock": 14, "boss": 2.5},
+        "frost": {"cost": 300, "damage": 40, "rate": 1, "range": 28, "unlock": 22, "slow": 0.4, "slowSeconds": 2.5},
+        "flame": {"cost": 400, "damage": 44, "rate": 4, "range": 20, "unlock": 55, "burn": 0.25, "burnSeconds": 3},
+        "tesla": {"cost": 600, "damage": 160, "rate": 1.2, "range": 30, "unlock": 105, "chain": 3},
+        "rocket": {"cost": 1000, "damage": 680, "rate": 0.4, "range": 60, "unlock": 160, "splash": 12,
                    "burn": 0.2, "burnSeconds": 3},
     },
     "order": ["cannon", "gatling", "mortar", "sniper", "frost", "flame", "tesla", "rocket"],

@@ -73,6 +73,7 @@ local hooks = {
 	ready = {}, leave = {}, shot = {}, kill = {}, waveCleared = {}, hatch = {}, rebirth = {}, tick = {},
 	levelStart = {}, levelFailed = {}, leak = {},
 	action = {}, -- just before a client's action or a prompt is handled: (name), "prompt" for a prompt
+	acted = {}, -- just after it was handled: (name)
 }
 
 -- A feature's mistake must not break a shot, a kill or a save: a failing modifier or hook is skipped,
@@ -1836,6 +1837,7 @@ local function onAction(player: Player, name: unknown, argument: unknown)
 	state.lastAction = now
 	fire("action", player, data, state, name)
 	handler(player, data, state, argument)
+	fire("acted", player, data, state, name)
 	syncAll(player)
 end
 
@@ -2548,6 +2550,7 @@ function Game.start()
 		state.lastAction = now
 		fire("action", player, data, state, "prompt")
 		handler(player, data, state)
+		fire("acted", player, data, state, "prompt")
 		syncAll(player)
 	end
 	for prompt, eggId in Marketplace.eggPrompts do

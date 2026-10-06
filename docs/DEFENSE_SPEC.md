@@ -30,7 +30,7 @@ need to deviate, say so in your report: other people are coding against this tex
   8, "Private bases"). `Layout.plotCFrame(slot)`, `Layout.plotPoint(slot, Vector2(x, z), height?) -> Vector3`.
 - `Layout.PATH` (10 points), `Layout.PATH_LENGTH` (359), `Layout.pathAt(distance) -> (Vector2 point, Vector2
   direction)` in plot space.
-- `Layout.PADS` (16 `Vector2`s, the first is the free starter pad), `Layout.padPosition(slot, pad) -> Vector3`.
+- `Layout.PADS` (16 `Vector2`s, the first is the free starter pad, by the monsters' portal), `Layout.padPosition(slot, pad) -> Vector3`.
 - `Layout.plotSpawn(slot) -> CFrame`: where the owner arrives.
 - The marketplace stays where it is (`Layout.MARKET_CENTER`), reached by the existing `goMarket` / `goHome`
   actions (a teleport). The old lane functions in `Layout` (slotX, cameraCFrame, monsterPosition ...) are

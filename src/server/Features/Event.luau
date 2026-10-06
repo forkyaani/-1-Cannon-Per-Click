@@ -443,6 +443,12 @@ function Event.start(api)
 		settle(player, data, os.time())
 	end)
 
+	-- And just after: the balance is looked at again, so that what is earned next is counted from what the
+	-- purchase left, not hidden under what it took (a kill half a second after a purchase was lost).
+	Game.on("acted", function(player: Player, data)
+		settle(player, data, os.time())
+	end)
+
 	Game.on("tick", function(player: Player, data)
 		settle(player, data, os.time())
 		publish(player, data)

@@ -53,6 +53,8 @@ needs a second pass doubles its job.
 - [x] B11. The Sun base: theme, render, check the photo · **20 min**
 - [x] B12. The Sun base: import and test **[S]** · **15 min**
 
+- [x] B13. A new player's free cannon stands by the monsters' portal instead of by the gate (pads 1 and 12 swap places in `Layout.PADS`); the old spot is for sale. Check it on a fresh save **[S]** · **20 min**
+
 ## C. Islands
 
 - [x] C1. Earth island (live)

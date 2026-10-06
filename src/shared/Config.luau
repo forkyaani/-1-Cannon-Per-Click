@@ -535,35 +535,35 @@ Config.TowerCurve = {
 Config.Towers = {
 	cannon = {
 		name = "Cannon", desc = "A steady all-rounder", color = rgb(133, 94, 66),
-		cost = 50, damage = 18, rate = 1, range = 30, unlock = 0,
+		cost = 50, damage = 36, rate = 1, range = 30, unlock = 0,
 	},
 	gatling = {
 		name = "Gatling", desc = "Small shots, very fast, short range", color = rgb(150, 160, 175),
-		cost = 100, damage = 8, rate = 5, range = 22, unlock = 3,
+		cost = 100, damage = 16, rate = 5, range = 22, unlock = 3,
 	},
 	mortar = {
 		name = "Mortar", desc = "Slow shells that hit every monster near the target", color = rgb(90, 110, 80),
-		cost = 150, damage = 84, rate = 0.3, range = 45, unlock = 8, splash = 10,
+		cost = 150, damage = 168, rate = 0.3, range = 45, unlock = 8, splash = 10,
 	},
 	sniper = {
 		name = "Sniper", desc = "Reaches most of the plot and hits bosses 2.5x as hard", color = rgb(60, 90, 150),
-		cost = 250, damage = 120, rate = 0.2, range = 90, unlock = 14, boss = 2.5,
+		cost = 250, damage = 240, rate = 0.2, range = 90, unlock = 14, boss = 2.5,
 	},
 	frost = {
 		name = "Frost", desc = "Slows what it hits by 40%", color = rgb(150, 215, 255),
-		cost = 300, damage = 20, rate = 1, range = 28, unlock = 22, slow = 0.4, slowSeconds = 2.5,
+		cost = 300, damage = 40, rate = 1, range = 28, unlock = 22, slow = 0.4, slowSeconds = 2.5,
 	},
 	flame = {
 		name = "Flame", desc = "Sets monsters on fire: they keep burning for 3 seconds", color = rgb(255, 120, 40),
-		cost = 400, damage = 22, rate = 4, range = 20, unlock = 55, burn = 0.25, burnSeconds = 3,
+		cost = 400, damage = 44, rate = 4, range = 20, unlock = 55, burn = 0.25, burnSeconds = 3,
 	},
 	tesla = {
 		name = "Tesla", desc = "Lightning that jumps to 3 more monsters", color = rgb(120, 200, 255),
-		cost = 600, damage = 80, rate = 1.2, range = 30, unlock = 105, chain = 3,
+		cost = 600, damage = 160, rate = 1.2, range = 30, unlock = 105, chain = 3,
 	},
 	rocket = {
 		name = "Rocket", desc = "Long range blast that leaves everything burning", color = rgb(210, 60, 60),
-		cost = 1000, damage = 340, rate = 0.4, range = 60, unlock = 160, splash = 12, burn = 0.2, burnSeconds = 3,
+		cost = 1000, damage = 680, rate = 0.4, range = 60, unlock = 160, splash = 12, burn = 0.2, burnSeconds = 3,
 	},
 }
 Config.TowerOrder = { "cannon", "gatling", "mortar", "sniper", "frost", "flame", "tesla", "rocket" }
@@ -641,7 +641,7 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Mini cannons (pets) and the eggs they hatch from.
 -- A mini cannon deals damage of its own: its bonus times PetDps is its damage per second while it is equipped
--- (bonus 1.29 = +451 DPS; every entry carries it as `dps`). It is flat: it multiplies nothing and no tower
+-- (bonus 1.29 = +677 DPS; every entry carries it as `dps`). It is flat: it multiplies nothing and no tower
 -- multiplier touches it (the Veteran level, rebirths, 2x Power and a Huge's x3 are all tower damage). The
 -- server deals it to the lead monster of the owner's base all the time, wherever the player is, in shots of
 -- DPS / shots per second, so firing faster changes how it looks and not what it adds up to. (Until 5 Oct the
@@ -654,9 +654,9 @@ end
 -- section 3, says what has to be measured again.
 ----------------------------------------------------------------------------------------------------
 Config.SetBonus = 1.5
-Config.PetDps = 350 -- damage per second of a mini cannon per 1 of its bonus (100 until 6 Oct: 3.5x)
+Config.PetDps = 525 -- damage per second of a mini cannon per 1 of its bonus (100 until 6 Oct: 3.5x, then 1.5x)
 Config.EggCurve = {
-	base = 0.05, -- the Common of the first egg: +17.5 DPS
+	base = 0.05, -- the Common of the first egg: +26 DPS
 	step = 2.5, -- every coin egg's mini cannons are this many times as strong as the last egg's
 	clears = 2.5, -- an egg costs this many clears of the level that unlocks it
 	first = 500, -- except the first
@@ -722,7 +722,7 @@ end
 -- Every equipped Huge also fires a Huge Shot of its own (Config.HugeShot; the server half is
 -- src/server/Features/Huge.luau), and has a special feature while it is equipped: src/shared/Features/Huge.luau.
 Config.HugePower = 3
-Config.HugeDps = 175 -- the least a Huge's own shots deal a second (one with no ordinary mini cannon beside it)
+Config.HugeDps = 262.5 -- the least a Huge's own shots deal a second (one with no ordinary mini cannon beside it)
 -- The Huge Shot: every `seconds` each equipped Huge fires one giant shot worth `shots` mini cannon shots (hero
 -- shots) at once, at the monster furthest along within Defense.petRange of the player, like the mini cannons'
 -- own shots: only while the player is on their plot and near the fight.

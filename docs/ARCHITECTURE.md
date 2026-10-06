@@ -117,6 +117,8 @@ Game.on("kill", function(player, data, state, info) ... end)
 | `hatch` | `egg, results` | Eggs hatched. `results` is a list of `{ pet, kept, chance }` (chance is the % it had) |
 | `rebirth` | | The player rebirthed (`data.rebirths` is already one higher; levels, coins, pads and towers are a new save's) |
 | `tick` | `dt` | Twice a second per player |
+| `action` | `name` | Just before a client's action is handled, or a prompt of the core's (`name` is then `"prompt"`): the moment before anything is bought |
+| `acted` | `name` | Just after it was handled: what it bought is paid for. The event feature looks at the balance at both, so candy earned right after a purchase is counted |
 
 ### Players, messages, state
 

@@ -181,8 +181,8 @@ def inlay(outer, inner, z, colour, location=(0, 0, 0), **look):
 WIDTH, DEPTH, YARD = 110, 150, 16  # PLOT_WIDTH, PLOT_DEPTH, PLOT_YARD: the ground is x -55 ... 55, z -16 ... 150
 PATH_WIDTH = 8
 PATH = ((0, 145), (0, 128), (-38, 128), (-38, 98), (38, 98), (38, 68), (-38, 68), (-38, 38), (0, 38), (0, 14))
-PADS = ((-14, 26), (14, 26), (-8, 53), (8, 53), (-24, 53), (24, 53), (-8, 83), (8, 83), (-24, 83), (24, 83),
-        (-20, 113), (4, 113), (24, 113), (-50, 53), (50, 83), (-50, 113))
+PADS = ((4, 113), (14, 26), (-8, 53), (8, 53), (-24, 53), (24, 53), (-8, 83), (8, 83), (-24, 83), (24, 83),
+        (-20, 113), (-14, 26), (24, 113), (-50, 53), (50, 83), (-50, 113))
 PAD_SIZE, PAD_HEIGHT = 7, 0.5
 ROAD_TOP, KERB = 0.2, 0.8  # the road's top, and how much kerb shows on each side of it (the code's kerb top is 0.1)
 PORTAL_DEPTH = 2  # the portal stands this far behind the first point of the path, and the road starts under it

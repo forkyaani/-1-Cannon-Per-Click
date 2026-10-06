@@ -68,7 +68,7 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 
 | # | P | Task | Done when | Owner | Status |
 |---|---|---|---|---|---|
-| A1 | P0 | Retune so the game is playable past Earth: `Config.PetDps`, the egg curve, `Config.TowerCurve` (`tools/balance/tune.py`, `fit.py`) | `sim.py`: the Moon under 2 hours, Mars under 2:30, all twelve worlds between 40 and 60 hours | | open |
+| A1 | P0 | Retune so the game is playable past Earth: `Config.PetDps`, the egg curve, `Config.TowerCurve` (`tools/balance/tune.py`, `fit.py`) | `sim.py`: the Moon under 2 hours, Mars under 2:30, all twelve worlds between 40 and 60 hours | Yaani | doing: 6 Oct towers 4x and mini cannons 5.25x in all (two rounds); `sim.py` to be read again |
 | A2 | P0 | `docs/BALANCE.md` rewritten from the new run; its sections 1, 3 and 4 are out of date since the flat DPS change | the document's numbers are the simulator's | | open |
 | A3 | P0 | Decide what Mastery Rapid and the Silver tier's Rapid Fire do. Both are cosmetic since Quick Draw went and Rapid is still sold for gems (Yaani's call: remove and refund, or a new meaning) | no track or perk that does nothing is on sale | | open |
 | A4 | P0 | Things the simulator does not know and nobody has sized for the new core: ammo, powerups and the 2x boosts are still the clicker's numbers (`docs/BALANCE.md`, section 5) | each is in `sim.py` or checked by hand against a level's worth of damage | | open |
@@ -85,6 +85,7 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 | B3 | P0 | Never seen in Studio (built 5 Oct): the base's surround and the camera against its unseen walls, the two teleporters beside the arrival, the lobby during a slow load, the level panel's bottom row on a phone, a guest landing on a base 2,000 studs away | each looked at; what is wrong is a line in H3 | | open |
 | B4 | P1 | A guest on somebody's base sees the marketplace's sky, not the host's world's | the host's sky | | open |
 | B5 | P0 | First join: the level keeps running behind the welcome cards; the cards' and the marker's size on a real phone | checked on a phone with a new save | | open |
+| B19 | P0 | A new player's free cannon stands by the monsters' portal, not by the gate: the starter pad (`Layout.PADS[1]`) and the old twelfth pad swapped places, so the pad by the gate is for sale | a fresh save in a play test has one cannon, at the portal end | Yaani | done 6 Oct in code and tests; not yet seen in Studio |
 | B6 | P0 | Loading screen in `ReplicatedFirst` (not mapped in `default.project.json` today), held until the base has opened, which also hides the "Opening your base..." room (D11, D12, M24) | no grey room and no Roblox default screen on joining | | open |
 | B7 | P0 | Sound hooks: `UI.sound` does not exist and the only sounds in the game are six crate sounds with id 0 (D13). The hooks are listed in `docs/UI_VISION.md`, "Sound hooks" | every hook plays what F1 uploads | | open |
 | B8 | P1 | Health bar and backpack switched off (D9); particles with their own texture (D15) | not on screen | | open |
