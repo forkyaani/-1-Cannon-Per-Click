@@ -8,7 +8,8 @@ the ad budget and the human checklist.
 
 ## 0. The three things that decide the date
 
-1. **The balance is broken from the second world on, and that blocks the release more than any model.**
+1. **Fixed in the simulator on 6 October (A1), not yet played.** What it was:
+   the balance is broken from the second world on, and that blocks the release more than any model.
    `python3 tools/balance/sim.py` on 5 October, the ordinary player, every system on: Earth 1:12, the Moon
    **12:48**, Mars **92 hours**, Neptune **367 hours**, stuck in the fifth world after 600 hours. The target is
    about 44 hours for the whole game (`docs/BALANCE.md`, section 1). Since mini cannons became flat DPS their
@@ -18,7 +19,9 @@ the ad budget and the human checklist.
    model falls back to the part-built one by itself (`Models.mini`, `Models.monster`, `Islands.dressFor`), so
    no missing model can break the game. The plan models what a player sees on the first day and ships the
    rest in order, world by world, after the release.
-3. **There are two experiences, and only one can be the release.** Yaani's "Project Egg WIP" holds the
+3. **Settled 6 October: the group's experience is the release.** Yaani imported every model into the group's
+   place (`2504544`) and works there. What follows is the record of why it was a question.
+   There were two experiences, and only one can be the release. Yaani's "Project Egg WIP" holds the
    models as first imported (meshes owned by the account `OhYaani`; `place/ProjectEgg.rbxl` is its copy). On
    5 October Victor published a second one, `+1 Cannon Per Click`, under the group Astral Crafts, built from
    `src` and with Earth's models imported again from the FBX files (meshes owned by the group). Passes,
@@ -88,7 +91,7 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 | B19 | P0 | A new player's free cannon stands by the monsters' portal, not by the gate: the starter pad (`Layout.PADS[1]`) and the old twelfth pad swapped places, so the pad by the gate is for sale | a fresh save in a play test has one cannon, at the portal end | Yaani | done 6 Oct in code and tests; not yet seen in Studio |
 | B6 | P0 | Loading screen in `ReplicatedFirst` (not mapped in `default.project.json` today), held until the base has opened, which also hides the "Opening your base..." room (D11, D12, M24) | no grey room and no Roblox default screen on joining | | open |
 | B7 | P0 | Sound hooks: `UI.sound` does not exist and the only sounds in the game are six crate sounds with id 0 (D13). The hooks are listed in `docs/UI_VISION.md`, "Sound hooks" | every hook plays what F1 uploads | | open |
-| B8 | P1 | Health bar and backpack switched off (D9); particles with their own texture (D15) | not on screen | | open |
+| B8 | P1 | Particles with their own texture (D15). The health bar and backpack were switched off on 6 Oct (Yaani) | not Roblox's default sparkle | | open |
 | B9 | P0 | Paid random items: the odds are shown for every egg, crate and enchant roll, and `PolicyService` is asked before each paid roll (it is in Crates and Enchant; check the x3 Luck pass and the eggs) | a restricted test account cannot buy a random item | | open |
 | B10 | P0 | Halloween event end to end: candy drops, the four eggs, the candy shop, the event leaderboard, the top five's rewards paid once on the next join, everything gone after `Config.Halloween.endsAt` (1 November 2026, 00:00 UTC) | played with a test end time five minutes away | | open |
 | B11 | P0 | The first save of the real game. The live experience already holds test saves from 5 October in `PlayerData_v4`. Decide: wipe them or rename the store | no tester starts the release at level 28 | | open |
@@ -124,50 +127,22 @@ experience, given an icon (E4), and its id pasted into the file named.
 | C13 | P0 | Buy each once on the live place with a real account: the pass works at once and after rejoining; a product is granted once, and once only when the receipt is retried (`Game.processReceipt`) | 12 ticks | | open |
 | C14 | P0 | Group revenue: who gets what share of Astral Crafts' Robux (Victor and Yaani decide; set in the group's payouts) | set | | open |
 
-### D. Blender
+### D. Models, islands, bases, sky and sound: see `docs/RELEASE_TASKS.md`
 
-All Blender work is code: one script per set in `tools/blender`, run headless, exporting FBX to
-`assets/models`. In the place on 5 October: Earth's island, Earth's five monsters and one boss model, the Gem
-Egg and the four Halloween eggs, and their 25 mini cannons.
+**The jobs for Blender models, the Studio imports, sky, light and sound are in `docs/RELEASE_TASKS.md`**
+(Yaani's list, groups A to G and I, with time estimates). They are ticked there and not repeated here, so a
+job has one home. On 6 October it stood at 61 done, 32 open: bases, islands and monsters for worlds 1 to 5
+are built; the open jobs are the Studio import-and-test of the four new islands and of each world's monsters,
+Earth's two coin eggs and their 10 mini cannons, the marketplace model and its hook, sky and light, all of
+sound, and the launch jobs. Worlds 6 to 12 and the mini cannons of worlds 2 to 5 are after the release.
 
-What is left, in all:
+Where this file and that one name the same job, that one is where it is ticked: sound (F here, G2 to G5
+there), sky (E6 here, G1 there), icon and thumbnails (G3 here, I1 and I2 there), the passes (C1 to C6 here,
+I3 there), the kept place file (R2 here, I4 there), the phone play-through (H2 here, I5 there), the
+marketplace and base hooks (B12 and B13 here, F2 and B2 there).
 
-| Set | In the game | Left | Script |
-|---|---|---|---|
-| Mini cannons: coin eggs (12 worlds x 2 eggs x 5) | 0 | **120** | `minis.py` (a recipe each) |
-| Mini cannons: Gem Egg and the four Halloween eggs | 25 | 0 | `minis.py` |
-| Mini cannons: Exclusive (shops, daily, crates) | 0 | 11 | `minis.py` |
-| Mini cannons: Secret (crate jackpots, hidden) | 0 | 7 | `minis.py` |
-| Huges | 0 | 9 | `minis.py`, at 4x with its own extras |
-| Eggs: coin eggs | 0 | 24 | `minis.py` |
-| Monsters (5 a world) | 5 (Earth) | 55 | `wave.py`, one file per world |
-| Bosses (a mid boss and a final boss a world) | 1 shared `Boss` | 24 | `boss_king.py` as the recipe |
-| World islands | 1 (Earth) | 11 | `earth_island.py` as the template |
-| Island machines: Mastery Shrine, Enchanting Table, Fusion Machine (M32, M33) | 0 | 3 | new |
-| Marketplace town (M34 to M47) | 0 | 1 set | `marketplace.py`; `assets/models/marketplace/marketplace.fbx` is exported (Yaani, 5 Oct), not imported, and no code wears it |
-| Base (M11 to M22) | 0 | Earth's exported, 11 worlds' tints left | `earth_base.py`; `assets/models/bases/earth_base.fbx` (Yaani, 5 Oct, in progress), not imported, and no code wears it |
-| Towers: 8 kinds (M1, M2) | 0 | 8 | new |
-| Shots, crates, daily chest, Ammo Forge, Captain Kaboom, Huge pedestal (M9, M10, M41, M44 to M47) | 0 | 6 sets | new |
-
-This week's tasks:
-
-| # | P | Task | Done when | Owner | Status |
-|---|---|---|---|---|---|
-| D1 | P0 | Blender on the machine that builds; every script in `tools/blender` re-run from clean | each writes the FBX that is committed, or the difference is explained | | open |
-| D2 | P0 | Monsters as one mesh each with vertex colours, the way `minis.py` joins a mini cannon. Earth's six are 189 MeshParts (about 30 a monster, 10 to 20 monsters on screen), and their colours are material colours, which the importer drops | `wave.py` and `boss_king.py` export one mesh a monster; `COLOURS` is gone from `organize_imports.luau` | | open |
-| D3 | P0 | Earth's coin eggs: Basic Egg and Forest Egg and their 10 mini cannons. The first thing every player hatches, and parts today | in the place; the hatch reveal checked | | open |
-| D4 | P0 | Earth's own bosses: Ogre Chief and Earth Titan (both are the shared `Boss` today); giants use their monster's model (M4) | both fought | | open |
-| D5 | P0 | Marketplace: finish `marketplace.py`, import its FBX (with B12) | in the place | Yaani | doing |
-| D6 | P0 | Towers: the 8 kinds as models with tint zones, so the 60 tiers stay recolours (with B13) | in a fight | | open |
-| D7 | P0 | Earth's base: finish `earth_base.py` (ground, cliff, road, backdrop, trees, and the shells: pad, gate, portal, teleporter, lamp), import its FBX (with B13) | a new player's first screen has no bare slab in it | Yaani | doing |
-| D8 | P1 | What `earth_base.py` leaves as parts: FOR SALE sign, fence, skyline (M14, M18, M19) | the same, seen from the gate | | open |
-| D9 | P1 | Marketplace set pieces: crates, daily chest, Ammo Forge, Huge pedestal, Captain Kaboom (M41, M44 to M47) | in the place | | open |
-| D10 | P0 | The Moon: island, 5 monsters, 2 bosses, Moon Egg and Comet Egg, 10 mini cannons, the base's tint and props | island visited, a boss fought | | open |
-| D11 | P0 | Mars: the same, and the Mastery Shrine (M32) | the same | | open |
-| D12 | P1 | The 9 Huges | the showcase shows one | | open |
-| D13 | P1 | The 11 Exclusive mini cannons (seven are sold in the weekly and Halloween shops on day one) | the shop's preview shows the model | | open |
-| D14 | P1 | Shots: a cannonball with a trail for mini cannons, one mesh per tower look (M9, M10) | in a fight | | open |
-| D15 | P0 | Renders for the page from the real models: the game icon and three thumbnails (D20) | four image files in `assets` | | open |
+Not in that list: towers have no models (after the release, by that list), and the loot viewer and the Huge
+showcase still build mini cannons from parts (B14).
 
 ### E. Interface
 
@@ -238,7 +213,7 @@ Each blocks a task above. Write the answer here.
 
 | # | Question | Blocks | Answer |
 |---|---|---|---|
-| 1 | Which experience is released: the group's `+1 Cannon Per Click` (the plan), or Yaani's "Project Egg WIP"? And who presses Publish? | C, G, R2, G10 | |
+| 1 | Which experience is released: the group's `+1 Cannon Per Click` (the plan), or Yaani's "Project Egg WIP"? And who presses Publish? | C, G, R2, G10 | The group's (6 Oct: Yaani imported every model into it). Who publishes: still open |
 | 1b | Is it acceptable that worlds 4 to 12 are part-built on Saturday? The plan assumes yes | everything | |
 | 2 | Mastery Rapid and Silver's Rapid Fire: remove and refund, or a new meaning? | A3 | |
 | 3 | Gems for Robux at launch: no (the plan), or yes? | A7 | |
