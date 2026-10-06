@@ -626,6 +626,9 @@ class World:
         self.ordered = {}  # OrderedDataStores: name -> {key: whole number}
         self.ordered_failures = 0  # requests to them that will fail next (harness.failOrdered)
         self.is_studio = True
+        # What PolicyService says about paid random items for whoever is asked next (harness.setPolicy):
+        # True = restricted, False = allowed, None = the lookup fails.
+        self.policy_restricted = False
         self.known_props = set()
         self.defaults = {
             "Visible": True, "Text": "", "Enabled": True, "LayoutOrder": 0, "Active": False,
@@ -1514,7 +1517,12 @@ class World:
 
         self.methods["TweenService"] = {"Create": tween_create}
         self.methods["Workspace"] = {"GetServerTimeNow": lambda w: world.clock, "Raycast": lambda *a: None}
-        self.methods["PolicyService"] = {"GetPolicyInfoForPlayerAsync": lambda s, p: lua_value({"ArePaidRandomItemsRestricted": False})}
+        def policy_info(service, player):
+            if world.policy_restricted is None:
+                raise LuaError("GetPolicyInfoForPlayerAsync: the policy service is unavailable")
+            return lua_value({"ArePaidRandomItemsRestricted": world.policy_restricted})
+
+        self.methods["PolicyService"] = {"GetPolicyInfoForPlayerAsync": policy_info}
         self.methods["UserInputService"] = {"GetMouseLocation": lambda u: Vector2(0, 0), "IsKeyDown": lambda u, k: False}
         def get_text_size(service, text=None, size=None, font=None, frame=None):
             """An estimate: no font metrics here, so a glyph is taken to be half the font size wide."""

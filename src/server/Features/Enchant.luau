@@ -5,15 +5,14 @@
 -- Those that change a number of the game are labelled modifiers, one per enchantment, whose label lists
 -- every mini cannon that has it ("Mini Storm Cannon: Sharp III"), so each shows as its own source in the
 -- STATS window. Those that act on a shot or a kill are hooks.
-local PolicyService = game:GetService("PolicyService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local Build = require(script.Parent.Parent.Build)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Enchant = require(ReplicatedStorage.Shared.Features.Enchant)
 local Islands = require(script.Parent.Parent.Islands)
 local Items = require(ReplicatedStorage.Shared.Items)
+local Policy = require(script.Parent.Parent.Policy)
 
 local rgb = Color3.fromRGB
 local OBSIDIAN = rgb(38, 30, 60)
@@ -285,53 +284,26 @@ function Feature.start(Game)
 	------------------------------------------------------------------------------------------------
 	-- Paid random items: a roll costs gems, which are meant to be sold for Robux (docs/GEMS.md), and a
 	-- Shiny key is. Roblox does not allow those to be sold to players in some regions and says which
-	-- through PolicyService, as for the crates.
+	-- through PolicyService, as for the crates (Policy.luau asks and remembers).
 	------------------------------------------------------------------------------------------------
-	local restricted = {} -- [player] = whether they may not buy paid random items; nil until Roblox has answered
-	local asking = {}
-
 	local function publish(player: Player, data)
 		local saved = today(data)
-		Game.setMeta(player, "enchant", { rolls = saved.rolls, restricted = restricted[player] == true })
+		Game.setMeta(player, "enchant", { rolls = saved.rolls, restricted = Policy.restricted(player) == true })
 	end
 
-	local function askPolicy(player: Player)
-		if asking[player] then
-			return
+	Policy.changed:Connect(function(player: Player)
+		local data = Game.data(player)
+		if data then
+			publish(player, data)
 		end
-		asking[player] = true
-		task.spawn(function()
-			local ok, info = pcall(PolicyService.GetPolicyInfoForPlayerAsync, PolicyService, player)
-			asking[player] = nil
-			if not player.Parent then
-				return
-			end
-			if ok and typeof(info) == "table" then
-				restricted[player] = info.ArePaidRandomItemsRestricted == true
-			elseif RunService:IsStudio() then
-				restricted[player] = false -- only a play test may go on without an answer
-			else
-				warn(`[Enchant] policy lookup failed for {player.Name}: {info}`)
-				return
-			end
-			local data = Game.data(player)
-			if data then
-				publish(player, data)
-			end
-		end)
-	end
+	end)
 
 	local function mayRoll(player: Player): boolean
-		if restricted[player] == false then
-			return true
+		local ok, why, kind = Policy.maySell(player, "Enchanting", "offered")
+		if not ok then
+			Game.notify(player, why, kind)
 		end
-		if restricted[player] then
-			Game.notify(player, "Enchanting cannot be offered in your region", "bad")
-		else
-			askPolicy(player)
-			Game.notify(player, "Still checking whether enchanting can be offered in your region. Try again in a moment", "info")
-		end
-		return false
+		return ok
 	end
 
 	------------------------------------------------------------------------------------------------
@@ -429,12 +401,12 @@ function Feature.start(Game)
 		if typeof(saved.rolls) ~= "number" or saved.rolls ~= saved.rolls then
 			saved.rolls = 0
 		end
-		askPolicy(player)
+		Policy.ask(player)
 		publish(player, data)
 	end)
 
 	Game.on("leave", function(player: Player)
-		restricted[player], asking[player], owed[player] = nil, nil, nil
+		owed[player] = nil
 	end)
 end
 
