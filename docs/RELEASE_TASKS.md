@@ -162,6 +162,7 @@ needs a second pass doubles its job.
 
 ## J. Asked for on 7 Oct (Yaani)
 
+- [x] J0. Enchantment keys for gems, no daily limit: 50 gems, Shiny 1,000 gems, in the island shop from The Sun's island on (`Features/IslandShop`). Done 7 Oct (Yaani's side); emulator test passes, not yet seen in Studio.
 - [ ] J1. FUSE window: a **FUSE ALL** button beside FILL / CLEAR / FUSE. One press fuses every set of 3 of the same mini cannon and tier the player has, repeating up the tiers until no set is left; equipped and enchanted ones are kept as the first pick so nothing is lost; a result line says what was made. Server action plus the button (`Features/Fusion`) · **45 min**
 
 ## After launch
