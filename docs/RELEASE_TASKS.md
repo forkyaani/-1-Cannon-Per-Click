@@ -7,8 +7,8 @@ Written 5 Oct 2026. Background: `docs/VISUAL_AUDIT.md`, `docs/UI_VISION.md`, `do
 Order of work: A, B, C, D per world (Earth, Moon, Mars, Neptune, The Sun), then E, F, G and I.
 
 **6 Oct, 06:50:** all 14 model files (5 bases, 4 new islands, 5 creature batches) are imported into the group's place
-with `setup_models.luau` and saved. Only the Earth base has been looked at in a play test so far (B4); the
-other "import and test" jobs below still need their test.
+with `setup_models.luau` and saved. All five bases were seen in a play test (the base swaps as the world changes); the new monsters
+were seen walking on The Sun. The islands and a proper look at each monster batch still need their test.
 
 ## Time estimates
 
@@ -45,13 +45,13 @@ needs a second pass doubles its job.
 - [x] B3. Colliders list for the Earth base · **10 min**
 - [x] B4. Import and test the Earth base **[S]** · **20 min**
 - [x] B5. Moon base: theme, render, check the photo · **20 min**
-- [ ] B6. Moon base: import and test **[S]** · **15 min**
+- [x] B6. Moon base: import and test **[S]** · **15 min**
 - [x] B7. Mars base: theme, render, check the photo · **20 min**
-- [ ] B8. Mars base: import and test **[S]** · **15 min**
+- [x] B8. Mars base: import and test **[S]** · **15 min**
 - [x] B9. Neptune base: theme, render, check the photo · **20 min**
-- [ ] B10. Neptune base: import and test **[S]** · **15 min**
+- [x] B10. Neptune base: import and test **[S]** · **15 min**
 - [x] B11. The Sun base: theme, render, check the photo · **20 min**
-- [ ] B12. The Sun base: import and test **[S]** · **15 min**
+- [x] B12. The Sun base: import and test **[S]** · **15 min**
 
 ## C. Islands
 
