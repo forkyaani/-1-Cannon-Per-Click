@@ -365,7 +365,7 @@ Config.Level = {
 	-- the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
 	-- tools/balance/fit.py sets the anchors, one world at a time, so that every world takes the simulated
 	-- player its target time (docs/BALANCE.md).
-	worldPay = { 15, 5000, 2.553e6, 1.845e9, 1.981e12, 1.268e15, 1.655e18, 1.002e21, 8.768e23, 1.149e27, 6.779e29, 6.504e32 },
+	worldPay = { 4.7, 1.81e04, 1.77e08, 1.13e12, 5.07e15, 2.49e19, 1.08e23, 1.89e27, 8.02e30, 5.52e34, 4.77e38, 5e42 },
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
 	-- pads and towers come quickly, and the grind sets in as the head start runs out.

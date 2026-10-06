@@ -363,10 +363,10 @@ KNOBS = {
     # coins: every world has an anchor of its own, what an ordinary monster of its first level pays (worldPay).
     # Inside the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
     # fit.py sets the anchors, one world at a time, so that every world takes its target time.
-    "worldPay": [1.2, 77.7, 1.76e+04, 1.26e+07, 7.77e+09, 9.39e+12, 5.52e+15, 2.68e+18, 2.07e+21, 2.29e+24, 2.05e+27, 8.64e+29],
+    "worldPay": [4.7, 1.81e+04, 1.77e+08, 1.13e+12, 5.07e+15, 2.49e+19, 1.08e+23, 1.89e+27, 8.02e+30, 5.52e+34, 4.77e+38, 5e+42],
     "coinPower": -0.25, "coinGrowth": 1.1455,
     # coin multipliers of the very first levels (Config.Level.headStart): a new player's first minutes are quick
-    "headStart": [4.83, 4.22, 3.68, 3.21, 2.81, 2.45, 2.14, 1.87, 1.63, 1.42, 1.24, 1.08],
+    "headStart": [],
     "speed": 18.0, "gap": 1.25, "count": 10,
     # an ordinary monster crosses the path in crossSeconds[0] on the first world, down to [1] on the last
     # (Config.CrossSeconds): every world's monsters walk a little faster
