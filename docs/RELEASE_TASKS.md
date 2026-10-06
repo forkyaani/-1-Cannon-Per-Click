@@ -131,7 +131,7 @@ needs a second pass doubles its job.
 
 ## G. Sky, light and sound
 
-- [ ] G1. Sky and lighting per place in code (Earth, Moon, Mars, Neptune, The Sun, marketplace) · **1 h 00** · **d1v is on this (6 Oct evening)**
+- [x] G1. Sky and lighting per place in code (Earth, Moon, Mars, Neptune, The Sun, marketplace) · **1 h 00** Done 6 Oct (d1v): `Effects.updateLighting` gives every place an atmosphere, stars and a tint. The values for Earth, the Moon, Mars, Neptune and The Sun were tried live on their islands in a Studio play test (Mars is peach and hazy, the Moon a starry night, The Sun gold); worlds 6 to 12 take theirs from their backdrop colour. **The code itself has only run in the emulator**: look at one base and the marketplace after the next Rojo sync. No skybox textures and no clouds: the sky's own colour high up is still Roblox's.
 - [ ] G2. `UI.sound` helper and button click / window open / error sounds · **30 min**
 - [ ] G3. Fight sounds: shot, hit, monster pop, boss arrive, level cleared · **30 min**
 - [ ] G4. Hatch sounds: shake, crack, reveal · **20 min**

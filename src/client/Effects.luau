@@ -50,28 +50,79 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Lighting: local to this client. Each world has its own sky, on the plot (the world being fought) and on
 -- that world's island; the marketplace has a bright afternoon of its own.
+-- A sky is the time of day, brightness and ambient colour (Config.Worlds[world].sky) and a look: the
+-- atmosphere's haze and its colour at the horizon and high up, how many stars, and a tint over the picture.
+-- The looks of the first five worlds use the sky colours of their Blender themes (tools/blender/themes.py);
+-- a world without one gets a look from its backdrop colour. The Atmosphere, the Sky and the tint are made
+-- here, in this client's Lighting; what the place file has there (bloom, colour grading) is left alone.
 ----------------------------------------------------------------------------------------------------
 local MARKET_SKY = { clock = 13.5, brightness = 2.6, ambient = Color3.fromRGB(150, 150, 160) }
 local HALLOWEEN_SKY = { clock = 15.6, brightness = 2.3, ambient = Color3.fromRGB(165, 140, 125) }
 
+local hex = Color3.fromHex
+local WHITE = Color3.new(1, 1, 1)
+local LOOKS = {
+	Earth = { density = 0.3, offset = 0.25, horizon = hex("C4E8FF"), top = hex("3F8FE0"), glare = 0.2, haze = 1.2 },
+	Moon = { density = 0.3, offset = 0, horizon = hex("4D4296"), top = hex("17153F"), glare = 0, haze = 1.5, stars = 6000 },
+	Mars = { density = 0.36, offset = 0.3, horizon = hex("FFD9A8"), top = hex("F0884E"), glare = 0.4, haze = 2.2, tint = hex("FFF0E0") },
+	Neptune = { density = 0.34, offset = 0.2, horizon = hex("A8DCFF"), top = hex("3264C8"), glare = 0.2, haze = 1.8 },
+	["The Sun"] = { density = 0.3, offset = 0.3, horizon = hex("FFE27A"), top = hex("FF7A1E"), glare = 0.8, haze = 2, tint = hex("FFF4E0") },
+}
+local MARKET_LOOK = { density = 0.28, offset = 0.25, horizon = hex("D6EEFF"), top = hex("4F9BEA"), glare = 0.2, haze = 1 }
+local HALLOWEEN_LOOK = { density = 0.36, offset = 0.2, horizon = hex("FFB37A"), top = hex("5A3A8A"), glare = 0.3, haze = 2, tint = hex("FFEEDD") }
+
+-- The look of a world that has none of its own: hazy in its backdrop colour, with stars when it is night there.
+local function lookFor(world)
+	local night = world.sky.clock < 5 or world.sky.clock > 19.5
+	return LOOKS[world.name] or {
+		density = 0.32, offset = 0.2, horizon = world.backdrop:Lerp(WHITE, 0.35), top = world.backdrop,
+		glare = 0.2, haze = 1.6, stars = if night then 6000 else nil,
+	}
+end
+
+-- This client's own instance of that class in Lighting, made the first time it is asked for.
+local function lit(class: string, name: string): Instance
+	local found = Lighting:FindFirstChild(name)
+	if not found or not found:IsA(class) then
+		found = Instance.new(class)
+		found.Name = name
+		found.Parent = Lighting
+	end
+	return found
+end
+
 local litKey = nil
 local function updateLighting()
 	local world = if island > 0 then island elseif inMarket then nil else Config.worldOf(State.get("Wave", 1))
-	local key = world or "market"
+	local halloween = not world and Config.halloweenActive(State.now())
+	local key = world or (if halloween then "halloween" else "market")
 	if key == litKey then
 		return
 	end
 	litKey = key
-	local sky
+	local sky, look
 	if world and Config.Worlds[world] then
-		sky = Config.Worlds[world].sky
+		sky, look = Config.Worlds[world].sky, lookFor(Config.Worlds[world])
+	elseif halloween then
+		sky, look = HALLOWEEN_SKY, HALLOWEEN_LOOK
 	else
-		sky = if Config.halloweenActive(State.now()) then HALLOWEEN_SKY else MARKET_SKY
+		sky, look = MARKET_SKY, MARKET_LOOK
 	end
 	Lighting.ClockTime = sky.clock
 	Lighting.Brightness = sky.brightness
 	Lighting.Ambient = sky.ambient
 	Lighting.OutdoorAmbient = sky.ambient
+	local atmosphere = lit("Atmosphere", "WorldAtmosphere") :: Atmosphere
+	atmosphere.Density = look.density
+	atmosphere.Offset = look.offset
+	atmosphere.Color = look.horizon
+	atmosphere.Decay = look.top
+	atmosphere.Glare = look.glare
+	atmosphere.Haze = look.haze
+	local stars = lit("Sky", "WorldSky") :: Sky
+	stars.StarCount = look.stars or 3000
+	local tint = lit("ColorCorrectionEffect", "WorldTint") :: ColorCorrectionEffect
+	tint.TintColor = look.tint or WHITE
 end
 
 ----------------------------------------------------------------------------------------------------
