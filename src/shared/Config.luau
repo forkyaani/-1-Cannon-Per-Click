@@ -369,15 +369,15 @@ Config.Level = {
 	-- the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
 	-- tools/balance/fit.py sets the anchors, one world at a time, so that every world takes the simulated
 	-- player its target time (docs/BALANCE.md).
-	-- Fitted 6 Oct to Yaani's pace: about 30 minutes a world, the last four 40, 50, 60 and 70 on the average
+	-- Fitted 7 Oct (after the towers' and mini cannons' buffs of that day) to Yaani's pace: about 30 minutes a world, the last four 40, 50, 60 and 70 on the average
 	-- of six seeds. One player's world can take twice its average, and none should pass 1:30.
-	worldPay = { 0.453, 868.9, 5.697e5, 1.437e9, 3.442e11, 5.99e14, 5.719e17, 1.002e21, 4.014e23, 6.554e26, 6.779e29, 8.351e32 },
+	worldPay = { 0.2748, 193.9, 4.437e+05, 5.286e+08, 2.088e+11, 3.206e+14, 4.454e+17, 5.363e+20, 2.435e+23, 3.096e+26, 5.279e+29, 3.945e+32 },
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
 	-- pads and towers come quickly, and the grind sets in as the head start runs out.
-	-- Earth's anchor is 33 times lower than the 15 it was, and this gives the 33 times back at level 1 and
-	-- less each level: the first 26 levels pay about what level 1 always paid, then the curve takes over.
-	headStart = { 33.1, 28.9, 25.2, 22, 19.2, 16.8, 14.7, 12.8, 11.2, 9.75, 8.51, 7.43, 6.49, 5.66, 4.94, 4.32, 3.77, 3.29, 2.87, 2.51, 2.19, 1.91, 1.67, 1.46, 1.27, 1.11 },
+	-- Earth's anchor is 55 times lower than the 15 it was, and this gives the 55 times back at level 1 and
+	-- less each level: the first 30 levels pay about what level 1 always paid, then the curve takes over.
+	headStart = { 54.6, 47.7, 41.6, 36.3, 31.7, 27.7, 24.2, 21.1, 18.4, 16.1, 14, 12.2, 10.7, 9.34, 8.15, 7.11, 6.21, 5.42, 4.73, 4.13, 3.61, 3.15, 2.75, 2.4, 2.1, 1.83, 1.6, 1.39, 1.22, 1.06 },
 	speed = 18, -- studs per second; the path is Layout.PATH_LENGTH (359) studs long
 	gap = 1.25, -- seconds between two spawns
 	-- HP multipliers of the very first levels. A brand-new player who touches nothing must not be stopped by
@@ -543,15 +543,15 @@ Config.TowerCurve = {
 Config.Towers = {
 	cannon = {
 		name = "Cannon", desc = "A steady all-rounder", color = rgb(133, 94, 66),
-		cost = 50, damage = 36, rate = 1, range = 30, unlock = 0,
+		cost = 50, damage = 64, rate = 1, range = 30, unlock = 0,
 	},
 	gatling = {
 		name = "Gatling", desc = "Small shots, very fast, short range", color = rgb(150, 160, 175),
-		cost = 100, damage = 16, rate = 5, range = 22, unlock = 3,
+		cost = 100, damage = 40, rate = 5, range = 22, unlock = 3,
 	},
 	mortar = {
 		name = "Mortar", desc = "Slow shells that hit every monster near the target", color = rgb(90, 110, 80),
-		cost = 150, damage = 168, rate = 0.3, range = 45, unlock = 8, splash = 10,
+		cost = 150, damage = 340, rate = 0.3, range = 45, unlock = 8, splash = 10,
 	},
 	sniper = {
 		name = "Sniper", desc = "Reaches most of the plot and hits bosses 2.5x as hard", color = rgb(60, 90, 150),
@@ -559,22 +559,51 @@ Config.Towers = {
 	},
 	frost = {
 		name = "Frost", desc = "Slows what it hits by 40%", color = rgb(150, 215, 255),
-		cost = 300, damage = 40, rate = 1, range = 28, unlock = 22, slow = 0.4, slowSeconds = 2.5,
+		cost = 300, damage = 120, rate = 1, range = 28, unlock = 22, slow = 0.4, slowSeconds = 2.5,
 	},
 	flame = {
 		name = "Flame", desc = "Sets monsters on fire: they keep burning for 3 seconds", color = rgb(255, 120, 40),
-		cost = 400, damage = 44, rate = 4, range = 20, unlock = 55, burn = 0.25, burnSeconds = 3,
+		cost = 400, damage = 110, rate = 4, range = 20, unlock = 55, burn = 0.25, burnSeconds = 3,
 	},
 	tesla = {
 		name = "Tesla", desc = "Lightning that jumps to 3 more monsters", color = rgb(120, 200, 255),
-		cost = 600, damage = 160, rate = 1.2, range = 30, unlock = 105, chain = 3,
+		cost = 600, damage = 400, rate = 1.2, range = 30, unlock = 105, chain = 3,
 	},
 	rocket = {
 		name = "Rocket", desc = "Long range blast that leaves everything burning", color = rgb(210, 60, 60),
-		cost = 1000, damage = 680, rate = 0.4, range = 60, unlock = 160, splash = 12, burn = 0.2, burnSeconds = 3,
+		cost = 1000, damage = 1400, rate = 0.4, range = 60, unlock = 160, splash = 12, burn = 0.2, burnSeconds = 3,
+	},
+	-- Six more kinds (7 Oct), each a new mix of the specials above: nothing in the core is special to them.
+	-- They wear the shape of the kind they are closest to, with an accent of their own (Models.luau).
+	laser = {
+		name = "Laser", desc = "A steady beam: 8 small hits a second on one monster", color = rgb(255, 60, 120),
+		cost = 350, damage = 36, rate = 8, range = 36, unlock = 35,
+	},
+	venom = {
+		name = "Venom", desc = "A splash of poison that keeps eating for 6 seconds", color = rgb(120, 220, 70),
+		cost = 500, damage = 220, rate = 0.8, range = 34, unlock = 80, splash = 7, burn = 0.4, burnSeconds = 6,
+	},
+	blizzard = {
+		name = "Blizzard", desc = "Slows a whole crowd by 50%", color = rgb(200, 240, 255),
+		cost = 800, damage = 300, rate = 0.6, range = 40, unlock = 130, splash = 12, slow = 0.5, slowSeconds = 3,
+	},
+	railgun = {
+		name = "Railgun", desc = "Reaches the whole plot and hits bosses 3x as hard", color = rgb(90, 110, 255),
+		cost = 1500, damage = 3000, rate = 0.1, range = 130, unlock = 200, boss = 3,
+	},
+	storm = {
+		name = "Storm", desc = "Lightning that jumps to 7 more monsters", color = rgb(190, 130, 255),
+		cost = 2500, damage = 900, rate = 1, range = 36, unlock = 260, chain = 7,
+	},
+	meteor = {
+		name = "Meteor", desc = "A huge slow blast that leaves a wide patch burning", color = rgb(255, 150, 60),
+		cost = 5000, damage = 16000, rate = 0.08, range = 80, unlock = 320, splash = 22, burn = 0.3, burnSeconds = 4,
 	},
 }
-Config.TowerOrder = { "cannon", "gatling", "mortar", "sniper", "frost", "flame", "tesla", "rocket" }
+Config.TowerOrder = {
+	"cannon", "gatling", "mortar", "sniper", "frost", "laser", "flame", "venom", "tesla", "blizzard", "rocket", "railgun",
+	"storm", "meteor",
+}
 
 -- The look and the name of a tower of this level: an index into Config.Cannons. A new one every ten levels.
 function Config.towerTier(level: number): number

@@ -4,6 +4,13 @@ Every number is in `src/shared/Config.luau`. This file says what they are meant 
 gets out of them, and how to change them. Nothing here has been played by a person at these numbers: it is a
 simulator's result, and section 5 lists what the simulator does not know.
 
+> **7 October, after this file was written.** Mini cannons grow 15x an egg from the third egg on (it was
+> 2.5x: `Config.EggCurve.second` and `step`); every tower but the Sniper deals 1.75x to 3x more, and six new
+> kinds are on sale (Laser, Venom, Blizzard, Railgun, Storm, Meteor: `Config.Towers`); `worldPay` and
+> `headStart` were fitted again. `sim.py`, four seeds: worlds 1 to 8 take 23 to 38 minutes, worlds 9 to 12
+> from 9 minutes to 1:26, none over 1:30, 6:35 to 8:03 in all. The sections below still give 6 October's
+> numbers: the pace is the same, the shares of towers and mini cannons are not.
+
 The 6 October retune, in one paragraph: towers deal 4x what they did (`Config.Towers`: the starter Cannon is
 36 damage a second at level 1, it was 9), mini cannons 5.25x (`Config.PetDps` = 525, it was 100), monster
 health grows 13.1% a level instead of 17.2% (`Config.Level.hpGrowth` = 1.131), and every world's coins were

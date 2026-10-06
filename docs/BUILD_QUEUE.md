@@ -286,3 +286,19 @@ the middle of the map and its a long walk".
   tighter bottom row on a phone, and streaming when a guest lands on a base 2,000 or more studs away. A guest
   on a base sees the marketplace's sky, not the host's world's. A server over twelve players still shares
   bases (as before): the second owner of a shared base cannot invite.
+
+## Mini cannons that keep up, more towers, AMMO in the TOWER window (built 7 Oct 2026)
+
+- **Why:** Yaani on The Sun: a full team of 11 mini cannons dealt 5.28M a second beside towers dealing 2.84T.
+  Every egg was 2.5x the one before while monsters are about 22x tougher from egg to egg.
+- **Mini cannons:** from the third coin egg on, each egg's are 15x the last egg's (`Config.EggCurve.step`; the
+  first two eggs are as they were). The same team on The Sun now deals about 1.5T.
+- **Towers:** "sniper is the only good one": it was the only kind worth its coins on a boss. Cannon 36 to 64,
+  Gatling 16 to 40, Mortar 168 to 340, Frost 40 to 120, Flame 44 to 110, Tesla 160 to 400, Rocket 680 to 1,400;
+  the Sniper stays. Six new kinds from the specials the core already has: Laser (level 35), Venom (80),
+  Blizzard (130), Railgun (200), Storm (260), Meteor (320). They wear the turret of the kind nearest to them
+  with an accent of their own (`Models.luau`, `SHAPES`); none has a model.
+- **AMMO:** a button on a cannon's page of the TOWER window opens the AMMO window.
+- **Pace:** `worldPay` and `headStart` fitted again; see the note at the top of `docs/BALANCE.md`.
+- Not done: nothing here was seen in Studio. The new kinds' numbers are a first guess, sized on paper against
+  the Sniper and then only through the simulator's pace, not kind by kind.

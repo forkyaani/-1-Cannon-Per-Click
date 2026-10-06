@@ -266,9 +266,28 @@ function Feature.start(ctx)
 		TextXAlignment = right,
 		Parent = towerPage,
 	})
+	-- The way to the AMMO window from where the player looks at a cannon: its menu button is easy to miss.
+	-- Shown only when the Ammo feature has registered its window (it may load after this one).
+	local AMMO_BUTTON = Vector2.new(124, 34)
+	local ammoButton = UI.button({
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, 0, 0, 38),
+		Size = UDim2.fromOffset(AMMO_BUTTON.X, AMMO_BUTTON.Y),
+		Text = "🔥 AMMO",
+		TextSize = 20,
+		BackgroundColor3 = Color3.fromRGB(225, 95, 45),
+		Visible = false,
+		Parent = towerPage,
+	})
+	ammoButton.Activated:Connect(function()
+		local ammoWindow = ctx.Windows.byName.AMMO
+		if ammoWindow then
+			ammoWindow.open()
+		end
+	end)
 	local descLabel = UI.label({
 		Position = UDim2.fromOffset(0, 40),
-		Size = UDim2.new(1, 0, 0, 26),
+		Size = UDim2.new(1, -AMMO_BUTTON.X - 8, 0, 26),
 		TextSize = 24,
 		TextColor3 = Colors.text,
 		TextXAlignment = left,
@@ -382,6 +401,7 @@ function Feature.start(ctx)
 		salePage.Visible = tower == nil and not owned
 		buildPage.Visible = tower == nil and owned
 		towerPage.Visible = tower ~= nil
+		ammoButton.Visible = ctx.Windows.byName.AMMO ~= nil
 		showRange()
 
 		if tower then

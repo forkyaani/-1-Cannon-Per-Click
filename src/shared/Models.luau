@@ -280,7 +280,16 @@ local ACCENTS = {
 	frost = rgb(130, 225, 255),
 	flame = rgb(255, 130, 30),
 	tesla = rgb(255, 240, 110),
+	laser = rgb(255, 60, 120),
+	venom = rgb(120, 220, 70),
+	blizzard = rgb(200, 240, 255),
+	railgun = rgb(90, 110, 255),
+	storm = rgb(190, 130, 255),
+	meteor = rgb(255, 150, 60),
 }
+-- A kind with no turret of its own wears the turret of the kind it is closest to (the rocket wears the
+-- cannon's, as it always did).
+local SHAPES = { laser = "gatling", venom = "flame", blizzard = "frost", railgun = "sniper", storm = "tesla", meteor = "mortar" }
 
 function Models.towerTier(level: number): number
 	return Config.towerTier(math.max(1, math.floor(level)))
@@ -496,7 +505,7 @@ function Models.tower(kind: string, level: number, parent: Instance?): Model
 	kit.frame = if rank <= 3 then WOOD else DARK
 	kit.frameMaterial = if rank <= 3 then Enum.Material.Wood else METAL
 
-	local crown, pivotHeight, turns = (KINDS[kind] or KINDS.cannon)(kit)
+	local crown, pivotHeight, turns = (KINDS[kind] or KINDS[SHAPES[kind]] or KINDS.cannon)(kit)
 	if rank >= 10 then
 		local halo = kit.rod(tower, "Halo", 0.12, 2.4, Vector3.new(0, crown + 0.9, 0), Vector3.yAxis, GOLD, NEON)
 		halo.Transparency = 0.3
