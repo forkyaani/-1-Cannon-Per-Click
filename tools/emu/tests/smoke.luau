@@ -2047,6 +2047,7 @@ do
 	harness.flush()
 	local guestData, guestState = Game.data(guest), Game.state(guest)
 	assert(guestData and guestState, "the second player did not load")
+	T.release(guest) -- a new save: its plot would wait behind the welcome cards
 	check(guestState.slot ~= state.slot, "two players, two bases")
 	for a = 1, Layout.PLOT_COUNT do
 		for b = a + 1, Layout.PLOT_COUNT do

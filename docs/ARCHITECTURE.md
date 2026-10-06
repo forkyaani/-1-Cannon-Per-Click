@@ -314,6 +314,12 @@ numbers are `Config.Fan`.
   good); a like and a favourite. NEXT turns the page (a page ignores presses for its first 0.6 s). The last
   card has START TUTORIAL and a small "Skip tutorial" link that takes two presses. The action is
   `tutorialWelcome("start" | "skip")`.
+- **The plot waits behind the cards.** A save that has not been welcomed is paused when it joins (the server
+  feature calls the core's own `setPaused`, see "Pause"), so nothing spawns or walks until START or the skip
+  link, which resume it. Only that one pause is the tutorial's: it is made once, when the cards come up, and
+  the HUD's PAUSED banner can still resume the plot, so a client that failed to draw the cards is never
+  stuck. The pause is session state: a welcomed save always joins running, and somebody who left in the
+  middle of the welcome is paused next time only because the cards are up again.
 - **The fan bonus is for the group only.** `Config.Fan = { groupId, groupName, gems, coins }`; `groupId = 0`
   means there is no group yet: the card says "coming soon", has no CHECK button and nothing can be claimed.
   With an id, the server asks `player:IsInGroup(groupId)` in a pcall on every join and when the player
@@ -607,7 +613,7 @@ part-built island plus one unseen pillar per trunk, lamp and prop (`SOLIDS`, a l
   burns or counts down, the break between levels included) and keeps sending its field, so the monsters stand
   still on screen; `Game.damage`, `damageAll`, `hurt` and `shoot` do nothing and `Game.leadNear` is nil.
   Building, upgrading, selling and picking a level work as always. It is session state: never saved, a player
-  always joins unpaused. It pays nothing: offline earnings go by the time since the last save and by the
+  always joins unpaused (but for a new save, which the Tutorial feature pauses until its welcome cards close). It pays nothing: offline earnings go by the time since the last save and by the
   towers, not by play time (`Features/Offline.luau` is untouched); boosts run on the real clock, paused or not;
   the STATS window's seconds played keep counting.
 

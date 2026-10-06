@@ -232,8 +232,10 @@ the game before letting them start".
 - **The story's chapter 1** now runs in the walkthrough's order (the hatch comes before the first giant, the
   marketplace visit after it and it now needs a real visit); a tutorial quest and its walkthrough step share
   one payment.
-- Not done: the level keeps running behind the welcome cards (the starter cannon clears the first levels by
-  itself, so nothing is lost); looks, sizes on a real phone and the marker's height need a Studio play test.
+- **The plot waits behind the welcome cards** (6 Oct 2026): a save that has not been welcomed joins paused and
+  starts on START TUTORIAL or the skip link. Emulator tests paused the plot of every new save too, so
+  `tests/_prelude.luau` lets its player's go (`T.release`); only `tests/tutorial.luau` keeps the wait.
+- Not done: looks, sizes on a real phone and the marker's height need a Studio play test.
 
 
 ## Mini cannons deal flat DPS; monster health in numbers (built 5 Oct 2026)
