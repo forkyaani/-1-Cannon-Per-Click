@@ -482,6 +482,24 @@ State.feature("stats") = {
   seconds, seeded }` (bosses defeated, levels cleared, seconds played). An older save starts them from its
   `bestCleared`.
 
+### Redeem codes (`Features/Codes.luau` x3)
+
+The group's page promises codes; the CODES window (menu button CODES) is where one is typed.
+
+- **The list** is `Codes.List` in `src/shared/Features/Codes.luau`: `CODE = { gems = n, clears = n, item = id,
+  amount = n, expires = Codes.day(year, month, day) }`, any mix of the rewards. The key is in capitals, letters
+  and digits only. `clears` is coins worth that many clears of an ordinary level at the player's best level
+  (`Config.levelCoins`). `expires` is the last UTC day the code works; without it the code never runs out.
+  `LAUNCH` (100 gems) is a placeholder for Yaani to change. Adding a code is one line and a publish.
+- **The action** `redeemCode` takes the typed text and nothing else. The server trims it, puts it in capitals,
+  looks it up and pays. Each code pays a player once: `data.features.codes.used[code]` holds when. It is
+  marked used before it is paid. Unknown, used and expired codes are each answered with a toast, and so is a
+  try within `Codes.COOLDOWN` (2 s) of the last one, which is not looked up at all.
+- A line of the list that cannot be paid (an item that does not exist, no reward) is refused with a warning in
+  the server log and is not used up, so fixing the line lets players redeem it.
+- **The window** is a text box and a REDEEM button, opened from its menu button only. `tests/codes.luau` covers
+  all of the above and a rejoin.
+
 ### Robux
 
 - Game passes: add an entry to `Config.Passes` from your shared module
@@ -724,7 +742,7 @@ enchanting with each key, the Shiny key's guarantee over many rolls, fusing and 
 and offline earnings (the same player leaving and coming back after a faked 30 seconds, 2 hours and 20 hours),
 pause (a level stops and resumes) and a visit with two players (invitation, expiry, JOIN, what a guest
 cannot do, BASE, SEND HOME, the host leaving).
-`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
+`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/codes.luau` redeems codes: once, twice, junk, too fast, expired, each kind of reward, from the window and after a rejoin. `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
 against the real server and the real `Plots.luau` and checks the battlefield, the TOWER window, the level HUD
 and travel. `cd tools/emu2 && GAME_ROOT=<tree> python3 boot.py` boots the server with the real `Plots` and
 `Marketplace`, `play.py` there lets a player join, build, upgrade, sell, travel and leave, then plays a visit between two
