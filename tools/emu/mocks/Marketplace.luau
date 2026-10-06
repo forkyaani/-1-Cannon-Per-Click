@@ -18,6 +18,8 @@ function Marketplace.buildEggStand(egg, frame: CFrame, parent: Instance)
 end
 
 -- As the real one: a world's coin eggs stand on its island (src/server/Islands.luau builds those stands).
+function Marketplace.cover() end
+
 function Marketplace.build()
 	for _, egg in Config.Eggs do
 		if not egg.world then
