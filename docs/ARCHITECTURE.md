@@ -509,6 +509,42 @@ The group's page promises codes; the CODES window (menu button CODES) is where o
 - **The window** is a text box and a REDEEM button, opened from its menu button only. `tests/codes.luau` covers
   all of the above and a rejoin.
 
+### Analytics (`Features/Analytics.luau`, server only)
+
+What Creator Hub's Analytics pages are fed: the funnel of a new player's first ten minutes, and the Robux
+purchases a server sees. It changes nothing in the game and uses hooks only.
+
+- **The funnel** is `AnalyticsService:LogOnboardingFunnelStepEvent(player, step, name)`, seven steps
+  (`Analytics.STEPS`), numbered in the order a new player is expected to reach them. A player may reach them
+  in any order; each is logged the moment it happens and once per player ever.
+
+| Step | Name | Read from |
+|---|---|---|
+| 1 | Joined | the `ready` hook |
+| 2 | Welcome done | `data.features.tutorial.welcomed` (START or Skip on the last welcome card) |
+| 3 | First tower built or upgraded | the towers before and after an action (`action` / `acted`): one more, or a level higher. The starter cannon is not a step |
+| 4 | Level 5 cleared | `waveCleared`, and `data.bestCleared` |
+| 5 | First hatch | the `hatch` hook, and `data.totalHatches` |
+| 6 | Level 10 cleared | as level 5 |
+| 7 | First marketplace visit | `state.place == "market"`, on `tick` |
+
+- **Saved** as `data.features.analytics = { old, done = { [step id] = true } }`. `old` is set on a save that was
+  played before the feature existed (`lastSeen` is not 0 when the table is first made): such a player is kept
+  out of the funnel for good, instead of pouring seven steps into it on one join.
+- **Purchases** are custom events, `LogCustomEvent(player, name, value, { CustomField01 = ... })`:
+  `PassBought` (value: the pass's price in `Config.Passes`, field: its key) when `Passes.changed` shows a pass
+  the player did not have a moment ago, and `ProductBought` (value 0, field: the product id) when a developer
+  product's handler returns true. The core has no purchase hook, so the feature wraps the handlers in
+  `Game.products` each time a player becomes ready; a product registered later is wrapped on the next join.
+  Not seen: a pass bought on the game's page while the player is not in the game, and a product's price (it
+  is in each feature's own table, not in the core). Roblox's own Monetization page counts both anyway.
+  `LogEconomyEvent` is for coins and gems, not Robux, and is not used.
+- **Never in Studio.** `Analytics.logger` is the service on a live server and nil in Studio and in the
+  emulator. With no logger nothing is sent and nothing is saved, so a save made in Studio still starts the
+  funnel on its first live join. Every call is in a pcall; one that fails is warned about, not marked as
+  logged, and tried again on the next join.
+- `tests/analytics.luau` puts a fake logger there before the server starts (`analytics.pre.luau`).
+
 ### Robux
 
 - Game passes: add an entry to `Config.Passes` from your shared module
@@ -751,7 +787,7 @@ enchanting with each key, the Shiny key's guarantee over many rolls, fusing and 
 and offline earnings (the same player leaving and coming back after a faked 30 seconds, 2 hours and 20 hours),
 pause (a level stops and resumes) and a visit with two players (invitation, expiry, JOIN, what a guest
 cannot do, BASE, SEND HOME, the host leaving).
-`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/codes.luau` redeems codes: once, twice, junk, too fast, expired, each kind of reward, from the window and after a rejoin. `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
+`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/codes.luau` redeems codes: once, twice, junk, too fast, expired, each kind of reward, from the window and after a rejoin. `tests/analytics.luau` checks the funnel and the purchase events against a fake logger (each step once, in any order, nothing after a rejoin, an older save, a logger that fails or is missing). `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
 against the real server and the real `Plots.luau` and checks the battlefield, the TOWER window, the level HUD
 and travel. `cd tools/emu2 && GAME_ROOT=<tree> python3 boot.py` boots the server with the real `Plots` and
 `Marketplace`, `play.py` there lets a player join, build, upgrade, sell, travel and leave, then plays a visit between two
