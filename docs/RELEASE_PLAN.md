@@ -81,7 +81,7 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 | # | P | Task | Done when | Owner | Status |
 |---|---|---|---|---|---|
 | B1 | P0 | The six `.conflict` files (`Game`, `Config`, `Data`, `Effects`, `ARCHITECTURE.md`, `BUILD_QUEUE.md`): fold in what is missing from the live file, or delete | none left in the repository | Yaani | done 6 Oct |
-| B2 | P0 | Server size. The place allows 50 players and there are 12 bases; over twelve, bases are shared and the second owner cannot invite | the experience's maximum is 12 | | open |
+| B2 | P0 | Server size. The place allows 50 players and there are 12 bases; over twelve, bases are shared and the second owner cannot invite | the experience's maximum is 12 | Victor | done 6 Oct (Creator Hub, the place's Access page: 50 to 12) |
 | B3 | P0 | Never seen in Studio (built 5 Oct): the base's surround and the camera against its unseen walls, the two teleporters beside the arrival, the lobby during a slow load, the level panel's bottom row on a phone, a guest landing on a base 2,000 studs away | each looked at; what is wrong is a line in H3 | | open |
 | B4 | P1 | A guest on somebody's base sees the marketplace's sky, not the host's world's | the host's sky | | open |
 | B5 | P0 | First join: the level keeps running behind the welcome cards; the cards' and the marker's size on a real phone | checked on a phone with a new save | | open |
