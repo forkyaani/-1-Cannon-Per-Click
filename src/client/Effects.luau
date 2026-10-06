@@ -96,6 +96,7 @@ local function updateLighting()
 	local world = if island > 0 then island elseif inMarket then nil else Config.worldOf(State.get("Wave", 1))
 	local halloween = not world and Config.halloweenActive(State.now())
 	local key = world or (if halloween then "halloween" else "market")
+	UI.music(if island > 0 then "island" elseif inMarket then "market" else "base")
 	if key == litKey then
 		return
 	end
@@ -568,6 +569,7 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		end
 		local lean = 5 + swing * 1.3
 		local goal = { Rotation = if swing % 2 == 0 then -lean else lean }
+		UI.sound("wobble", 1 + swing * 0.05)
 		local tweens = {}
 		for index in reveals do
 			tweens[index] = TweenService:Create(cards[index].egg, TweenInfo.new(SHAKE_SECONDS), goal)
@@ -578,6 +580,8 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 	if token ~= hatchToken then
 		return
 	end
+	UI.sound("crack")
+	UI.sound(if rarest then "reveal_rare" else "reveal")
 	for index, reveal in reveals do
 		local card, pet = cards[index], reveal.pet
 		local color = Config.RarityColors[pet.rarity]

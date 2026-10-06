@@ -724,6 +724,7 @@ local function remove(plot, monster, pop: boolean, now: number)
 			puff(at, color, 1.6 * scale, 3.6 * scale, 0.28)
 			spark(at, color, if monster.boss then 30 else 8)
 			if plot.mine then
+				UI.sound(if monster.boss then "boss_down" else "pop")
 				killed(at, now)
 			end
 		end

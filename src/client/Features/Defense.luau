@@ -257,6 +257,7 @@ function Feature.start(ctx)
 		if key ~= seen then
 			if seen and kind ~= "normal" and phase ~= "break" then
 				announce(`⚠ {string.upper(Config.monsterFor(wave).name)} IS COMING!`, UI.Variants.danger)
+				UI.sound("boss")
 			end
 			seen = key
 		end
@@ -282,11 +283,13 @@ function Feature.start(ctx)
 			local _, level = Config.worldOf(a)
 			local coins = if typeof(b) == "number" and b > 0 then `   +★ {Format.abbreviate(b)}` else ""
 			announce(`LEVEL {level} CLEARED!{coins}`, UI.Variants.primary)
+			UI.sound("clear")
 		elseif what == "failed" and typeof(a) == "number" then
 			local _, level = Config.worldOf(a)
 			-- A boss that got through still pays for the damage it took.
 			local coins = if typeof(b) == "number" and b > 0 then `   +★ {Format.abbreviate(b)}` else ""
 			announce(`LEVEL {level} FAILED{coins}`, UI.Variants.danger)
+			UI.sound("fail")
 		elseif what == "rebirth" and typeof(a) == "number" then
 			announce(`REBIRTH {a}!`, UI.Variants.gold)
 		elseif what == "leak" then

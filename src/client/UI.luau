@@ -4,6 +4,7 @@ local CollectionService = game:GetService("CollectionService")
 local ContentProvider = game:GetService("ContentProvider")
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
@@ -110,6 +111,88 @@ function UI.make(className: string, props, children: { Instance }?)
 	end
 	instance.Parent = props.Parent
 	return instance
+end
+
+----------------------------------------------------------------------------------------------------
+-- Sound. UI.sound(name) plays one of UI.Sounds for this player only; an id of 0 is silent, so a hook can be
+-- in the code before its sound is chosen. Every id is from Roblox's own library (the creator "Roblox") or,
+-- for the music, its licensed catalogue (APMOfficial): both may be used in any experience. They were picked
+-- by name and length, not by ear: change an id here and nothing else.
+----------------------------------------------------------------------------------------------------
+UI.Sounds = {
+	press = 15675059323, -- Roblox_UI_Bright_Click: any kit button
+	open = 15675024286, -- Roblox_UI_Whoosh_01: a window opens
+	close = 15675012262, -- Roblox_UI_Whoosh_04: a window closes
+	error = 15675075163, -- Roblox_UI_Delete: a toast that says no
+	shot = 0, -- a mini cannon fires: twenty a second, so nothing until one is found that is quiet enough
+	hit = 0, -- that shot lands
+	pop = 17208204604, -- Roblox GUI - Bubble: a monster of your own base is defeated
+	boss = 9120031442, -- Thunder With Lion Roar: a boss level starts
+	boss_down = 3149249837, -- Cannon_Explode: a boss is defeated
+	clear = 15675043410, -- Roblox_UI_Tonal_Stinger: level cleared
+	fail = 15675062723, -- Roblox_UI_Whistle_Low: level failed
+	wobble = 15675028888, -- Roblox_UI_Whoosh_02: an egg rocks
+	crack = 15675055424, -- Roblox_UI_Cute_Pop: the egg opens
+	reveal = 15675032796, -- Roblox_UI_Small_Click: an ordinary mini cannon is shown
+	reveal_rare = 16480570986, -- Roblox_Pinball_Bumper_Low_Bells_02: a Secret or a Huge is shown
+}
+UI.Music = {
+	base = 9047876673, -- Happy Adventure (APM), 71 s
+	market = 1840383905, -- Happy Shoppers (APM), 165 s
+	island = 15675069601, -- Roblox_UI_Loop_Calm_Music, 95 s
+}
+local SOUND_VOLUME = 0.5
+local MUSIC_VOLUME = 0.22
+local QUIET = { pop = 0.25, press = 0.4, wobble = 0.35, reveal = 0.4 } -- sounds heard many times a minute
+local SOUND_GAP = 0.06 -- seconds: the same sound is not started twice within this, however often it is asked for
+
+local playing: { [string]: Sound } = {}
+local lastPlayed: { [string]: number } = {}
+-- pitch is a multiplier (default 1); every play is also 4% off either way, so a run of them is not a machine.
+function UI.sound(name: string, pitch: number?)
+	local id = UI.Sounds[name]
+	local now = os.clock()
+	if not id or id == 0 or now - (lastPlayed[name] or 0) < SOUND_GAP then
+		return
+	end
+	lastPlayed[name] = now
+	local sound = playing[name]
+	if not sound then
+		sound = UI.make("Sound", {
+			Name = "Sound_" .. name,
+			SoundId = `rbxassetid://{id}`,
+			Volume = QUIET[name] or SOUND_VOLUME,
+			Parent = SoundService,
+		})
+		playing[name] = sound
+	end
+	sound.PlaybackSpeed = (pitch or 1) * (0.96 + math.random() * 0.08)
+	sound:Play()
+end
+
+-- The loop for where the player is: one of UI.Music, or nil for silence. Asking for the one that is playing
+-- does nothing, so it can be called every frame.
+local music: Sound? = nil
+local musicName: string? = nil
+function UI.music(name: string?)
+	if name == musicName then
+		return
+	end
+	musicName = name
+	local id = if name then UI.Music[name] else nil
+	if not id or id == 0 then
+		if music then
+			music:Stop()
+		end
+		return
+	end
+	if not music then
+		music = UI.make("Sound", { Name = "Music", Looped = true, Volume = MUSIC_VOLUME, Parent = SoundService })
+	end
+	local track = music :: Sound
+	track:Stop()
+	track.SoundId = `rbxassetid://{id}`
+	track:Play()
 end
 
 -- Everything is laid out for a 720px tall screen and scaled to fit phones.
@@ -251,6 +334,7 @@ function UI.button(props): TextButton
 	button.InputBegan:Connect(function(input)
 		if isPress(input) then
 			press(true)
+			UI.sound("press")
 		end
 	end)
 	button.InputEnded:Connect(function(input)
@@ -454,9 +538,13 @@ function UI.window(title: string, width: number, height: number)
 
 	local window = { frame = frame, body = body, onOpen = nil :: (() -> ())? }
 	function window.close()
+		if frame.Visible then
+			UI.sound("close")
+		end
 		frame.Visible = false
 	end
 	function window.open()
+		UI.sound("open")
 		for _, other in windows do
 			other.frame.Visible = false
 		end

@@ -21,12 +21,13 @@ local Shared = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Fe
 -- Sound asset ids, as numbers. 0 is silent: none has been picked yet, so put an id from the Creator Store
 -- (Toolbox > Audio) behind each name to give the opening its sound.
 local SOUNDS = {
-	drop = 0, -- the crate lands
-	shake = 0, -- it starts to shake
-	burst = 0, -- the lid flies off
-	card = 0, -- a reward card is dealt
-	rare = 0, -- the last, rarest card of a batch turns over
-	jackpot = 0, -- that card is a Secret or a jackpot
+	-- From Roblox's own library, picked by name and length, not by ear (see UI.Sounds in src/client/UI.luau).
+	drop = 15674975792, -- Roblox_UI_Whoosh_03: the crate lands
+	shake = 12221976, -- clickfast.wav: it starts to shake
+	burst = 15675055424, -- Roblox_UI_Cute_Pop: the lid flies off
+	card = 15675032796, -- Roblox_UI_Small_Click: a reward card is dealt
+	rare = 15675043410, -- Roblox_UI_Tonal_Stinger: the last, rarest card of a batch turns over
+	jackpot = 16480570986, -- Roblox_Pinball_Bumper_Low_Bells_02: that card is a Secret or a jackpot
 }
 local SOUND_VOLUME = 0.6
 

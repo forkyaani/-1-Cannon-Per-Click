@@ -1547,6 +1547,7 @@ class World:
         self.methods["Debris"] = {"AddItem": lambda *a: None}
         self.methods["Humanoid"] = {"MoveTo": lambda *a: None}
         self.methods["Sound"] = {"Play": lambda *a: None, "Stop": lambda *a: None}
+        self.methods["SoundService"] = {"PlayLocalSound": lambda *a: None}
         self.methods["ParticleEmitter"] = {"Emit": lambda *a: None}
         # Everything is "on screen", in the middle, as far away as it is from the camera's position.
         self.methods["Camera"] = {"WorldToViewportPoint": lambda cam, at: [

@@ -639,6 +639,9 @@ end
 -- kind: good, bad or info.
 function Hud.toast(message: string, kind: string?)
 	local look = NOTE_KINDS[kind or "info"] or NOTE_KINDS.info
+	if kind == "bad" then
+		UI.sound("error")
+	end
 	local textWidth = TextService:GetTextSize(message, 22, UI.FONT, Vector2.new(2000, NOTE_HEIGHT)).X
 	local frame = UI.make("Frame", {
 		AnchorPoint = Vector2.new(1, 0),
