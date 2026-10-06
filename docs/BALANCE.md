@@ -4,6 +4,14 @@ Every number is in `src/shared/Config.luau`. This file says what they are meant 
 gets out of them, and how to change them. Nothing here has been played by a person yet: it is a simulator's
 result, and section 5 lists what the simulator does not know.
 
+> **6 October retune, not yet written into the sections below.** Towers deal 4x and mini cannons 5.25x what
+> they did (`Config.Towers`, `Config.PetDps` = 525), and monster health grows 13.65% a level instead of 17.2%
+> (`Config.Level.hpGrowth`). `sim.py`, ordinary player, at 3x: Earth 8 min, the Moon 11 min, Mars 18 min,
+> Neptune 58 min, The Sun 31 min, then 1:11, 1:17, 6:04, 3:24, 3:59, 16:10 and 17:53: 52 hours in all. The
+> first three worlds are far shorter than section 1's targets and the times are uneven: `fit.py` has not been
+> run on the new curve. The edge is sharp: 1.1355 is a 32 hour game, 1.1375 an 80 hour one. A player without
+> the 3x Speed pass plays at 2x, so about one and a half times these.
+
 ## 1. Targets and what the simulator measures
 
 | Target | Simulated (ordinary player, three seeds) |
@@ -21,7 +29,7 @@ fuses everything, and stands in the middle of the plot 70% of the time.
 
 ## 2. How the numbers are built
 
-- **Monsters.** An ordinary monster of level L has `10 * L^0.5 * 1.172^(L-1)` HP. A level is 10 monsters;
+- **Monsters.** An ordinary monster of level L has `10 * L^0.5 * 1.1365^(L-1)` HP (1.172 until 6 Oct). A level is 10 monsters;
   of every five levels the third is a swarm (20 at half HP, faster), the fourth a pack of tanks (5 at double
   HP, slower), the fifth a giant. Giants have 6x the HP of one monster, the mid boss 9x, the world boss 14x,
   and they walk at 60 to 70% speed. Half of an ordinary level may reach the gate; a boss that does fails it.

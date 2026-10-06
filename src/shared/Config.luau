@@ -360,7 +360,9 @@ Config.Defense = {
 -- Change a number here only with the simulator open.
 ----------------------------------------------------------------------------------------------------
 Config.Level = {
-	hp = 10, hpPower = 0.5, hpGrowth = 1.172,
+	-- hpGrowth was 1.172 until 6 Oct: monsters outgrew the towers from the second world on (the Moon 12 hours,
+	-- Mars 92). At 1.1365 sim.py gives 52 hours for the twelve worlds; 1.1355 gives 32 and 1.1375 gives 80.
+	hp = 10, hpPower = 0.5, hpGrowth = 1.1365,
 	-- Coins. Every world has an anchor of its own: what an ordinary monster of its first level pays. Inside
 	-- the world a monster pays  anchor * (level / first)^coinPower * coinGrowth^(level - first).
 	-- tools/balance/fit.py sets the anchors, one world at a time, so that every world takes the simulated
