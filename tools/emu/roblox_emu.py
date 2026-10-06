@@ -229,6 +229,7 @@ EXTRA_PROPS = set("""
 ScreenInsets ApplyStrokeMode LineJoinMode ClipsDescendants ZIndexBehavior DisplayOrder IgnoreGuiInset ResetOnSpawn
 AutomaticSize AutomaticCanvasSize ScrollingDirection ScrollBarThickness ScrollBarImageColor3 CanvasSize CanvasPosition
 TextTruncate TextStrokeTransparency TextStrokeColor3 RichText LineHeight MaxVisibleGraphemes TextTransparency
+PlaceholderText PlaceholderColor3 ClearTextOnFocus
 ImageColor3 ImageTransparency ScaleType SliceCenter ImageRectOffset ImageRectSize ResampleMode
 Rotation AnchorPoint SizeConstraint Selectable Active AutoButtonColor Modal Interactable
 GroupTransparency GroupColor3 Ambient LightDirection LightColor CurrentCamera FieldOfView Focus CameraType
