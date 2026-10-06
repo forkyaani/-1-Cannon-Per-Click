@@ -163,7 +163,7 @@ The game is silent today.
 |---|---|---|---|---|---|
 | F1 | P0 | Effects, uploaded under Astral Crafts or taken from Roblox's licensed library: button, purchase, tower shot (one per look), mini cannon shot, monster death, boss arrives, boss dies, level cleared, level failed, hatch roll and reveal by rarity, crate opening (six ids in `CrateOpening.SOUNDS`), coin pick-up, error | ids in the code, heard on a phone | Victor | done 6 Oct from Roblox's own library (`UI.Sounds`); tower and mini cannon shots are silent on purpose (id 0). Nobody has listened yet |
 | F2 | P0 | Music: one loop each for the base, the marketplace and an island, and the Halloween one | plays, loops cleanly, lowers in windows | Victor | done 6 Oct for base, marketplace and island (`UI.Music`); no Halloween loop, and it does not lower in windows |
-| F3 | P0 | A music and a sound switch in settings, saved | both work | Victor | claimed 6 Oct |
+| F3 | P0 | A music and a sound switch in settings, saved | both work | Victor | done 6 Oct in code and tests (`settings.luau`): SETTINGS in the menu drawer, two switches kept in the save. Not yet seen or heard in Studio |
 
 ### G. Roblox: the experience, the group, the accounts
 

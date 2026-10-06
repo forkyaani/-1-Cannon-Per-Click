@@ -312,13 +312,14 @@ function Opening.start(ctx)
 				Name = "Crate_" .. name,
 				SoundId = `rbxassetid://{id}`,
 				Volume = SOUND_VOLUME,
+				SoundGroup = UI.SoundGroups.sound, -- the SETTINGS window's sound switch
 				Parent = SoundService,
 			})
 		end
 	end
 	local function sound(name: string)
 		if sounds[name] then
-			SoundService:PlayLocalSound(sounds[name])
+			sounds[name]:Play()
 		end
 	end
 

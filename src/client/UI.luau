@@ -146,6 +146,20 @@ local MUSIC_VOLUME = 0.22
 local QUIET = { pop = 0.25, press = 0.4, wobble = 0.35, reveal = 0.4 } -- sounds heard many times a minute
 local SOUND_GAP = 0.06 -- seconds: the same sound is not started twice within this, however often it is asked for
 
+-- Two mixers, so a switch of the SETTINGS window silences everything of its kind at once. A sound made
+-- anywhere else (the crate opening) joins one with `SoundGroup = UI.SoundGroups.sound`.
+UI.SoundGroups = {
+	sound = UI.make("SoundGroup", { Name = "Effects", Parent = SoundService }),
+	music = UI.make("SoundGroup", { Name = "Music", Parent = SoundService }),
+}
+-- kind is "sound" or "music".
+function UI.setAudio(kind: string, on: boolean)
+	local group = UI.SoundGroups[kind]
+	if group then
+		group.Volume = if on then 1 else 0
+	end
+end
+
 local playing: { [string]: Sound } = {}
 local lastPlayed: { [string]: number } = {}
 -- pitch is a multiplier (default 1); every play is also 4% off either way, so a run of them is not a machine.
@@ -162,6 +176,7 @@ function UI.sound(name: string, pitch: number?)
 			Name = "Sound_" .. name,
 			SoundId = `rbxassetid://{id}`,
 			Volume = QUIET[name] or SOUND_VOLUME,
+			SoundGroup = UI.SoundGroups.sound,
 			Parent = SoundService,
 		})
 		playing[name] = sound
@@ -187,7 +202,7 @@ function UI.music(name: string?)
 		return
 	end
 	if not music then
-		music = UI.make("Sound", { Name = "Music", Looped = true, Volume = MUSIC_VOLUME, Parent = SoundService })
+		music = UI.make("Sound", { Name = "Music", Looped = true, Volume = MUSIC_VOLUME, SoundGroup = UI.SoundGroups.music, Parent = SoundService })
 	end
 	local track = music :: Sound
 	track:Stop()

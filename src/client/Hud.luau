@@ -308,6 +308,7 @@ local ORBS = {
 	LOOT = { color = hex("#2FA8FF"), icon = "🎲", picture = "loot" },
 	MARKET = { color = hex("#FF9A3D"), icon = "🏪", picture = "market" },
 	BASE = { color = hex("#FF9A3D"), icon = "🏰", picture = "cannon" },
+	SETTINGS = { color = hex("#97A0B9"), icon = "⚙️" },
 	MORE = { color = Colors.cream, dots = true },
 }
 Hud.PINNED = {
