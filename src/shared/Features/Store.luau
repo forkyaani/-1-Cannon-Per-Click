@@ -5,14 +5,14 @@
 local Store = {}
 
 -- product is the developer product's id from the Creator Hub, in the group's experience: 0 means not created
--- yet, and the pack is shown but cannot be bought. The first pack a player ever buys gives double.
+-- yet, and the pack is shown but cannot be bought (all six were created on 7 Oct 2026, Managed Pricing off). The first pack a player ever buys gives double.
 Store.GemPacks = {
-	{ id = "gems1", name = "Handful of Gems", gems = 250, robux = 49, product = 0 },
-	{ id = "gems2", name = "Pouch of Gems", gems = 700, robux = 129, product = 0 },
-	{ id = "gems3", name = "Bag of Gems", gems = 1_500, robux = 249, product = 0 },
-	{ id = "gems4", name = "Chest of Gems", gems = 3_500, robux = 499, product = 0 },
-	{ id = "gems5", name = "Vault of Gems", gems = 8_000, robux = 999, product = 0 },
-	{ id = "gems6", name = "Mountain of Gems", gems = 21_000, robux = 2_499, product = 0 },
+	{ id = "gems1", name = "Handful of Gems", gems = 250, robux = 49, product = 3717006456 },
+	{ id = "gems2", name = "Pouch of Gems", gems = 700, robux = 129, product = 3717006502 },
+	{ id = "gems3", name = "Bag of Gems", gems = 1_500, robux = 249, product = 3717006534 },
+	{ id = "gems4", name = "Chest of Gems", gems = 3_500, robux = 499, product = 3717006551 },
+	{ id = "gems5", name = "Vault of Gems", gems = 8_000, robux = 999, product = 3717006598 },
+	{ id = "gems6", name = "Mountain of Gems", gems = 21_000, robux = 2_499, product = 3717006614 },
 }
 Store.FIRST_PACK_MULTIPLIER = 2
 
