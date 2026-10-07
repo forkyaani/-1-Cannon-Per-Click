@@ -58,7 +58,7 @@ def rift_stalker(c, a):
             cone(0.14, 0.4, knee + Vector((side * 0.2, 0, -1.6)), (side * 0.18, 0, -1), a, sides=6, emission=1)
             cone(0.28, 1.95, knee, (side * 0.18, 0, -1), dark, sides=6)
     plate([(-1.0, 0), (-0.62, 0.75), (-0.3, 0.35), (0.1, 1.15), (0.42, 0.5), (0.76, 0.9), (1.0, 0)], a, (0, 0.05, 2.0), thick=0.34, rotation=(0, 0, math.pi / 2), emission=0.8)
-    plate([(-0.85, 0), (-0.5, 0.42), (-0.2, 0.15), (0.15, 0.6), (0.45, 0.22), (0.85, 0)], "FFE0FF", (0, 0.05, 2.0), thick=0.42, rotation=(0, 0, math.pi / 2), emission=2)
+    plate([(-0.85, 0), (-0.5, 0.42), (-0.2, 0.15), (0.15, 0.6), (0.45, 0.22), (0.85, 0)], "FFC0FF", (0, 0.05, 2.0), thick=0.42, rotation=(0, 0, math.pi / 2), emission=2)
     eyes(front, 1.52, 0.52, a, size=0.86, brow=dark, tilt=-22)
     mouth(front, 0.98, 0.42, "fangs")
 
@@ -68,13 +68,13 @@ def void_eye(c, a):
     ball(1.15, (0, 0, 1.75), c, segments=12, roughness=0.35)
     front = -0.86
     the_void_one_eye(front, 1.75, 1.0, a)
-    hoop(0.86, 0.15, (0, front + 0.05, 1.75), a, rotation=(math.pi / 2, 0, 0), segments=14, emission=0.6)
-    for lean in (-40, -14, 14, 40):  # lashes
+    hoop(0.86, 0.11, (0, front + 0.05, 1.75), a, rotation=(math.pi / 2, 0, 0), segments=14, emission=0.6)
+    for lean in (-62, -30, 30, 62):  # lashes
         way = (math.sin(math.radians(lean)), -0.25, math.cos(math.radians(lean)))
-        cone(0.22, 0.5, (way[0] * 1.0, -0.4, 1.75 + way[2] * 1.0), way, a, sides=5, emission=0.6)
+        cone(0.24, 0.55, (way[0] * 1.0, -0.4, 1.75 + way[2] * 1.0), way, a, sides=5, emission=0.6)
     for index, (x, y) in enumerate(((-0.55, -0.2), (0.55, -0.2), (-0.25, 0.4), (0.3, 0.4))):
         sway = 0.25 if index % 2 else -0.25
-        tail([(x, y, 0.72), (x * 1.25, y, 0.42), (x * 1.3 + sway, y, 0.2)], shade(c, -0.2), start=0.32, end=0.2, tip=a, tip_size=0.24)
+        tail([(x, y, 0.78), (x * 1.3, y, 0.55), (x * 1.45 + sway, y, 0.4)], shade(c, -0.2), start=0.32, end=0.2, tip=a, tip_size=0.24)
 
 
 def abyss_knight(c, a):
