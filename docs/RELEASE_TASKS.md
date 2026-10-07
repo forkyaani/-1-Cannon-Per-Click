@@ -235,6 +235,11 @@ shows instead: that is what Yaani saw.
 - [ ] N4. **[open]** The opening animation in `Effects.hatch`: the egg rocks harder with a squash, cracks (a flash), the top flies off and shell pieces fly out, the mini cannon jumps up out of the bottom half with a spin and lands; rare ones get rays and a longer hold. Works with one-piece eggs too (the whole shell bursts) until N3 lands · **1 h 30**
 - [ ] N5. **[open]** See it in Studio for one egg of each kind (marketplace, world, a Secret, a Huge) and on a phone-sized screen **[S]** · **20 min**
 
+## O. Things for sale that have no Roblox id yet (7 Oct)
+
+- [ ] O1. **[Yaani]** (taken: Yaani, 7 Oct) HUGE Tycoon Cannon game pass, 1,499 Robux: create it in the group's experience and paste its id into `Huge.Pass` (`src/shared/Features/Huge.luau`, `id = 0`). The STORE says "not on sale yet" until then · **15 min**
+- [ ] O2. **[open]** Decide and then create or remove the other things still at `product = 0`: the Royal Crate (99 Robux, `Features/Crates`), the three powerup packs (49 / 129 / 399 Robux, `Features/Powerups`) and the old Robux Shiny key (`Enchant.ShinyProduct`, dropped in favour of gems). Not started: needs Yaani's call
+
 ## After launch
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
