@@ -188,14 +188,14 @@ needs a second pass doubles its job.
 
 ## K. Islands for worlds 6 to 12 (asked for by Yaani on 7 Oct; stopped once the same day with nothing made; taken again by Yaani on 7 Oct 09:42)
 
-- [ ] K1. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Themes for worlds 6 to 12 in `tools/blender/themes.py`, and their tree, liquid, fence and set pieces in `island.py` · **1 h 00**
-- [ ] K2. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) The Void island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K3. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Nebula island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K4. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Crystal Belt island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K5. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Robot Factory island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K6. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K7. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K8. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K1. **[Yaani]** (done 7 Oct: themes, tall props, liquids, fences and set pieces for the seven worlds in `themes.py` and `island.py`; the five finished worlds render the same; not yet imported, see K9) Themes for worlds 6 to 12 in `tools/blender/themes.py`, and their tree, liquid, fence and set pieces in `island.py` · **1 h 00**
+- [x] K2. **[Yaani]** (done 7 Oct: `assets/models/islands/the_void_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) The Void island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K3. **[Yaani]** (done 7 Oct: `nebula_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Nebula island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K4. **[Yaani]** (done 7 Oct: `crystal_belt_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Crystal Belt island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K5. **[Yaani]** (done 7 Oct: `robot_factory_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Robot Factory island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K6. **[Yaani]** (done 7 Oct: `alien_jungle_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K7. **[Yaani]** (done 7 Oct: `black_hole_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [x] K8. **[Yaani]** (done 7 Oct: `the_big_bang_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
 - [ ] K9. **[open]** Import the seven islands and look at each in a play test **[S]** · **45 min**
 
 ## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
