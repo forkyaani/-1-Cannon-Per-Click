@@ -726,7 +726,7 @@
    "name": "Base_Backdrop",
    "kind": "scenery",
    "origin": "the plot's origin, on the ground",
-   "triangles": 7813,
+   "triangles": 8053,
    "box_blender": {
     "low": [
      -90.6,
@@ -794,24 +794,24 @@
    "box_blender": {
     "low": [
      -16.54,
-     51.3,
+     47.42,
      -0.25
     ],
     "high": [
-     82.49,
+     85.89,
      152.46,
-     34.19
+     41.23
     ]
    },
    "box": {
     "low": [
-     -82.49,
+     -85.89,
      -0.25,
-     51.3
+     47.42
     ],
     "high": [
      16.54,
-     34.19,
+     41.23,
      152.46
     ]
    },
@@ -851,7 +851,7 @@
    "white_for_tinting": false
   }
  ],
- "total_triangles": 39877,
+ "total_triangles": 40117,
  "shells": {
   "Pad": {
    "meshes": [
