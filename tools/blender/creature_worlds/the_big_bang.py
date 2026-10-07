@@ -65,20 +65,20 @@ def atom_spinner(c, a):
     for x, y, z, r, colour in ((-0.8, 0.3, 2.7, 0.6, "FF5A7A"), (0.78, 0.35, 2.74, 0.56, shade(c, 0.45)), (0, 0.6, 3.0, 0.5, c), (-0.95, 0.35, 1.3, 0.5, shade(c, 0.45)), (0.98, 0.35, 1.32, 0.52, "FF5A7A")):
         ball(r, (x, y, z), colour, segments=8, roughness=0.3)
     for index, (turn, where) in enumerate(((0, 200), (60, 20), (120, 160))):
-        the_big_bang_orbit(1.8, 0.13, centre, (14, turn, 0), a, moons=((where, 0.3, "8CF4FF"),), segments=18, emission=0.4)
+        the_big_bang_orbit(1.8, 0.13, centre, (14, turn, 0), "BDF2FF", moons=((where, 0.32, "FFE45A"),), segments=18, emission=0.8)
     eyes(front, 2.05, 0.5, "8CF4FF", size=0.95)
     mouth(front - 0.06, 1.4, 0.36)
 
 
 def photon_sprite(c, a):
     # A twinkle of light with a face, fairy wings, and the wave it travels as trailing under it.
-    plate(the_big_bang_sparkle(1.75, 1.75, 0.5), THE_BIG_BANG_STAR, (0, 0.4, 1.9), thick=0.2, emission=2)
+    plate(the_big_bang_sparkle(1.5, 2.0, 0.5), THE_BIG_BANG_STAR, (0, 0.4, 1.9), thick=0.2, emission=2)
     plate(the_big_bang_sparkle(1.3, 1.3, 0.4), a, (0, 0.55, 1.9), thick=0.2, rotation=(0, math.radians(45), 0), emission=0.6)
     ball(1.1, (0, 0, 1.9), c, scale=(1, 0.85, 1), segments=14, roughness=0.3, emission=0.5)
     front = -0.88
     wings(THE_BIG_BANG_STAR, 0.8, 1.9, size=0.8, y=0.15, sweep=24, kind="round")
-    for index in range(4):  # the wave: beads swinging from side to side, smaller as they go
-        z = 0.72 - index * 0.26
+    for index in range(3):  # the wave: beads swinging from side to side, smaller as they go
+        z = 0.75 - index * 0.24
         ball(0.3 - index * 0.04, (0.3 * math.sin(index * 1.6 + 0.8), 0.1 + index * 0.08, z), THE_BIG_BANG_STAR if index % 2 else a, segments=8, emission=1.5)
     for side in (-1, 1):
         ball(0.22, (side * 0.95, -0.5, 1.4), a, segments=6)  # little hands
@@ -163,11 +163,13 @@ def chaos_herald(c, a):
         disc(0.22, (side * 1.4, front + 0.04, 1.95), BLUSH, height=0.05, stretch=0.6, sides=8)
     mouth(front - 0.02, 1.72, 0.95, "grin")
     # The trumpet: a long gold horn held out to its right, a banner hanging from it.
-    ball(0.42, (1.95, -0.9, 2.0), shade(c, -0.2), segments=8)
-    tube(0.16, 1.5, (1.95, -0.6, 2.05), (0.25, -1, 0.3), GOLD, vertices=6, roughness=0.3)
-    tube(0.18, 0.8, (2.3, -1.98, 2.46), (0.25, -1, 0.3), GOLD, tip=0.85, vertices=8, roughness=0.3)
-    plate([(0, 0), (1.0, 0), (1.0, -1.2), (0.5, -0.85), (0, -1.2)], a, (1.9, -1.2, 2.15), thick=0.1, rotation=(0, 0, math.radians(76)))
-    ball(0.16, (1.95, -0.6, 2.05), GOLD, segments=6)
+    ball(0.42, (1.95, -0.9, 1.9), shade(c, -0.2), segments=8)
+    way = Vector((0.9, -1, 0.2)).normalized()
+    grip = Vector((1.95, -0.9, 1.9))
+    tube(0.16, 1.9, grip - way * 0.4, way, GOLD, vertices=6, roughness=0.3)
+    tube(0.18, 0.7, grip + way * 1.5, way, GOLD, tip=0.62, vertices=8, roughness=0.3)
+    plate([(0, 0), (1.0, 0), (1.0, -1.1), (0.5, -0.8), (0, -1.1)], a, grip + way * 0.35 + Vector((0, 0, -0.12)), thick=0.1, rotation=(0, 0, math.atan2(way.y, way.x)))
+    ball(0.18, grip - way * 0.4, GOLD, segments=6)
 
 
 def genesis_titan(c, a):
@@ -212,4 +214,4 @@ WORLDS["The Big Bang"] = [
     ("Chaos Herald", chaos_herald, "E23CA4", "6A30C0", "boss floater"),
     ("Genesis Titan", genesis_titan, "3A30B0", "FFB01E", "boss"),
 ]
-BACKDROPS["The Big Bang"] = "86D2B4"
+BACKDROPS["The Big Bang"] = "58AE96"
