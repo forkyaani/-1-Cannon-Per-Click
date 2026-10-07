@@ -18,6 +18,8 @@ twice in parallel. So:
 3. **A claimed job is the claimer's.** Do not start it, extend it or "help" with it; pick another, or ask.
 4. **When done:** tick it, replace the claim with a short note of what was made and where, push.
 5. A claim older than a day with no commits behind it may be taken over, with a note saying so.
+6. **Plan first, on git first** (Yaani, 7 Oct): a new piece of work is written here as jobs and pushed BEFORE
+   anybody starts it. Nothing is built, and no agent is started, from a chat message alone.
 
 ### Who has what (split on 7 Oct; d1v has the bigger share because he has more usage)
 
@@ -27,7 +29,7 @@ the name on its line and push before starting.
 | Owner | Jobs | About |
 |---|---|---|
 | **d1v** | E6 remaining mini cannons · F1 to F5 the marketplace · I2 thumbnails · I5 the phone play-through | 6 h 30 |
-| **Yaani** | J3 gem pack products · I4 refresh the place file · I6 publish | 30 min |
+| **Yaani** | I6 publish | 5 min |
 
 **6 Oct, 06:50:** all 14 model files (5 bases, 4 new islands, 5 creature batches) are imported into the group's place
 with `setup_models.luau` and saved. All five bases were seen in a play test (the base swaps as the world changes); the new monsters
@@ -178,17 +180,17 @@ needs a second pass doubles its job.
 - [x] J2. **[Yaani]** STORE window with three tabs: GEMS (six packs for Robux, first one doubled), ITEMS for gems (keys 50 / 1,000, Boss Chest 100, 2x Power and 2x Coins 30) and PASSES. Catalogue `src/shared/Features/Store.luau`, server `src/server/Features/Store.luau`, window in `src/client/Windows.luau`. Done 7 Oct; emulator test passes (1,344 checks); not yet seen in Studio.
 - [x] J3. **[Yaani]** (done 7 Oct: six products created, ids in `Store.GemPacks`, Managed Pricing left off; a real purchase has not been tried) Create the six gem pack developer products in the group's experience (Creator Hub > Monetisation > Developer Products; names and Robux prices as in `Store.GemPacks`) and paste each id into its `product = 0`. Until then the GEMS tab shows the packs and answers "not on sale yet" · **20 min**
 
-## K. Islands for worlds 6 to 12 (asked for by Yaani on 7 Oct)
+## K. Islands for worlds 6 to 12 (asked for by Yaani on 7 Oct; started and STOPPED by Yaani the same day, nothing was made; nobody has it)
 
-- [ ] K1. **[Yaani]** (taken: Yaani, 7 Oct) Themes for worlds 6 to 12 in `tools/blender/themes.py`, and their tree, liquid, fence and set pieces in `island.py` · **1 h 00**
-- [ ] K2. **[Yaani]** (taken: Yaani, 7 Oct) The Void island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K3. **[Yaani]** (taken: Yaani, 7 Oct) Nebula island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K4. **[Yaani]** (taken: Yaani, 7 Oct) Crystal Belt island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K5. **[Yaani]** (taken: Yaani, 7 Oct) Robot Factory island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K6. **[Yaani]** (taken: Yaani, 7 Oct) Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K7. **[Yaani]** (taken: Yaani, 7 Oct) Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K8. **[Yaani]** (taken: Yaani, 7 Oct) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K9. **[Yaani]** Import the seven islands and look at each in a play test **[S]** · **45 min**
+- [ ] K1. **[open]** Themes for worlds 6 to 12 in `tools/blender/themes.py`, and their tree, liquid, fence and set pieces in `island.py` · **1 h 00**
+- [ ] K2. **[open]** The Void island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K3. **[open]** Nebula island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K4. **[open]** Crystal Belt island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K5. **[open]** Robot Factory island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K6. **[open]** Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K7. **[open]** Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K8. **[open]** The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K9. **[open]** Import the seven islands and look at each in a play test **[S]** · **45 min**
 
 ## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
 
@@ -214,6 +216,18 @@ Each world: its 5 monsters, mid boss and final boss (names in `Config.Worlds`), 
 - [ ] M6. **[open]** Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
 - [ ] M7. **[open]** The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
 - [ ] M8. **[open]** Import the seven batches and watch a wave in each world **[S]** · **1 h 00**
+
+## N. Egg opening (asked for by Yaani on 7 Oct; PLAN only, not started, nobody has it yet)
+
+Today the hatch reveal (`Effects.hatch` in `src/client/Effects.luau`) rocks the egg for about 1.4 s and swaps it
+for the mini cannon. Where an egg or a mini cannon has no Blender model in the place, a flat coloured circle
+shows instead: that is what Yaani saw.
+
+- [ ] N1. **[open]** Find out which eggs and mini cannons still show as circles: list `ReplicatedStorage.EggModels` and `MiniCannons` in the group's place against `Config.Eggs` and `Config.Pets` **[S]** · **15 min**
+- [ ] N2. **[open]** Model what N1 finds missing, in d1v's style (`minis.py ... worlds`), and import it **[S]** · depends on N1
+- [ ] N3. **[open]** Eggs that can open: each egg exported as two meshes, top and bottom, split along a zigzag crack (same pivot), so the game can lift the top off. Needs a change to how eggs are modelled and filed (`minis.py`, `add_minis.luau`) · **1 h 30**
+- [ ] N4. **[open]** The opening animation in `Effects.hatch`: the egg rocks harder with a squash, cracks (a flash), the top flies off and shell pieces fly out, the mini cannon jumps up out of the bottom half with a spin and lands; rare ones get rays and a longer hold. Works with one-piece eggs too (the whole shell bursts) until N3 lands · **1 h 30**
+- [ ] N5. **[open]** See it in Studio for one egg of each kind (marketplace, world, a Secret, a Huge) and on a phone-sized screen **[S]** · **20 min**
 
 ## After launch
 
