@@ -27,7 +27,7 @@ the name on its line and push before starting.
 | Owner | Jobs | About |
 |---|---|---|
 | **d1v** | E6 remaining mini cannons · F1 to F5 the marketplace · I2 thumbnails · I5 the phone play-through | 6 h 30 |
-| **Yaani** | J1 Fuse All · J2 the new STORE · I4 refresh the place file · I6 publish | 4 h |
+| **Yaani** | J3 gem pack products · I4 refresh the place file · I6 publish | 30 min |
 
 **6 Oct, 06:50:** all 14 model files (5 bases, 4 new islands, 5 creature batches) are imported into the group's place
 with `setup_models.luau` and saved. All five bases were seen in a play test (the base swaps as the world changes); the new monsters
@@ -175,7 +175,8 @@ needs a second pass doubles its job.
 - [x] J0. Enchantment keys for gems, no daily limit: 50 gems, Shiny 1,000 gems, in the island shop from The Sun's island on (`Features/IslandShop`). Done 7 Oct (Yaani's side); emulator test passes, not yet seen in Studio.
 - [x] J0b. Keys from more places (7 Oct, Yaani's side): Halloween shop sells them for candy (1,000; Shiny 15,000, `Config.EventShop`, new offer kind `item`); Pumpkin and Cursed Crates drop them; Boss Chest drops them twice as often (`Features/Crates`). Emulator test passes, not yet seen in Studio. These are drop rates: balance may want to tune them.
 - [x] J1. **[Yaani]** (done 7 Oct: `fuseAll` action and the button in `Features/Fuse`; it uses only mini cannons without enchantments, so none can be lost; emulator test passes, not yet seen in Studio) FUSE window: a **FUSE ALL** button beside FILL / CLEAR / FUSE. One press fuses every set of 3 of the same mini cannon and tier the player has, repeating up the tiers until no set is left; equipped and enchanted ones are kept as the first pick so nothing is lost; a result line says what was made. Server action plus the button (`Features/Fusion`) · **45 min**
-- [ ] J2. **[Yaani]** (taken: Yaani, 7 Oct) STORE window redone with three tabs: GEMS (gem packs for Robux), ITEMS (priced in gems: keys, Boss Chests, boosts), PASSES. Gems are the main currency. Waits for Yaani's yes on the product list and prices; the Robux products have to be created in the group's experience (d1v or Yaani) · **3 h 00**
+- [x] J2. **[Yaani]** STORE window with three tabs: GEMS (six packs for Robux, first one doubled), ITEMS for gems (keys 50 / 1,000, Boss Chest 100, 2x Power and 2x Coins 30) and PASSES. Catalogue `src/shared/Features/Store.luau`, server `src/server/Features/Store.luau`, window in `src/client/Windows.luau`. Done 7 Oct; emulator test passes (1,344 checks); not yet seen in Studio.
+- [ ] J3. **[Yaani]** Create the six gem pack developer products in the group's experience (Creator Hub > Monetisation > Developer Products; names and Robux prices as in `Store.GemPacks`) and paste each id into its `product = 0`. Until then the GEMS tab shows the packs and answers "not on sale yet" · **20 min**
 
 ## After launch
 

@@ -543,17 +543,65 @@ local function refreshShop()
 end
 
 ----------------------------------------------------------------------------------------------------
--- Store: game passes (Robux). One row per entry in Config.Passes.
+-- Store: three tabs. GEMS (gem packs for Robux), ITEMS (backpack items for gems) and PASSES (Robux, one row
+-- per entry in Config.Passes). The catalogue of the first two is src/shared/Features/Store.luau.
 ----------------------------------------------------------------------------------------------------
-local storeWindow = UI.window("GAME PASSES", 620, 400)
-local storeList = UI.scroll(storeWindow.body)
-local passRows = {}
+local Store = require(ReplicatedStorage.Shared:WaitForChild("Features"):WaitForChild("Store"))
+local Items = require(ReplicatedStorage.Shared:WaitForChild("Items"))
+
+local STORE_TABS = { "GEMS", "ITEMS", "PASSES" }
+-- 21000 -> "21,000": prices and pack sizes are shown in full.
+local function commas(n: number): string
+	local text = tostring(math.floor(n))
+	local grouped = string.gsub(string.reverse(text), "(%d%d%d)", "%1,")
+	return (string.gsub(string.reverse(grouped), "^,", ""))
+end
+local STORE_TAB_HEIGHT = 44
+local GEM_BLUE = Color3.fromRGB(90, 225, 255)
+local storeWindow = UI.window("STORE", 640, 480)
+local storeTab = "GEMS"
+local storeTabs, storeLists = {}, {}
+local refreshStore
+for index, name in STORE_TABS do
+	local button = UI.button({
+		Position = UDim2.new((index - 1) / #STORE_TABS, 2, 0, 0),
+		Size = UDim2.new(1 / #STORE_TABS, -4, 0, STORE_TAB_HEIGHT - 6),
+		Text = name,
+		Parent = storeWindow.body,
+	})
+	button.Activated:Connect(function()
+		storeTab = name
+		refreshStore()
+	end)
+	storeTabs[name] = button
+	storeLists[name] = UI.scroll(storeWindow.body, { Position = UDim2.fromOffset(0, STORE_TAB_HEIGHT), Size = UDim2.new(1, 0, 1, -STORE_TAB_HEIGHT) })
+end
+
+local packRows = {}
+for order, pack in Store.GemPacks do
+	local row = UI.row(storeLists.GEMS, 70, order)
+	row.icon.BackgroundColor3 = GEM_BLUE
+	row.button.Activated:Connect(function()
+		act("storeBuyPack", pack.id)
+	end)
+	packRows[pack.id] = row
+end
+
+local itemRows = {}
+for order, entry in Store.Items do
+	local row = UI.row(storeLists.ITEMS, 70, order)
+	row.button.Activated:Connect(function()
+		act("storeBuyItem", entry.id)
+	end)
+	itemRows[entry.id] = row
+end
 
 -- A row is added the first time a pass is seen, so passes a feature defines after start-up still show up.
+local passRows = {}
 local function ensurePassRows()
 	for key, pass in Config.Passes do
 		if not passRows[key] then
-			local row = UI.row(storeList, 70, pass.order)
+			local row = UI.row(storeLists.PASSES, 70, pass.order)
 			row.icon.BackgroundColor3 = Colors.gold
 			row.title.Text = pass.name
 			row.sub.Text = pass.desc
@@ -565,7 +613,38 @@ local function ensurePassRows()
 	end
 end
 
-local function refreshStore()
+function refreshStore()
+	for name, button in storeTabs do
+		button.BackgroundColor3 = if name == storeTab then Colors.blue else Colors.grey
+		storeLists[name].Visible = name == storeTab
+	end
+
+	-- Gem packs: the first one a player buys gives double.
+	local bought = (State.feature("store") or {}).packs or 0
+	for _, pack in Store.GemPacks do
+		local row = packRows[pack.id]
+		local gems = Store.gemsFor(pack, bought)
+		row.title.Text = `{commas(gems)} Gems`
+		row.title.TextColor3 = GEM_BLUE
+		row.sub.Text = if gems > pack.gems then `{pack.name}  •  DOUBLE on your first pack (usually {commas(pack.gems)})` else pack.name
+		setButton(row.button, `{commas(pack.robux)} R$`, Colors.green)
+	end
+
+	-- Items for gems.
+	local gemsOwned = State.get("Diamonds", 0)
+	for _, entry in Store.Items do
+		local row = itemRows[entry.id]
+		local item = Items.get(entry.item) :: any
+		row.frame.Visible = item ~= nil
+		if item then
+			row.icon.BackgroundColor3 = item.color or Colors.white
+			row.title.Text = if entry.amount > 1 then `{item.name} x{entry.amount}` else item.name
+			row.title.TextColor3 = Config.RarityColors[item.rarity] or Colors.white
+			row.sub.Text = entry.note
+			setButton(row.button, `{commas(entry.gems)} 💎`, if gemsOwned >= entry.gems then Colors.green else Colors.grey)
+		end
+	end
+
 	ensurePassRows()
 	local owned = State.meta.passes or {}
 	for key, row in passRows do

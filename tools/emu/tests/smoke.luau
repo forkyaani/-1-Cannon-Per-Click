@@ -2064,6 +2064,39 @@ do
 	noErrors("pausing")
 end
 
+T.section("the store: items for gems, gem packs")
+do
+	local Store = require(game.ReplicatedStorage.Shared.Features.Store)
+	local gems = data.diamonds
+	local keys = Game.items.count(data, "enchantkey")
+	data.diamonds = 49
+	act("storeBuyItem", "key")
+	eq(Game.items.count(data, "enchantkey"), keys, "no gems, no key")
+	data.diamonds = 2_000
+	act("storeBuyItem", "key")
+	eq(Game.items.count(data, "enchantkey"), keys + 1, "a key from the store")
+	eq(data.diamonds, 1_950, "for 50 gems")
+	local shiny = Game.items.count(data, "shinykey")
+	act("storeBuyItem", "shinykey")
+	eq(Game.items.count(data, "shinykey"), shiny + 1, "a shiny key from the store")
+	eq(data.diamonds, 950, "for 1,000 gems")
+	act("storeBuyItem", "nope")
+	act("storeBuyItem", { 1 })
+	eq(data.diamonds, 950, "an unknown row costs nothing")
+	local power = Game.items.count(data, "power2x")
+	act("storeBuyItem", "power")
+	eq(Game.items.count(data, "power2x"), power + 6, "six powerups in one purchase")
+	act("storeBuyPack", "gems1")
+	eq(data.diamonds, 920, "a pack that is not on sale gives nothing")
+	eq(Store.gemsFor(Store.GemPacks[1], 0), 500, "the first pack is doubled")
+	eq(Store.gemsFor(Store.GemPacks[1], 1), 250, "the next is not")
+	Game.items.take(player, "enchantkey", 1)
+	Game.items.take(player, "shinykey", 1)
+	Game.items.take(player, "power2x", 6)
+	data.diamonds = gems
+end
+noErrors("the store")
+
 T.section("visits by invitation")
 do
 	local HttpService = game:GetService("HttpService")

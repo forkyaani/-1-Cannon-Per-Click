@@ -570,6 +570,15 @@ spans -75..75) and `Marketplace.container()` the folder to parent props to. Buil
 A `ProximityPrompt` with the attribute `Window = "<NAME>"` opens that window on the client with no server code.
 One with the attribute `Loot = "<source id>"` opens the loot viewer on that source (see `ctx.Loot`).
 
+### The store
+
+The STORE window (`src/client/Windows.luau`) has three tabs: GEMS, ITEMS and PASSES. The catalogue of the
+first two is `src/shared/Features/Store.luau`: `Store.GemPacks` (Robux developer products; `product = 0` means
+not created yet; the first pack a player buys is doubled) and `Store.Items` (backpack items for gems). The
+server half (`src/server/Features/Store.luau`) registers each pack in `Game.products`, and has the actions
+`storeBuyPack` (asks `Policy.maySell`, then prompts) and `storeBuyItem`. Gems are the main currency: new things
+are priced in gems and go in `Store.Items`.
+
 ### Blender bases
 
 A world whose base has a Blender model (`tools/blender/base.py <World>`, imported with
