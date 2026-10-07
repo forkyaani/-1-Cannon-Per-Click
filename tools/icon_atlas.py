@@ -7,7 +7,7 @@ finds each icon, and packs them into a 1024 x 1024 PNG with a 4 x 4 grid of 256 
 in the middle 216 px of its cell. Transparent pixels carry the outline colour, so edges do not fringe when
 Roblox scales the image.
 
-Usage: icon_atlas.py sheet.png atlas.png [preview.png]
+Usage: icon_atlas.py sheet.png atlas.png [preview.png] [tolerance]
 """
 import sys
 
@@ -19,6 +19,10 @@ CELL = 256
 INNER = 216
 INK = (43, 18, 64)
 TOLERANCE = 34  # how far from the background colour a pixel may be and still count as background
+# A sheet that came back with a darker tile behind each icon (sheet D did) needs more: `icon_atlas.py sheet atlas
+# preview 65` takes the tiles off as background, and the icons' white sticker edge stops the fill.
+if len(sys.argv) > 4:
+    TOLERANCE = int(sys.argv[4])
 
 
 def background_mask(image: Image.Image) -> np.ndarray:

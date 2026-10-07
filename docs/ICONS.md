@@ -69,3 +69,13 @@ their own.
   TOWER, ENCHANT, FUSE, MASTERY, TRADE, the HUD chips and the notifications.
 - The Roblox purchase prompts: the six gem packs and seven passes take an uploaded image each (Q9), cut from
   sheets C and D.
+
+## Made on 7 Oct 2026
+
+All six sheets were painted in one go (120 credits) and cut into `assets/ui/atlas-c.png` to `atlas-h.png`
+(previews beside them, originals in `assets/ui/sheets/`). Cells run left to right, top to bottom, in the order
+each sheet is listed above. Not yet uploaded to Roblox or wired into `UI.icon` (Q6).
+
+Known weak spots, not regenerated: sheet H (enchantments) has glow halos and no white sticker edge, unlike
+the others; sheet F's last cell (fusion) reads as a gatling gun; sheet D was cut with tolerance 65 because it
+came back with a tile behind each icon, and a faint dark fringe is left on a few.
