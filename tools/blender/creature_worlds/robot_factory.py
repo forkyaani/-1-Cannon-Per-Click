@@ -221,21 +221,22 @@ def factory_overlord(c, a):
     dark, light = shade(c, -0.3), shade(c, 0.3)
     front = biped(c, dark, w=3.0, d=2.5, h=2.8, legs=0.5, arm=False, bevel=0.45, foot=(1.1, 1.3, 0.6), roughness=0.4)
     for side in (-1, 1):
-        robot_factory_stack((side * 0.85, 0.85, 3.2), 0.42, 1.45, a, bands=4, smoke=side > 0)
-        robot_factory_cog((side * 1.75, -0.3, 2.75), 0.62, GOLD, teeth=8, thick=0.5, tooth=0.3, roughness=0.3)
-        tube(0.26, 0.56, (side * 1.75, -0.6, 2.75), (0, 1, 0), a, vertices=8, emission=1.5)
-        box((0.7, 0.85, 1.25), (side * 1.85, -0.1, 1.75), light, bevel=0.25, segments=2)
+        robot_factory_stack((side * 0.8, 0.85, 3.2), 0.42, 1.15, a, bands=3, smoke=False)
+        robot_factory_cog((side * 1.78, -0.3, 2.5), 0.62, GOLD, teeth=8, thick=0.5, tooth=0.3, roughness=0.3)
+        tube(0.26, 0.56, (side * 1.78, -0.6, 2.5), (0, 1, 0), a, vertices=8, emission=1.5)
+        box((0.7, 0.85, 1.1), (side * 1.85, -0.1, 1.6), light, bevel=0.25, segments=2)
         box((0.9, 1.0, 0.6), (side * 1.9, -0.15, 0.95), dark, bevel=0.2, segments=1)  # a clamp for a hand
         for dx in (-0.26, 0.26):
             cone(0.2, 0.55, (side * 1.9 + dx, -0.3, 0.7), (dx * 0.6, -0.35, -1), GOLD, sides=5)
-        cone(0.42, 1.0, (side * 1.2, 0, 3.15), (side * 1, 0, 0.55), "FFF3D6")  # horns
-        cone(0.28, 0.85, (side * 1.98, 0, 3.55), (-side * 0.15, 0, 1), "FFF3D6", sides=6)
+        cone(0.46, 1.15, (side * 1.15, -0.1, 3.1), (side * 1, 0, 0.75), "FFF3D6")  # horns
+        cone(0.3, 0.95, (side * 1.95, -0.1, 3.7), (-side * 0.2, 0, 1), "FFF3D6", sides=6)
     # The furnace door: a gold ring, the glow, two bars.
     tube(0.62, 0.16, (0, front + 0.02, 1.08), (0, -1, 0), GOLD, vertices=12, roughness=0.3)
     tube(0.46, 0.1, (0, front - 0.14, 1.08), (0, -1, 0), a, vertices=10, emission=2.5)
     for dx in (-0.18, 0.18):
         slab((0.1, 0.12, 0.84), (dx, front - 0.26, 1.08), dark)
     box((3.1, 2.6, 0.3), (0, 0, 0.72), light, bevel=0.1, segments=1)
+    tuft("FFF6E0", ((0.85, 0.85, 4.7, 0.34), (1.1, 0.9, 5.15, 0.24)))  # one chimney smokes
     crown(3.3, radius=0.8, colour=GOLD, gems=a, points=5, size=1.2)
     eyes(front, 2.4, 0.68, a, size=1.1, brow=light, tilt=-26, blush=False)
     mouth(front, 1.9, 0.8, "grin", teeth=a)
