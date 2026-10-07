@@ -456,22 +456,26 @@ def glow_shroom(leaf, kind):
 
 
 def bent_rock(leaf, kind):
-    """The Black Hole's: rock pulled out of shape. Two claws closing over a tiny black hole, or a horn
-    bending towards one."""
-    def hole(at, radius):  # a dark ball in a flat ring of fire, tilted
-        ball(radius, at, HOLE, segments=8, roughness=0.3)
-        lean = Vector((0.3, -0.38, 1)).normalized()
-        tube(radius * 2.0, radius * 0.16, Vector(at) - lean * radius * 0.08, lean, leaf, vertices=8, emission=1.5)
-        tube(radius * 1.35, radius * 0.24, Vector(at) - lean * radius * 0.12, lean, ACCENT_PALE, vertices=8, emission=1.7)
+    """The Black Hole's: rock pulled out of shape. Two claws closing over a small black hole, or a spire
+    that breaks up at the top, its pieces falling in an arc into one."""
+    def hole(at, radius):  # a dark ball in a thin ring of fire, well clear of it and nearly level (close to it or tilted at you, it is an eye)
+        ball(radius, at, HOLE, segments=10, roughness=0.3)
+        first = len(made)
+        lathe([(radius * 1.42, -radius * 0.08), (radius * 1.42, radius * 0.08), (radius * 1.85, radius * 0.05), (radius * 1.85, -radius * 0.05), (radius * 1.42, -radius * 0.08)], leaf, segments=10, emission=1.5)
+        turned(first, Matrix.Translation(at) @ Matrix.Rotation(0.16, 4, "X") @ Matrix.Rotation(0.08, 4, "Y"))
 
     if kind == "round":
-        chunk((3.6, 3.0, 1.4), (0, 0, 0.5), ROCK_DARK)
+        chunk((3.8, 3.1, 1.5), (0, 0, 0.5), ROCK_DARK)
         for side in (-1, 1):
-            bent((side * 2.6, 0, 0.2), [(side * 0.5, 0, 1), (side * 0.1, 0, 1), (-side * 0.5, 0, 1), (-side * 1.3, 0, 1)], 1.6, 2.9, (ROCK, ROCK_LIGHT), taper=0.2, vertices=6, glow=leaf)
-        hole(Vector((0, 0, 6.4)), 1.4)
+            bent((side * 2.9, 0, 0.2), [(side * 0.5, 0, 1), (side * 0.1, 0, 1), (-side * 0.5, 0, 1), (-side * 1.3, 0, 1)], 1.8, 2.9, (ROCK, ROCK_LIGHT), taper=0.2, vertices=5, glow=leaf)
+        hole(Vector((0, 0, 6.0)), 1.8)
     else:
-        end = bent((0, 0, -0.4), [(0, 0, 1), (0.08, 0, 1), (0.18, 0, 1), (0.3, 0, 1), (0.45, 0, 1), (0.65, 0, 1)], 2.2, 2.6, (ROCK, ROCK_LIGHT), taper=0.13, vertices=6, glow=leaf)
-        hole(end + Vector((0.9, 0, 0.9)), 1.0)
+        leans = [(0.03, 0, 1), (0.12, 0, 1), (0.26, 0, 1)]
+        end = bent((0, 0, -0.4), leans, 2.5, 3.1, (ROCK, ROCK_LIGHT, ROCK), taper=0.17, vertices=5)
+        tube(1.3, 0.3, end - Vector(leans[-1]).normalized() * 0.1, leans[-1], leaf, vertices=5, emission=1.4)  # where it broke
+        for x, z, size in ((1.7, 10.3, 1.0), (2.1, 11.9, 0.75), (2.3, 13.2, 0.5)):  # the pieces, on their way in
+            chunk((size, size * 0.9, size * 1.1), (x, 0, z), ROCK_LIGHT if size > 0.6 else ROCK, detail=1)
+        hole(Vector((2.4, 0, 15.3)), 1.4)
 
 
 def spark_burst(leaf, kind):
@@ -633,7 +637,7 @@ def themed_fence(step):
         elif FENCING == "orbit_post":  # Black Hole: a post with a ringed ball on it
             box((1.15, 1.15, 3.2), (x, y, z + 1.3), ROCK_LIGHT, bevel=0.3, rotation=turn, segments=1)
             ball(0.55, (x, y, z + 3.7), HOLE, segments=6)
-            tube(1.05, 0.12, (x, y, z + 3.64), (0.25 * math.sin(-turn[2]), 0.25 * math.cos(-turn[2]), 1), LEAVES[0], vertices=6, emission=1.4)
+            tube(1.1, 0.12, (x, y, z + 3.64), (0.55 * math.sin(-turn[2] + 0.9), 0.55 * math.cos(-turn[2] + 0.9), 1), LEAVES[0], vertices=8, emission=1.4)
         elif FENCING == "spark_post":  # The Big Bang: a gold post with a spark on it
             tube(0.5, 3.1, (x, y, z - 0.3), UP, WOOD_LIGHT, vertices=6, roughness=0.3)
             gem(0.65, 1.7, (x, y, z + 3.6), ACCENT_PALE, emission=1.4)
@@ -1174,30 +1178,35 @@ def black_hole():
 
 
 def warped_clock():
-    """The Black Hole: a clock tower that time has bent over, its hands glowing, a ring of light round it."""
-    cream, orange = "FFE8C0", "FF7A1E"
+    """The Black Hole: a clock tower that time has bent over towards the plaza, a face with glowing hands
+    on each of its four sides, a ring of light round it."""
+    cream, peach, pink, teal = "FFE8C0", "FFBE8A", "FF3C8C", "2EC4D6"
     tube(4.0, 0.7, (0, 0, 0), UP, STONE_DARK, vertices=8)
-    frame = Matrix.Translation((-1.3, 0.4, 0.7))
-    for index, (size, height, bend) in enumerate(((3.6, 2.4, 0.0), (3.2, 2.2, 0.1), (2.9, 2.0, 0.14), (2.7, 1.8, 0.18))):
-        frame = frame @ Matrix.Rotation(bend, 4, "Y")
+    frame = Matrix.Translation((0, 1.6, 0.7))
+    for index, (size, height, bend) in enumerate(((4.0, 3.0, 0.0), (3.6, 2.8, 0.1), (3.3, 2.5, 0.15), (3.1, 2.2, 0.2))):
+        frame = frame @ Matrix.Rotation(bend, 4, "X")
         first = len(made)
-        box((size, size, height + 0.3), (0, 0, height / 2), STONE if index % 2 == 0 else STONE_PALE, bevel=0.35)
+        box((size, size, height + 0.3), (0, 0, height / 2), cream if index % 2 == 0 else peach, bevel=0.35)
         turned(first, frame)
         frame = frame @ Matrix.Translation((0, 0, height))
+    frame = frame @ Matrix.Rotation(0.18, 4, "X")
     first = len(made)
-    box((4.3, 3.3, 4.3), (0, 0, 2.15), STONE, bevel=0.5)  # the clock's head
-    tube(1.85, 0.3, (0, -1.6, 2.15), (0, -1, 0), cream, vertices=16)
-    hoop(1.9, 0.25, (0, -1.85, 2.15), GOLD, rotation=(math.pi / 2, 0, 0), segments=16, roughness=0.3)
-    for index in range(4):
-        x, z = ring(index * 90, 1.4)
-        ball(0.22, (x, -1.95, 2.15 + z), STONE_DARK, segments=6)
-    box((0.3, 0.22, 1.35), (0, -2.02, 2.7), orange, bevel=0.08, segments=1, emission=1.4)  # its hands
-    box((0.26, 0.22, 1.0), (0.38, -2.02, 1.9), orange, bevel=0.08, rotation=(0, -0.95, 0), segments=1, emission=1.4)
-    ball(0.26, (0, -2.05, 2.15), GOLD, segments=6, roughness=0.3)
-    tube(3.3, 2.6, (0, 0, 4.3), UP, "E0481E", tip=0.0, vertices=4)
-    ball(0.5, (0, 0, 7.0), GOLD, segments=8, roughness=0.3)
-    turned(first, frame @ Matrix.Rotation(0.2, 4, "Y"))
-    hoop(4.7, 0.2, (0, 0, 5.2), orange, rotation=(0.28, 0.2, 0), segments=18, emission=1.4)
+    box((5.0, 5.0, 5.0), (0, 0, 2.5), STONE, bevel=0.5)  # the clock's head
+    tube(3.9, 0.5, (0, 0, 4.9), UP, GOLD, vertices=8, roughness=0.3)
+    tube(3.5, 3.8, (0, 0, 5.4), UP, teal, tip=0.0, vertices=8)
+    ball(0.55, (0, 0, 9.2), GOLD, segments=8, roughness=0.3)
+    turned(first, frame)
+    for quarter in range(4):
+        first = len(made)
+        tube(2.15, 0.3, (0, -2.35, 2.5), (0, -1, 0), cream, vertices=12)
+        hoop(2.2, 0.27, (0, -2.6, 2.5), GOLD, rotation=(math.pi / 2, 0, 0), segments=12, roughness=0.3)
+        for index in range(4):
+            x, z = ring(index * 90, 1.6)
+            box((0.34, 0.2, 0.34), (x, -2.67, 2.5 + z), STONE_DARK, bevel=0.0, segments=1)
+        box((0.38, 0.22, 1.6), (0, -2.75, 3.15), pink, bevel=0.08, segments=1, emission=1.4)  # its hands
+        box((0.34, 0.22, 1.15), (0.44, -2.75, 2.2), pink, bevel=0.08, rotation=(0, -0.95, 0), segments=1, emission=1.4)
+        turned(first, frame @ Matrix.Rotation(quarter * math.pi / 2, 4, "Z"))
+    hoop(3.5, 0.2, (0, 0, 0.75), "FF7A1E", segments=16, emission=1.4)  # light round its foot
 
 
 def atom():
@@ -1245,7 +1254,7 @@ SET_PIECES = {
     "Crystal Belt": ((geode, (("geode", 0, 1.2, 4.8, 8.4), ("loose crystals", 4.8, -2.2, 1.4, 3.2), ("loose crystal", -4.9, -2.4, 0.9, 2.6))), (mine_cart, (("mine cart", 0, 0, 3.4, 5.2), ("pickaxe", 3.6, -2.4, 0.6, 5.0)))),
     "Robot Factory": ((robot_arm, (("robot arm", 0, 0, 3.7, 9.6),)), (conveyor, (("conveyor", -3.6, 0, 2.3, 4.6), ("press", 0, 0, 3.0, 8.2), ("conveyor end", 3.6, 0, 2.3, 4.6)))),
     "Alien Jungle": ((snap_pod, (("snapping plant", 0, 0.8, 2.6, 9.0),)), (saucer, (("crashed saucer", 0, 0.6, 5.2, 5.4),))),
-    "Black Hole": ((black_hole, (("black hole", 0, 0, 3.8, 11.0),)), (warped_clock, (("bent clock tower", 0, 0, 4.0, 14.0),))),
+    "Black Hole": ((black_hole, (("black hole", 0, 0, 3.8, 11.0),)), (warped_clock, (("bent clock tower", 0, 0, 4.0, 16.0),))),
     "The Big Bang": ((atom, (("atom", 0, 0, 3.4, 12.0),)), (bang, (("the bang", 0, 0, 3.4, 9.0),))),
     "Moon": ((lander, (("lander", 0, 0, 3.6, 9.0), ("flag", 3.9, -3.4, 0.5, 6.0))), (dish, (("radar dish", 0, 0, 2.8, 8.0), ("control box", 4.3, 1.4, 1.7, 2.4)))),
     "Mars": ((rover, (("rover wreck", 0, 0, 3.8, 4.4), ("wheel", -4.7, -3.9, 1.4, 1.3))), (habitat, (("habitat", 0, 0, 5.2, 5.6), ("airlock", 0, -4.9, 2.1, 3.6), ("air tanks", 5.1, 1.3, 1.9, 3.6)))),
