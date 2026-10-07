@@ -19,25 +19,24 @@ def the_void_one_eye(front, z, size, iris):
 
 def shadow_wisp(c, a):
     # A lick of shadow: a teardrop whose top curls over, a ragged hem of darker tongues, a tail that trails off.
-    lathe([(0, 2.25), (0.55, 2.1), (0.95, 1.65), (1.08, 1.15), (0.98, 0.65), (0.62, 0.32), (0, 0.2)], c, segments=14, roughness=0.3, emission=0.15)
-    front = -0.99
-    tail([(0.1, 0.05, 2.1), (0.35, 0.05, 2.5), (0.75, 0.05, 2.75), (1.15, 0.05, 2.7), (1.4, 0.05, 2.42)], c, start=0.5, end=0.16, emission=0.15)
-    ball(0.2, (1.4, 0.05, 2.42), "E6D2FF", segments=8, emission=2)
+    lathe([(0, 2.25), (0.65, 2.1), (1.12, 1.65), (1.3, 1.15), (1.18, 0.65), (0.75, 0.32), (0, 0.2)], c, segments=14, roughness=0.3)
+    front = -1.2
+    tail([(0.1, 0.05, 2.05), (0.4, 0.05, 2.4), (0.8, 0.05, 2.55), (1.2, 0.05, 2.45), (1.42, 0.05, 2.15)], c, start=0.55, end=0.2)
+    ball(0.24, (1.42, 0.05, 2.15), "E6D2FF", segments=8, emission=2)
     for index in range(7):  # the hem
-        x, y = ring(index * 360 / 7 + 26, 0.72)
-        cone(0.34, 0.75, (x, y, 0.75), (x * 0.9, y * 0.9, -1), a, sides=5)
-    tail([(0, 0.1, 0.3), (0.16, 0.15, 0.0), (0.1, 0.2, -0.3), (-0.12, 0.2, -0.55)], a, start=0.42, end=0.12)
+        x, y = ring(index * 360 / 7 + 26, 0.85)
+        cone(0.4, 0.8, (x, y, 0.75), (x * 0.9, y * 0.9, -1), a, sides=5)
     for side in (-1, 1):  # wispy arms
-        cone(0.3, 0.85, (side * 0.9, -0.2, 1.05), (side * 1, -0.25, 0.55), a, sides=6)
-    eyes(front, 1.4, 0.42, "E6D2FF", size=0.8)
-    mouth(front + 0.06, 0.8, 0.3, "o")
+        cone(0.34, 0.85, (side * 1.1, -0.25, 1.0), (side * 1, -0.25, 0.55), a, sides=6)
+    eyes(front, 1.4, 0.5, "E6D2FF", size=0.95)
+    mouth(front + 0.08, 0.72, 0.34, "o")
 
 
 def null_blob(c, a):
     # A heap of nothing in a glowing puddle: the "null" sign stands on its head and bits of it are being deleted.
     front = blob(c, w=2.4, d=2.1, h=1.6, puddle=a, bevel=0.75)
-    hoop(0.55, 0.15, (0, 0, 2.3), a, rotation=(math.pi / 2, 0, 0), segments=12, emission=2)
-    slab((0.16, 0.16, 1.6), (0, 0, 2.3), a, rotation=(0, math.radians(40), 0), emission=2)
+    hoop(0.55, 0.15, (0, 0, 2.3), a, rotation=(math.pi / 2, 0, 0), segments=12, emission=1)
+    slab((0.16, 0.16, 1.6), (0, 0, 2.3), a, rotation=(0, math.radians(40), 0), emission=1)
     for x, y, z, size, colour in ((1.25, 0.0, 1.35, 0.44, c), (1.6, 0.1, 1.8, 0.32, a), (1.85, 0.0, 2.2, 0.2, c), (-1.3, 0.1, 1.2, 0.34, a), (-1.55, 0.0, 1.6, 0.22, c)):
         box((size, size, size), (x, y, z), colour, bevel=0.05, segments=1, rotation=(0.3, 0.4, 0.2), emission=1.5 if colour == a else 0)
     for x, z, r in ((-1.45, 0.25, 0.26), (1.4, 0.2, 0.2)):  # bubbles in the puddle
@@ -55,26 +54,27 @@ def rift_stalker(c, a):
         for y in (-0.62, 0.0, 0.62):
             knee = Vector((side * 1.85, y * 1.25, 1.95))
             tube(0.2, 1.15, (side * 1.0, y, 1.3), knee - Vector((side * 1.0, y, 1.3)), dark, vertices=6)
-            ball(0.3, knee, a, segments=8, emission=1)
+            ball(0.26, knee, dark, segments=8)
+            cone(0.14, 0.4, knee + Vector((side * 0.2, 0, -1.6)), (side * 0.18, 0, -1), a, sides=6, emission=1)
             cone(0.28, 1.95, knee, (side * 0.18, 0, -1), dark, sides=6)
-    plate([(-1.0, 0), (-0.62, 0.75), (-0.3, 0.35), (0.1, 1.15), (0.42, 0.5), (0.76, 0.9), (1.0, 0)], a, (0, 0.05, 2.0), thick=0.34, rotation=(0, 0, math.pi / 2), emission=2)
-    plate([(-0.85, 0), (-0.5, 0.42), (-0.2, 0.15), (0.15, 0.6), (0.45, 0.22), (0.85, 0)], "FFE0FF", (0, 0.05, 2.0), thick=0.14, rotation=(0, 0, math.pi / 2), emission=2)
+    plate([(-1.0, 0), (-0.62, 0.75), (-0.3, 0.35), (0.1, 1.15), (0.42, 0.5), (0.76, 0.9), (1.0, 0)], a, (0, 0.05, 2.0), thick=0.34, rotation=(0, 0, math.pi / 2), emission=0.8)
+    plate([(-0.85, 0), (-0.5, 0.42), (-0.2, 0.15), (0.15, 0.6), (0.45, 0.22), (0.85, 0)], "FFE0FF", (0, 0.05, 2.0), thick=0.42, rotation=(0, 0, math.pi / 2), emission=2)
     eyes(front, 1.52, 0.52, a, size=0.86, brow=dark, tilt=-22)
     mouth(front, 0.98, 0.42, "fangs")
 
 
 def void_eye(c, a):
     # One great eye that floats, lashes on its lid, tentacles trailing under it.
-    ball(1.15, (0, 0, 1.75), c, scale=(1, 1, 1), segments=14, roughness=0.35)
+    ball(1.15, (0, 0, 1.75), c, segments=12, roughness=0.35)
     front = -0.86
     the_void_one_eye(front, 1.75, 1.0, a)
     hoop(0.86, 0.15, (0, front + 0.05, 1.75), a, rotation=(math.pi / 2, 0, 0), segments=14, emission=0.6)
     for lean in (-40, -14, 14, 40):  # lashes
         way = (math.sin(math.radians(lean)), -0.25, math.cos(math.radians(lean)))
-        cone(0.2, 0.75, (way[0] * 1.0, -0.4, 1.75 + way[2] * 1.0), way, a, sides=5, emission=0.6)
-    for index, (x, y) in enumerate(((-0.55, -0.2), (0.55, -0.2), (-0.25, 0.4), (0.3, 0.4), (0, -0.45))):
+        cone(0.22, 0.5, (way[0] * 1.0, -0.4, 1.75 + way[2] * 1.0), way, a, sides=5, emission=0.6)
+    for index, (x, y) in enumerate(((-0.55, -0.2), (0.55, -0.2), (-0.25, 0.4), (0.3, 0.4))):
         sway = 0.25 if index % 2 else -0.25
-        tail([(x, y, 0.75), (x * 1.25, y, 0.4), (x * 1.3 + sway, y, 0.05), (x * 1.2 + sway * 1.6, y, -0.3)], shade(c, -0.2), start=0.3, end=0.16, tip=a, tip_size=0.2)
+        tail([(x, y, 0.72), (x * 1.25, y, 0.42), (x * 1.3 + sway, y, 0.2)], shade(c, -0.2), start=0.32, end=0.2, tip=a, tip_size=0.24)
 
 
 def abyss_knight(c, a):
@@ -127,8 +127,9 @@ def rift_warden(c, a):
     tube(0.36, 0.1, (-2.0, -0.5, -0.1), UP, GOLD, vertices=8)
     # The staff: a rift caught in a golden hoop.
     tube(0.12, 3.5, (2.3, -0.45, 0.1), UP, GOLD, vertices=6, roughness=0.3)
-    hoop(0.72, 0.15, (2.3, -0.45, 4.3), GOLD, rotation=(math.pi / 2, 0, 0), segments=12, roughness=0.3)
-    plate(the_void_tear(0.62), a, (2.3, -0.45, 4.3), thick=0.16, emission=2.5)
+    hoop(0.85, 0.16, (2.3, -0.45, 4.2), GOLD, rotation=(math.pi / 2, 0, 0), segments=12, roughness=0.3)
+    plate(the_void_tear(0.74), "FF3CC8", (2.3, -0.45, 4.2), thick=0.2, emission=0.8)
+    plate(the_void_tear(0.4), "FFE0FF", (2.3, -0.5, 4.2), thick=0.24, emission=1.5)
     eyes(front, 2.15, 0.68, a, size=1.1, brow=dark, tilt=-22)
     mouth(front, 1.42, 0.8, "fangs")
 
@@ -166,4 +167,4 @@ WORLDS["The Void"] = [
     ("Rift Warden", rift_warden, "6E32C8", "FF7ADC", "boss"),
     ("Void King", void_king, "3E2280", "FF3C5A", "boss"),
 ]
-BACKDROPS["The Void"] = "CDB4EE"
+BACKDROPS["The Void"] = "9DB2EC"
