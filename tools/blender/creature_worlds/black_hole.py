@@ -57,12 +57,12 @@ def gravity_mite(c, a):
 
 def time_eater(c, a):
     # A jellyfish with an alarm clock for a crown and a mouth full of teeth: it eats the hours.
-    lathe([(0, 2.3), (0.8, 2.15), (1.3, 1.7), (1.45, 1.15), (1.35, 0.8), (0, 0.95)], c, segments=16, roughness=0.3, emission=0.15)
+    lathe([(0, 2.45), (0.75, 2.32), (1.22, 1.9), (1.42, 1.3), (1.38, 0.8), (0, 0.95)], c, segments=16, roughness=0.3, emission=0.15)
     front = -1.38
     hoop(1.36, 0.15, (0, 0, 0.86), a, segments=14)
-    for degrees, reach in ((40, 0.5), (115, 0.4), (180, 0.48), (245, 0.4), (320, 0.5)):
+    for degrees, reach in ((40, 0.7), (115, 0.55), (180, 0.65), (245, 0.55), (320, 0.7)):
         x, y = ring(degrees, 0.85)
-        tube(0.22, reach, (x, y, 0.85), (x * 0.25, y * 0.25, -1), shade(c, -0.2), tip=0.1, vertices=6)
+        tube(0.22, reach, (x, y, 0.85), (x * 0.25, y * 0.25, -1), "B79CF2", tip=0.11, vertices=6)
         ball(0.17, (x * (1 + 0.25 * reach), y * (1 + 0.25 * reach), 0.85 - reach), a, segments=6, emission=1.5)
     # The clock: an orange case, a cream face, two hands, two bells and a knob.
     tube(0.68, 0.3, (0, 0.2, 2.6), (0, -1, 0), a, vertices=12, roughness=0.3)
@@ -74,8 +74,8 @@ def time_eater(c, a):
     for side in (-1, 1):
         ball(0.26, (side * 0.52, 0.05, 3.15), BLACK_HOLE_GOLD, scale=(1, 1, 0.8), segments=8, roughness=0.3)
     tube(0.09, 0.3, (0, 0.05, 3.22), UP, a, vertices=6)
-    eyes(front, 1.52, 0.5, a, size=0.9)
-    mouth(front - 0.02, 0.98, 0.72, "grin")
+    eyes(front, 1.58, 0.5, a, size=0.9)
+    mouth(front - 0.02, 1.02, 0.72, "grin")
 
 
 def warp_wraith(c, a):
@@ -91,8 +91,7 @@ def warp_wraith(c, a):
         ball(0.62 - index * 0.09, (math.sin(angle) * reach, 0.05 + math.cos(angle) * reach * 0.6, 1.3 - index * 0.2), c if index % 2 == 0 else shade(c, -0.18), segments=8, emission=0.25)
     cone(0.4, 0.55, (0.15, 0.0, 2.85), (0.5, 0.2, 1), c, sides=7, emission=0.25)  # a wisp flicking off its head
     for side in (-1, 1):
-        cone(0.38, 1.0, (side * 0.8, -0.35, 1.85), (side, -0.45, -0.2), c, sides=6, emission=0.25)  # reaching sleeves
-        ball(0.2, (side * 1.85, -0.82, 1.65), "B6F6FF", segments=6, emission=1.5)
+        cone(0.4, 0.7, (side * 0.75, -0.3, 1.75), (side, -0.5, -0.45), shade(c, -0.18), sides=6, emission=0.25)  # stubby sleeves
     eyes(front, 2.08, 0.42, "FFFFFF", size=0.84, blush=False, brow=a, tilt=-16)
     mouth(front, 1.5, 0.3, "o")
 
@@ -133,7 +132,7 @@ def graviton(c, a):
         cone(0.45 * size, 1.05 * size, Vector((0, 0, 1.9)) + Vector((way.x * 1.32, way.y * 1.25, way.z * 1.25)), way, "FF8A2A", sides=6, emission=0.15)
     violet = "7A5CE0"
     black_hole_orbit((0, 0, 1.9), 2.3, (0.42, 0.3), BLACK_HOLE_PINK, thick=0.08, segments=16, motes=((140, 0.26, violet), (215, 0.2, BLACK_HOLE_GOLD), (20, 0.3, violet), (290, 0.22, violet)))
-    black_hole_orbit((0, 0, 1.9), 2.05, (0.35, -0.5), BLACK_HOLE_GOLD, thick=0.07, segments=16, motes=((200, 0.22, violet), (80, 0.26, violet), (320, 0.18, BLACK_HOLE_PINK)))
+    black_hole_orbit((0, 0, 1.9), 2.05, (0.8, -0.4), BLACK_HOLE_GOLD, thick=0.07, segments=16, motes=((200, 0.22, violet), (80, 0.26, violet), (320, 0.18, BLACK_HOLE_PINK)))
     disc(0.26, (0, front + 0.12, 2.9), a, height=0.12, sides=6, emission=2)
     eyes(front, 2.1, 0.62, a, size=1.1, brow=violet, tilt=-24)
     mouth(front + 0.06, 1.32, 0.7, "fangs")
