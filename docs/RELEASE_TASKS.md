@@ -200,14 +200,14 @@ needs a second pass doubles its job.
 
 ## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; taken by Yaani on 7 Oct 19:06)
 
-- [ ] L1. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Base looks for the seven themes in `tools/blender/base.py` (gate, monster portal, backdrop per world; the themes come from K1) · **1 h 00**
-- [ ] L2. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) The Void base: render, check the photos · **20 min**
-- [ ] L3. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Nebula base: render, check the photos · **20 min**
-- [ ] L4. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Crystal Belt base: render, check the photos · **20 min**
-- [ ] L5. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Robot Factory base: render, check the photos · **20 min**
-- [ ] L6. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Alien Jungle base: render, check the photos · **20 min**
-- [ ] L7. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Black Hole base: render, check the photos · **20 min**
-- [ ] L8. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) The Big Bang base: render, check the photos · **20 min**
+- [x] L1. **[Yaani]** (done 7 Oct: `base.py` builds all twelve worlds; roofs, knobs, portal glow, backdrop, landmark, props and fence per world, taken from each world's island; the five finished bases build the same; not yet imported, see L9) Base looks for the seven themes in `tools/blender/base.py` (gate, monster portal, backdrop per world; the themes come from K1) · **1 h 00**
+- [x] L2. **[Yaani]** (done 7 Oct: `assets/models/bases/the_void_base.*`; photos looked at; not yet imported, see L9) The Void base: render, check the photos · **20 min**
+- [x] L3. **[Yaani]** (done 7 Oct: `assets/models/bases/nebula_base.*`; photos looked at; not yet imported, see L9) Nebula base: render, check the photos · **20 min**
+- [x] L4. **[Yaani]** (done 7 Oct: `assets/models/bases/crystal_belt_base.*`; photos looked at; not yet imported, see L9) Crystal Belt base: render, check the photos · **20 min**
+- [x] L5. **[Yaani]** (done 7 Oct: `assets/models/bases/robot_factory_base.*`; photos looked at; not yet imported, see L9) Robot Factory base: render, check the photos · **20 min**
+- [x] L6. **[Yaani]** (done 7 Oct: `assets/models/bases/alien_jungle_base.*`; photos looked at; not yet imported, see L9) Alien Jungle base: render, check the photos · **20 min**
+- [x] L7. **[Yaani]** (done 7 Oct: `assets/models/bases/black_hole_base.*`; photos looked at; not yet imported, see L9) Black Hole base: render, check the photos · **20 min**
+- [x] L8. **[Yaani]** (done 7 Oct: `assets/models/bases/the_big_bang_base.*`; photos looked at; not yet imported, see L9) The Big Bang base: render, check the photos · **20 min**
 - [ ] L9. **[open]** Import the seven bases and see each in a play test **[S]** · **45 min**
 
 ## M. Monsters and bosses for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
