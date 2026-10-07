@@ -43,21 +43,21 @@ def shardling(c, a):
 def quartz_crab(c, a):
     # A crab cut out of rose quartz: a cluster of white quartz points on its back, crystal pincers, crystal legs.
     dark = shade(c, -0.22)
-    box((2.7, 1.9, 1.25), (0, 0, 0.98), c, bevel=0.42, segments=1, smooth=False, roughness=0.3)
+    box((2.5, 1.9, 1.4), (0, 0, 1.05), c, bevel=0.42, segments=1, smooth=False, roughness=0.3)
     front = -0.95
     for side in (-1, 1):
         for y in (-0.5, 0.15, 0.75):
             crystal_belt_shard((side * 1.2, y, 0.95), (side * 1, 0, -1.05), 0.22, 1.25, dark, sides=4)
         # Pincers: a faceted fist with two quartz points that open like a V.
-        box((0.45, 0.8, 0.45), (side * 1.4, -0.9, 0.8), dark, bevel=0.15, segments=1, rotation=(0, 0, side * math.radians(-25)))
-        chunk((0.5, 0.5, 0.45), (side * 1.7, -1.45, 0.9), c, detail=1)
-        crystal_belt_shard((side * 1.55, -1.6, 1.05), (-side * 0.3, -1, 0.35), 0.3, 1.05, a, emission=0.4)
-        crystal_belt_shard((side * 1.9, -1.6, 0.8), (side * 0.3, -1, -0.1), 0.26, 0.9, a, emission=0.4)
+        box((0.9, 0.5, 0.45), (side * 1.6, -0.75, 0.75), dark, bevel=0.15, segments=1, rotation=(0, 0, side * math.radians(-30)))
+        chunk((0.52, 0.52, 0.48), (side * 2.05, -1.05, 0.75), dark, detail=1)
+        crystal_belt_shard((side * 2.0, -1.2, 0.95), (side * 0.15, -1, 0.5), 0.32, 1.05, a, emission=0.4)
+        crystal_belt_shard((side * 2.3, -1.2, 0.65), (side * 0.6, -1, -0.05), 0.27, 0.9, a, emission=0.4)
     for x, y, r, h, lean, colour in ((0.05, 0.3, 0.5, 1.7, (3, 4), a), (-0.75, 0.25, 0.38, 1.2, (-22, 0), "FFD9EA"), (0.8, 0.35, 0.36, 1.1, (24, 0), a),
                                      (0.3, -0.3, 0.28, 0.75, (10, -16), "FFD9EA"), (-0.35, 0.75, 0.3, 1.0, (-8, 20), a), (-0.35, -0.3, 0.22, 0.55, (-14, -14), a)):
-        crystal((x, y, 1.5), r, h, colour, lean=lean, sides=6, emission=0.35, roughness=0.25)
-    eyes(front, 1.05, 0.56, "FF5AA8", size=0.86)
-    mouth(front, 0.55, 0.4)
+        crystal((x, y, 1.65), r, h, colour, lean=lean, sides=6, emission=0.35, roughness=0.25)
+    eyes(front, 1.2, 0.54, "FF5AA8", size=0.9)
+    mouth(front, 0.62, 0.4)
 
 
 def prism_bat(c, a):
@@ -65,15 +65,15 @@ def prism_bat(c, a):
     plate([(-1.3, 0.5), (-1.08, 0.2), (1.08, 0.2), (1.3, 0.5), (0.2, 2.45), (-0.2, 2.45)], c, thick=1.4, roughness=0.15, emission=0.15)
     front = -0.7
     dark = shade(c, -0.35)
-    panes = ((a, (1.25, 1.35), (1.9, 0.65)), ("FFE45A", (1.9, 0.65), (1.5, -0.3)), ("FF8AD8", (1.5, -0.3), (0.5, -0.6)))
+    panes = ((a, (1.3, 1.6), (2.1, 0.8)), ("FFE45A", (2.1, 0.8), (1.7, -0.25)), ("FF6FCF", (1.7, -0.25), (0.6, -0.7)))
     for side in (-1, 1):
         for colour, (x1, z1), (x2, z2) in panes:
-            plate([(0, 0), (side * x1, z1), (side * x2, z2)], colour, (side * 0.6, 0.3, 1.0), thick=0.12, emission=0.7, roughness=0.2)
-        for x, z in ((1.25, 1.35), (1.9, 0.65), (1.5, -0.3), (0.5, -0.6)):  # the bones of the wing
-            tube(0.09, math.hypot(x, z), (side * 0.6, 0.3, 1.0), (side * x, 0, z), dark, vertices=5)
+            plate([(0, 0), (side * x1, z1), (side * x2, z2)], colour, (side * 0.7, -0.1, 1.0), thick=0.12, emission=0.7, roughness=0.2)
+        for x, z in ((1.3, 1.6), (2.1, 0.8), (1.7, -0.25), (0.6, -0.7)):  # the bones of the wing
+            tube(0.09, math.hypot(x, z), (side * 0.7, -0.1, 1.0), (side * x, 0, z), dark, vertices=5)
         # Ears: crystal points on the prism's slopes.
-        crystal_belt_shard((side * 0.62, 0.0, 1.6), (side * 0.75, 0, 1), 0.3, 1.0, dark, sides=4)
-        crystal_belt_shard((side * 0.66, -0.12, 1.68), (side * 0.75, 0, 1), 0.17, 0.62, a, sides=4, emission=0.7)
+        crystal_belt_shard((side * 0.62, 0.0, 1.6), (side * 0.75, 0, 1), 0.4, 1.3, dark, sides=4)
+        crystal_belt_shard((side * 0.66, -0.2, 1.68), (side * 0.75, 0, 1), 0.22, 0.85, a, sides=4, emission=0.7)
         ball(0.2, (side * 0.4, -0.2, 0.14), dark, scale=(1, 1.3, 0.8), segments=6)  # little feet
     slab((0.16, 0.06, 1.3), (0, front + 0.01, 1.75), "FFFFFF", emission=1.5)  # the beam of white light inside it
     eyes(front, 1.02, 0.42, a, size=0.78)
@@ -87,7 +87,7 @@ def geode_roller(c, a):
     dark = shade(c, -0.25)
     for index in range(12):  # the tread: knobs round it from front to back, none over the face
         angle = math.radians(index * 30)
-        if 195 < index * 30 < 345:
+        if index * 30 > 150:
             continue
         chunk((0.3, 0.26, 0.3), (0, math.sin(angle) * 1.12, 1.25 + math.cos(angle) * 1.2), dark, detail=1)
     way = Vector((0.5, -0.3, 1)).normalized()
@@ -138,7 +138,7 @@ def shard_sentinel(c, a):
     box((2.8, 2.8, 0.3), (0, 0, 1.55), GOLD, bevel=0.1, segments=1, roughness=0.3)  # a gold belt, a jewel on it
     crystal_belt_diamond((0, front - 0.1, 1.55), 0.3, a, emission=2)
     # The halberd, in its right fist.
-    tube(0.11, 4.3, (1.85, -0.75, 0.1), UP, GOLD, vertices=6, roughness=0.3)
+    tube(0.15, 4.3, (1.85, -0.75, 0.1), UP, GOLD, vertices=6, roughness=0.3)
     crystal_belt_shard((1.85, -0.75, 4.2), UP, 0.42, 1.5, a, sides=4, emission=1.2)
     crystal_belt_shard((1.85, -0.75, 4.3), (1, 0, 0.25), 0.3, 0.9, a, sides=4, emission=1.2)
     crystal_belt_shard((1.85, -0.75, 4.3), (-1, 0, 0.25), 0.3, 0.9, a, sides=4, emission=1.2)
@@ -157,38 +157,38 @@ def crystal_monarch(c, a):
     pale = shade("9CC0F5", 0.1)
     front = biped(c, pale, w=3.0, d=2.5, h=2.8, legs=0.5, arm=False, bevel=0.6, foot=(1.1, 1.3, 0.6), roughness=0.25)
     # The throne: a fan of tall spires behind it, in the belt's colours.
-    for index, (colour, height) in enumerate((("B58CFF", 2.3), (a, 2.9), ("FFD35A", 3.5), (a, 2.9), ("B58CFF", 2.3))):
+    for index, (colour, height) in enumerate((("6EF0E6", 2.3), ("9466F2", 2.9), ("FFD35A", 3.5), ("9466F2", 2.9), ("6EF0E6", 2.3))):
         lean = math.radians((index - 2) * 27)
-        crystal_belt_shard((math.sin(lean) * 1.1, 1.35, 2.4 + math.cos(lean) * 0.3), (math.sin(lean), 0.1, math.cos(lean)), 0.55, height, colour, sides=6, emission=0.7, roughness=0.2)
+        crystal_belt_shard((math.sin(lean) * 1.3, 1.35, 2.4 + math.cos(lean) * 0.3), (math.sin(lean), 0.1, math.cos(lean)), 0.6, height, colour, sides=6, emission=0.3, roughness=0.2)
     # The cape, with a gold clasp at each shoulder.
     plate([(-1.75, 3.1), (1.75, 3.1), (2.15, 0.25), (1.1, 0.5), (0, 0.2), (-1.1, 0.5), (-2.15, 0.25)], shade(a, -0.3), (0, 1.38, 0), thick=0.26)
     for side in (-1, 1):
         ball(0.8, (side * 1.7, 0, 2.85), GOLD, scale=(1, 1, 0.7), segments=10, roughness=0.3)
-        crystal_belt_shard((side * 1.75, 0, 3.1), (side * 0.5, 0, 1), 0.3, 1.0, a, emission=1)
+        crystal_belt_shard((side * 1.75, 0, 3.1), (side * 0.5, 0, 1), 0.3, 1.0, a, emission=0.5)
         box((0.65, 0.8, 1.2), (side * 1.85, -0.1, 1.75), pale, bevel=0.25, segments=2)
-        ball(0.5, (side * 1.95, -0.15, 1.0), c, segments=8)
+        ball(0.5, (side * 1.95, -0.3 - 0.25 * (side > 0), 1.0), c, segments=8)
     box((3.1, 2.6, 0.36), (0, 0, 0.95), GOLD, bevel=0.12, segments=1, roughness=0.3)
     crystal_belt_diamond((0, front - 0.12, 1.0), 0.36, a, emission=2)
     # The crown: a gold band, a ring of pink points round one tall white spire.
     tube(1.12, 0.42, (0, 0, 3.25), UP, GOLD, vertices=12, roughness=0.3)
     for index in range(6):
         x, y = ring(index * 60 + 30, 0.88)
-        crystal((x, y, 3.6), 0.3, 1.15 if index % 2 else 0.85, a, lean=(x * 16, y * 16), emission=1)
+        crystal((x, y, 3.6), 0.3, 1.15 if index % 2 else 0.85, a, lean=(x * 16, y * 16), emission=0.5)
         gx, gy = ring(index * 60, 1.14)
         ball(0.14, (gx, gy, 3.46), "6EF0E6", segments=6, emission=1)
     crystal((0, 0, 3.6), 0.42, 1.9, "FFFFFF", sides=6, emission=0.8)
     # The sceptre, in its right fist.
-    tube(0.12, 3.2, (2.3, -0.55, 0.3), UP, GOLD, vertices=6, roughness=0.3)
-    ball(0.26, (2.3, -0.55, 3.5), GOLD, segments=8, roughness=0.3)
-    crystal_belt_shard((2.3, -0.55, 4.05), UP, 0.48, 1.05, a, sides=6, emission=2)
-    crystal_belt_shard((2.3, -0.55, 4.05), (0, 0, -1), 0.48, 0.7, a, sides=6, emission=2)
+    tube(0.14, 3.2, (2.35, -0.9, 0.3), UP, GOLD, vertices=6, roughness=0.3)
+    ball(0.28, (2.35, -0.9, 3.5), GOLD, segments=8, roughness=0.3)
+    crystal_belt_shard((2.35, -0.9, 4.05), UP, 0.5, 1.05, a, sides=6, emission=0.8)
+    crystal_belt_shard((2.35, -0.9, 4.05), (0, 0, -1), 0.5, 0.7, a, sides=6, emission=0.8)
     eyes(front, 2.35, 0.68, a, size=1.1, brow=shade(a, -0.3), tilt=-22)
     mouth(front, 1.6, 0.8, "grin")
 
 
 WORLDS["Crystal Belt"] = [
     ("Shardling", shardling, "F6F4FF", "9466F2", "walker"),
-    ("Quartz Crab", quartz_crab, "FFB0D0", "FFFFFF", "walker"),
+    ("Quartz Crab", quartz_crab, "FF9CC6", "FFFFFF", "walker"),
     ("Prism Bat", prism_bat, "C873F2", "6EF0E6", "floater"),
     ("Geode Roller", geode_roller, "9C86C6", "D45CF2", "walker"),
     ("Crystal Golem", crystal_golem, "FFC44D", "FFF5D2", "walker"),
