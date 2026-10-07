@@ -180,16 +180,16 @@ needs a second pass doubles its job.
 - [x] J2. **[Yaani]** STORE window with three tabs: GEMS (six packs for Robux, first one doubled), ITEMS for gems (keys 50 / 1,000, Boss Chest 100, 2x Power and 2x Coins 30) and PASSES. Catalogue `src/shared/Features/Store.luau`, server `src/server/Features/Store.luau`, window in `src/client/Windows.luau`. Done 7 Oct; emulator test passes (1,344 checks); not yet seen in Studio.
 - [x] J3. **[Yaani]** (done 7 Oct: six products created, ids in `Store.GemPacks`, Managed Pricing left off; a real purchase has not been tried) Create the six gem pack developer products in the group's experience (Creator Hub > Monetisation > Developer Products; names and Robux prices as in `Store.GemPacks`) and paste each id into its `product = 0`. Until then the GEMS tab shows the packs and answers "not on sale yet" · **20 min**
 
-## K. Islands for worlds 6 to 12 (asked for by Yaani on 7 Oct; started and STOPPED by Yaani the same day, nothing was made; nobody has it)
+## K. Islands for worlds 6 to 12 (asked for by Yaani on 7 Oct; stopped once the same day with nothing made; taken again by Yaani on 7 Oct 09:42)
 
-- [ ] K1. **[open]** Themes for worlds 6 to 12 in `tools/blender/themes.py`, and their tree, liquid, fence and set pieces in `island.py` · **1 h 00**
-- [ ] K2. **[open]** The Void island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K3. **[open]** Nebula island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K4. **[open]** Crystal Belt island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K5. **[open]** Robot Factory island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K6. **[open]** Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K7. **[open]** Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K8. **[open]** The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K1. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Themes for worlds 6 to 12 in `tools/blender/themes.py`, and their tree, liquid, fence and set pieces in `island.py` · **1 h 00**
+- [ ] K2. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) The Void island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K3. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Nebula island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K4. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Crystal Belt island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K5. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Robot Factory island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K6. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K7. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
+- [ ] K8. **[Yaani]** (taken: Yaani, 7 Oct 09:42, a workflow in the session of the mastery work) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
 - [ ] K9. **[open]** Import the seven islands and look at each in a play test **[S]** · **45 min**
 
 ## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
