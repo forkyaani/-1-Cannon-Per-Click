@@ -68,3 +68,35 @@ cratered egg for Moon, a crystal egg for Gem, a pumpkin for Halloween. Rarer egg
 2. **Marketplace eggs first:** the Gem Egg and the four Halloween eggs (Pumpkin, Haunted, Crypt, Blood Moon)
    and their 25 mini cannons are the style sample and the first roll-out. World eggs follow.
 3. **Hatching is a slow automatic open**, no tapping. Auto Hatch and Fast Hatch come later as game passes.
+
+---
+
+## The MINI CANNONS window, rebuilt (group P, 8 Oct 2026)
+
+Yaani asked for a full inventory: equip and unequip, delete, search, loadouts and a storage bar. Before this
+the window was a list and the game always equipped the strongest ones by itself; there was no way to delete.
+
+**Rules (the defaults picked where Yaani had not said; change them in `src/shared/Features/Minis.luau`):**
+
+- **Equipping.** Automatic (the strongest, as before) until the player equips or unequips one by hand; from
+  then on exactly what they picked is equipped, and a newly hatched one is not equipped for them. EQUIP BEST
+  goes back to automatic. A pick that is fused or enchanted away is replaced by another of the same kind if
+  there is one, else its slot is left empty. One of each Huge at most, as before.
+- **Deleting gives nothing back.** A locked kind cannot be deleted. Equipped copies are the last to go.
+  Deleting a Huge, a Secret or an enchanted one takes a second press.
+- **Locks** are per kind (kind, tier and enchantments), no limit.
+- **Loadouts:** 3. SAVE then a number stores what is equipped now; a number alone equips it.
+- **Storage bar:** stored / storage, orange from 85% full, with the +500 Storage pass's button beside it
+  while the player does not own it.
+
+**Layout (800 x 540):** a top line (equipped count, DPS, the storage bar); a toolbar (search box, SORT,
+FILTER); a grid of picture cards on the left (5 across: 3D preview, count, equipped tick, lock, tier ring,
+enchant mark); a detail pane on the right (big preview, name, rarity, damage, enchantments, perks, EQUIP /
+UNEQUIP, LOCK, DELETE); a bottom bar (EQUIP BEST, UNEQUIP ALL, DELETE MANY, loadouts 1 2 3 and SAVE).
+SORT cycles damage, rarity, name, count. FILTER cycles all, equipped, enchanted, fused, then each rarity.
+Search matches the name, the rarity and the egg it hatches from.
+
+**Code:** rules `src/shared/Features/Minis.luau`; server `src/server/Features/Minis.luau` (actions
+`minisEquip`, `minisUnequip`, `minisBest`, `minisUnequipAll`, `minisDelete`, `minisLock`, `minisLoadout`),
+saved under the feature `minis`; the core asks `Game.equipPicker` in `refreshPets`; window
+`src/client/Features/Minis.luau` (the old list in `Windows.luau` is removed).
