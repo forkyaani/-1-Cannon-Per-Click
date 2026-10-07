@@ -130,7 +130,7 @@ LOOKS = {
                      monsters=("FF3C8C", "78DCFF", "FFE27A", "F6C2FF")),
     "Nebula": dict(road="wood", road_edge="wood_dark", kerb="cobble", kerb_glow=0.0, band="wood", hot="FFD23C", ember="FF8A3D", lair="under_dark",
                    roof="onion", knob="nova", window="accent", iron="wood_dark", board="4A389A", landmark="telescope", cloud="FFC2EE", ambient=0.85, sun=2.6,
-                   stars=("FFFFFF", "FFE27A", "C8FFF8"), lamp_glow=True, monsters=("6CE0E8", "FFE27A", "B49CFF", "FFFFFF")),
+                   hills=("A662E2", "9A58DA", "8E50D2", "8248C6"), stars=("FFFFFF", "FFE27A", "C8FFF8"), lamp_glow=True, monsters=("6CE0E8", "FFE27A", "B49CFF", "FFFFFF")),
     "Crystal Belt": dict(road="under", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="under", hot="FF4D8F", ember="FFB03D", lair="wood_dark",
                          roof="prism", knob="prism", window="accent", iron="wood_dark", board="1A3480", landmark="geode", cloud="3C78B8", ambient=1.0, fill=3.4, sun=2.9,
                          stars=("FFFFFF", "ECD8FF", "8CF0E6"), lamp_glow=True,
