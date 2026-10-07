@@ -125,7 +125,7 @@ LOOKS = {
     # grey in this world's light), stars (the photos' night sky), lamp_glow (the lamp's bands glow).
     "The Void": dict(road="2A1266", road_edge="1E0A50", kerb="water", kerb_glow=1.0, band="sand_dark", hot="FF7A28", ember="FFD23C", lair="30289E",
                      roof="shard", knob="gem", window="accent", iron="wood_dark", board="200C54", landmark="rift", cloud="5A34B8", ambient=1.0, fill=4.5, sun=2.9,
-                     stone=("8A6CF0", "6A48D0", "B49CFF"), stars=("F6C2FF", "FF7AD0", "78DCFF"), lamp_glow=True,
+                     stone=("8C94FF", "6468E4", "BCC4FF"), stars=("F6C2FF", "FF7AD0", "78DCFF"), lamp_glow=True,
                      sky=((0.0, "2A1270"), (0.36, "160A3C"), (0.47, "30167A"), (0.5, "3A1A7A"), (0.62, "2A1270"), (0.8, "160A3C"), (1.0, "0C0618")),
                      monsters=("FF3C8C", "78DCFF", "FFE27A", "F6C2FF")),
     "Nebula": dict(road="wood", road_edge="wood_dark", kerb="cobble", kerb_glow=0.0, band="wood", hot="FFD23C", ember="FF8A3D", lair="under_dark",
@@ -1155,8 +1155,9 @@ def pad(tint=WHITE):
     """One cannon pad: PAD_SIZE square, a stone plate on a darker foot with gold corners. Nothing of it is
     higher than PAD_HEIGHT (its corners); the plate, flat and empty, is 0.04 lower, so the game's "+" on
     the pad's top and the tower's foot lie just over it. PadTrim is the band round the plate."""
-    tile(PAD_SIZE, PAD_SIZE, 0.9, 0.0, 0.32, STONE_DARK, lip=0.1)
-    tile(6.3, 6.3, 0.7, 0.28, PAD_HEIGHT - 0.04, STONE_PALE, lip=0.07)
+    foot, plate_colour = ("200C54", "D2C8FF") if WORLD == "The Void" else (STONE_DARK, STONE_PALE)  # The Void: violet stone on violet ground vanished, so the road's dark and a pale plate
+    tile(PAD_SIZE, PAD_SIZE, 0.9, 0.0, 0.32, foot, lip=0.1)
+    tile(6.3, 6.3, 0.7, 0.28, PAD_HEIGHT - 0.04, plate_colour, lip=0.07)
     for x in (-1, 1):
         for y in (-1, 1):
             tile(1.5, 1.5, 0.45, 0.2, PAD_HEIGHT, GOLD, lip=0.07, location=(x * 2.75, y * 2.75, 0), roughness=0.3)
