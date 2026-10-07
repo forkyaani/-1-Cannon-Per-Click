@@ -214,13 +214,13 @@ needs a second pass doubles its job.
 
 Each world: its 5 monsters, mid boss and final boss (names in `Config.Worlds`), built with `tools/blender/creatures.py <World>`.
 
-- [ ] M1. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) The Void: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M2. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Nebula: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M3. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Crystal Belt: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M4. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Robot Factory: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M5. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Alien Jungle: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M6. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M7. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M1. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/the_void.py`, `assets/models/creatures/the_void_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) The Void: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M2. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/nebula.py`, `assets/models/creatures/nebula_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Nebula: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M3. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/crystal_belt.py`, `assets/models/creatures/crystal_belt_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Crystal Belt: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M4. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/robot_factory.py`, `assets/models/creatures/robot_factory_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Robot Factory: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M5. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/alien_jungle.py`, `assets/models/creatures/alien_jungle_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Alien Jungle: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M6. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/black_hole.py`, `assets/models/creatures/black_hole_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [x] M7. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/the_big_bang.py`, `assets/models/creatures/the_big_bang_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
 - [ ] M8. **[open]** Import the seven batches and watch a wave in each world **[S]** · **1 h 00**
 
 ## N. Egg opening (asked for by Yaani on 7 Oct; PLAN only, not started, nobody has it yet)
