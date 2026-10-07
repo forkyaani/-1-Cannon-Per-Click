@@ -121,7 +121,8 @@ LOOKS = {
                     monsters=("FF4D4D", "FFE56A", "FFFFFF", "FF8A1F")),
     # Worlds 6 to 12. More keys, all optional: stone (stone, dark, pale: what is BUILT here, when the theme's
     # own stone would vanish against this world's ground), hills (four tones, when the ground's rim is another
-    # colour than the ground), stars (the photos' night sky), lamp_glow (the lamp's bands glow).
+    # colour than the ground), crags (the five tones of the rock behind the portal, when the theme's rock goes
+    # grey in this world's light), stars (the photos' night sky), lamp_glow (the lamp's bands glow).
     "The Void": dict(road="2A1266", road_edge="1E0A50", kerb="water", kerb_glow=1.0, band="sand_dark", hot="FF7A28", ember="FFD23C", lair="30289E",
                      roof="shard", knob="gem", window="accent", iron="wood_dark", board="200C54", landmark="rift", cloud="5A34B8", ambient=1.0, fill=4.5, sun=2.9,
                      stone=("8A6CF0", "6A48D0", "B49CFF"), stars=("F6C2FF", "FF7AD0", "78DCFF"), lamp_glow=True,
@@ -141,9 +142,9 @@ LOOKS = {
     "Alien Jungle": dict(road="sand", road_edge="sand_dark", kerb="rock", kerb_glow=0.0, band="sand_dark", hot="3CD8FF", ember="B4FF2A", lair="under",
                          roof="cap", knob="pod", window="accent", iron="wood_dark", board="2C1858", landmark="snap_pod", cloud="E8FFB0", ambient=0.85, sun=2.6,
                          lamp_glow=True, monsters=("FF5AB4", "FFB03C", "A85CFF", "FFFFFF")),
-    "Black Hole": dict(road="sand", road_edge="sand_dark", kerb="water_light", kerb_glow=1.0, band="sand_dark", hot="5ADCE6", ember="B06BFF", lair="under_dark",
-                       roof="claw", knob="orbit", window="accent", iron="wood_dark", board="360A3A", landmark="black_hole", cloud="A02848", ambient=1.0, fill=4.0, sun=2.9,
-                       stone=("B84A8A", "8A3070", "E070A8"), hills=("641A64", "58165C", "4A1248", "5A1E4C"), stars=("FFD8A0", "FF8A28", "FF7AA8"), lamp_glow=True,
+    "Black Hole": dict(road="sand", road_edge="sand_dark", kerb="water_light", kerb_glow=1.0, band="sand_dark", hot="5ADCE6", ember="B06BFF", lair="wood_light",
+                       roof="claw", knob="orbit", window="accent", iron="wood_dark", board="360A3A", landmark="black_hole", cloud="A02848", ambient=1.0, fill=5.0, sun=3.1,
+                       stone=("B84A8A", "8A3070", "E070A8"), crags=("6A1C78", "7C2488", "641E6E", "78267E", "902E8E"), hills=("962C90", "882884", "7A2478", "8A2A6C"), stars=("FFD8A0", "FF8A28", "FF7AA8"), lamp_glow=True,
                        sky=((0.0, "6A1434"), (0.36, "2A0A20"), (0.47, "861A3C"), (0.5, "A01C40"), (0.62, "6A1434"), (0.8, "2A0A20"), (1.0, "1A0616")),
                        monsters=("FF3C8C", "5ADCE6", "B45CFF", "FFFFFF")),
     "The Big Bang": dict(road="sand_dark", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="FF3C6E", ember="3C9CFF", lair="under_dark",
@@ -536,16 +537,14 @@ def tree_factory_stack(tone=0, variant=0):
         lathe([(0, 1.5), (1.7, 1.2), (3.0, 0)], leaf, segments=10, location=(0, 0, 5.8), roughness=0.35)
         for z in (1.5, 4.6):
             tube(3.14, 0.5, (0, 0, z - 0.25), UP, NAVY, vertices=10)
-            for index in range(3):  # (island.py has six bolts a band and twelve sides: thirty of these share one mesh of 10,000 triangles)
-                x, y = ring(index * 120 + 180, 3.2)
-                slab((0.5, 0.5, 0.34), (x, y, z), GOLD, rotation=(0, 0, -math.radians(index * 120 + 180)), roughness=0.3)
-        tube(1.0, 0.35, (0, -2.95, 3.1), (0, -1, 0), WHITE, vertices=8)  # the gauge
-        tube(1.15, 0.2, (0, -2.95, 3.1), (0, -1, 0), NAVY, vertices=8)
+            for degrees in (130, 230):  # (island.py has six bolts a band, a rim round the gauge and twelve sides: thirty of these share one mesh of 10,000 triangles)
+                x, y = ring(degrees, 3.2)
+                slab((0.5, 0.5, 0.34), (x, y, z), GOLD, rotation=(0, 0, -math.radians(degrees)), roughness=0.3)
+        tube(1.1, 0.35, (0, -2.95, 3.1), (0, -1, 0), WHITE, vertices=8)  # the gauge
         slab((0.16, 0.12, 0.85), (0.2, -3.36, 3.3), RED, rotation=(0, 0.6, 0))
         tube(0.6, 2.4, (0, 0, 7.0), UP, T["stone"], vertices=6)  # the pipe out of its top, with an elbow
         ball(0.78, (0, 0, 9.4), T["stone_dark"], segments=6)
         tube(0.6, 2.7, (0, 0, 9.4), (1, 0.2, 0), T["stone"], vertices=6)
-        tube(0.8, 0.4, (2.5, 0.5, 9.4), (1, 0.2, 0), NAVY, vertices=6)
         ball(0.55, (-1.6, 0.6, 7.4), ACCENT, segments=6, emission=1.3)
     else:
         z = -0.4
@@ -711,7 +710,7 @@ def fence_new(kind, points, turn, first, last):
             sag(a, b, 1.75, 0.5, 0.24, WOOD_LIGHT)
         elif kind == "orbit_post":  # chains that glow
             sag(a, b, 3.1, 0.75, 0.24, LEAVES[1], emission=1.0)
-            sag(a, b, 1.75, 0.5, 0.2, LEAVES[0], emission=1.0)
+            sag(a, b, 1.75, 0.5, 0.22, T["stone_pale"])  # (not glowing: every glowing piece of the scenery is in one mesh)
         else:  # a bolt of lightning over a rail of gold
             corners = [a + Vector((0, 0, high))] + [a + (b - a) * share + Vector((0, 0, height)) for share, height in ((0.3, high + 0.8), (0.62, high - 0.9))] + [b + Vector((0, 0, high))]
             for p, q in zip(corners, corners[1:]):
@@ -1277,12 +1276,12 @@ def knob(x, y, z):
         prism(0.8, 2.6, (x, y, z - 0.3), UP, LEAVES[round(abs(x)) % 3], roughness=0.12)
     elif kind == "bolt":  # Robot Factory: a cap in hazard yellow with a green light
         tube(1.0, 0.5, (x, y, z - 0.25), UP, "FFC21A", vertices=6, roughness=0.4)
-        ball(0.62, (x, y, z + 0.55), ACCENT, segments=8, emission=1.3)
+        ball(0.62, (x, y, z + 0.55), ACCENT, segments=6, emission=1.3)
     elif kind == "pod":  # Alien Jungle: a glowing pod
         gem(0.85, 2.0, (x, y, z + 0.5), ACCENT, sides=5, emission=1.2)
     elif kind == "orbit":  # Black Hole: a dark ball in a ring of fire
-        ball(0.75, (x, y, z + 0.6), HOLE, segments=8, roughness=0.3)
-        tube(1.4, 0.14, (x, y, z + 0.53), (0.35, 0.3, 1), ACCENT, vertices=10, emission=1.4)
+        ball(0.75, (x, y, z + 0.6), HOLE, segments=6, roughness=0.3)
+        tube(1.4, 0.14, (x, y, z + 0.53), (0.35, 0.3, 1), ACCENT, vertices=8, emission=1.4)
     elif kind == "spark":  # The Big Bang: a spark
         gem(0.8, 2.2, (x, y, z + 0.6), T["accent"], emission=1.2)
     else:  # ember
@@ -1623,15 +1622,16 @@ for x, z, across, along, height, colour in ((-66, -25, 14, 12, 13.5, HILLS[2]), 
 # ---- Behind the portal: the monsters' rock. A steep monolith with the world's sign on it, crags and
 # buttes to both sides, everything from z = 150 on (where the game's skyline is solid). ----
 BEHIND = DEPTH + 0.3
-CRAGS = ((-11, 177, 14, 39, UNDER_DARK, peak), (13, 178, 13, 42, UNDER_DARK, peak), (-33, 172, 13, 30, UNDER, peak), (35, 173, 13, 33, UNDER, peak),  # (x, z, radius, height, colour, kind)
-         (-21, 163, 12.5, 30, ROCK_DARK, butte), (22, 164, 12.5, 27, ROCK_DARK, butte), (-38, 161, 11, 24, ROCK, peak), (39, 162, 11, 20, ROCK, butte),
-         (-53, 160, 9.5, 16.5, ROCK_LIGHT, butte), (54, 161, 9.5, 21, ROCK_LIGHT, peak))
+FAR_DARK, FAR, CRAG_DARK, CRAG, CRAG_LIGHT = LOOK.get("crags") or (UNDER_DARK, UNDER, ROCK_DARK, ROCK, ROCK_LIGHT)
+CRAGS = ((-11, 177, 14, 39, FAR_DARK, peak), (13, 178, 13, 42, FAR_DARK, peak), (-33, 172, 13, 30, FAR, peak), (35, 173, 13, 33, FAR, peak),  # (x, z, radius, height, colour, kind)
+         (-21, 163, 12.5, 30, CRAG_DARK, butte), (22, 164, 12.5, 27, CRAG_DARK, butte), (-38, 161, 11, 24, CRAG, peak), (39, 162, 11, 20, CRAG, butte),
+         (-53, 160, 9.5, 16.5, CRAG_LIGHT, butte), (54, 161, 9.5, 21, CRAG_LIGHT, peak))
 SQUASH = 0.8  # a crag is this much less deep than it is wide
 for x, z, radius, height, colour, kind in CRAGS:
     place(kind, (x, max(z, BEHIND + radius * SQUASH)), radius=radius, height=height, colour=colour, stretch=SQUASH)
 # The world's liquid falls down the butte to the right of the portal, into a pool at its foot (outside the ground).
 place(waterfall, (22, 164), face=180, fall=[(5.2, 27.6), (6.5, 26.9), (7.3, 25.0), (8.0, 21.5), (9.3, 12.0), (10.2, 1.2), (10.75, 0.25)], pool=1.8, reach=11.1)
-place(monolith, (0, BEHIND + 15 * 0.85), radius=15, height=45, colour=UNDER, stretch=0.85)
+place(monolith, (0, BEHIND + 15 * 0.85), radius=15, height=45, colour=FAR, stretch=0.85)
 for x, z, size in ((-15.5, 153.8, 1.5), (14.6, 153.8, 1.1)):  # a boulder at its foot on each side of the portal
     place(rocks, (x, z), face=rng.uniform(0, 360), scale=size, colour=ROCK_LIGHT)
 for x, z, radius, length, lean, colour in ((-13.0, 151.6, 0.9, 4.6, -0.3, HOT), (-14.6, 151.2, 0.6, 2.8, -0.6, EMBER), (13.4, 151.5, 0.95, 5.0, 0.3, HOT), (15.0, 151.1, 0.6, 3.0, 0.6, EMBER),
@@ -1701,7 +1701,7 @@ for far, tone, size in ((9, 0, 1.5), (34, 1, 1.5), (47, 2, 1.5), (70, 0, 1.5), (
         far -= length
 words("YAANI'S BASE", (0, GATE_Z - NAME_SIGN[2] / 2 - 0.02, NAME_SIGN_Y), 1.5, face=180)
 words("YAANI'S BASE", (0, GATE_Z + NAME_SIGN[2] / 2 + 0.02, NAME_SIGN_Y), 1.5, face=0)
-words(WORLD.upper(), (sign_x, DEPTH - 0.02, sign_y), 5.4 if len(WORLD) < 6 else 4.4 if len(WORLD) < 9 else 35 / len(WORLD), face=180)
+words(WORLD.upper(), (sign_x, DEPTH - 0.02, sign_y), 5.4 if len(WORLD) < 6 else 4.4 if len(WORLD) < 9 else 30 / len(WORLD), face=180)
 
 use("Sky")
 for x, z, y, size in ((-150, 60, -40, 11), (160, 90, -34, 10), (-140, 200, -55, 8), (150, 220, -60, 9), (-60, -80, -70, 10), (70, -90, -75, 9),  # around and under the island
