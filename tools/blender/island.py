@@ -700,7 +700,7 @@ def themed_fence(step):
         elif FENCING == "spark_post":  # a bolt of lightning
             corners = [a + Vector((0, 0, 2.0))] + [a + (b - a) * share + Vector((0, 0, height)) for share, height in ((0.3, 2.9), (0.62, 1.3))] + [b + Vector((0, 0, 2.0))]
             for p, q in zip(corners, corners[1:]):
-                tube(0.17, (q - p).length, p, q - p, ACCENT, vertices=4, emission=1.2)
+                tube(0.24, (q - p).length, p, q - p, ACCENT, vertices=4, emission=1.2)
         else:
             sag(a, b, 2.9, 1.1, 0.26, ROCK_DARK)
 
@@ -1252,39 +1252,40 @@ def warped_clock():
 
 def atom():
     """The Big Bang: the first atom, as big as a house: a knot of red and blue balls on a gold stand, three
-    glowing orbits round it with an electron on each."""
-    red, blue, gold, middle = "EB4650", "328CEB", "FFD83A", Vector((0, 0, 7.6))
+    glowing blue orbits round it with a gold electron on each."""
+    red, blue, gold, middle = "EB4650", "328CEB", "FFD83A", Vector((0, 0, 8.2))
     tube(3.4, 0.7, (0, 0, 0), UP, STONE_DARK, vertices=12)
     tube(2.4, 0.6, (0, 0, 0.7), UP, WOOD_LIGHT, vertices=12, roughness=0.3)
-    tube(0.9, 4.2, (0, 0, 1.3), UP, WOOD, tip=0.55, vertices=8, roughness=0.3)
-    for index, offset in enumerate(((0.95, 0, 0.45), (-0.95, 0.2, 0.4), (0, 0.95, -0.5), (0.1, -0.95, -0.4), (0, 0, 1.35), (0, 0.1, -1.3))):
-        ball(1.15, middle + Vector(offset), red if index % 2 == 0 else blue, segments=10, roughness=0.3)
+    tube(1.0, 4.4, (0, 0, 1.3), UP, WOOD, tip=0.55, vertices=8, roughness=0.3)
+    for index, offset in enumerate(((1.15, 0, 0.5), (-1.15, 0.25, 0.45), (0, 1.15, -0.6), (0.1, -1.15, -0.5), (0, 0, 1.6), (0, 0.1, -1.55))):
+        ball(1.45, middle + Vector(offset), red if index % 2 == 0 else blue, segments=10, roughness=0.3)
     for index in range(3):
-        turn = (math.radians(24), math.radians(index * 60), 0)
-        hoop(4.5, 0.2, middle, gold, rotation=turn, segments=24, emission=1.4)
+        turn = (math.radians(62), 0, math.radians(index * 60))
+        hoop(5.4, 0.34, middle, "40E0FF", rotation=turn, segments=24, emission=1.0)
         where = math.radians(index * 130 + 40)
-        ball(0.62, middle + Euler(turn).to_matrix() @ Vector((math.cos(where) * 4.5, math.sin(where) * 4.5, 0)), "40E0FF", segments=8, emission=1.5)
+        ball(0.85, middle + Euler(turn).to_matrix() @ Vector((math.cos(where) * 5.4, math.sin(where) * 5.4, 0)), gold, segments=8, emission=1.2)
 
 
 def bang():
-    """The Big Bang: the bang itself, stopped an instant after. A white-hot spark, the shell round it blown
-    to pieces, beams and a ring of light flying out."""
-    middle = Vector((0, 0, 6.6))
-    hoop(3.3, 0.5, (0, 0, 0.15), STONE_DARK, segments=12)
-    tube(3.0, 0.3, (0, 0, 0), UP, ACCENT, vertices=12, emission=1.0)
-    tube(0.8, 4.6, (0, 0, 0.2), UP, ACCENT_PALE, tip=0.5, vertices=6, emission=1.4)
-    ball(2.3, middle, "FFF0A0", segments=12, emission=1.2)
-    for index, (degrees, rise) in enumerate(((0, 0.15), (62, 0.75), (120, 0.05), (185, 0.65), (240, 0.2), (300, 0.8), (30, 2.4))):
+    """The Big Bang: the bang itself, stopped an instant after. A white-hot spark on a gold stand, fat rays
+    of light bursting out of it in every direction, pieces of what it was flying off between them, and two
+    shock rings running out."""
+    middle = Vector((0, 0, 8.0))
+    tube(3.4, 0.7, (0, 0, 0), UP, STONE_DARK, vertices=12)
+    tube(2.4, 0.6, (0, 0, 0.7), UP, WOOD_LIGHT, vertices=12, roughness=0.3)
+    tube(1.0, 4.6, (0, 0, 1.3), UP, WOOD, tip=0.55, vertices=8, roughness=0.3)
+    ball(2.5, middle, "FFE680", segments=12, emission=1.0)
+    rays = ((0, 0.1), (60, 0.7), (120, 0.0), (180, 0.75), (240, 0.1), (300, 0.7), (30, -0.55), (150, -0.5), (270, -0.55), (90, 3.0))
+    for index, (degrees, rise) in enumerate(rays):  # the rays: fat at the spark, a point far out
         x, y = ring(degrees, 1.0)
         out = Vector((x, y, rise)).normalized()
-        first = len(made)
-        lathe([(0, 0.6), (1.0, 0.42), (1.6, -0.2), (1.25, -0.32), (0, 0.22)], LEAVES[index % 3], segments=5, smooth=False, roughness=0.35)  # a piece of the shell
-        turned(first, Matrix.Translation(middle + out * 4.3) @ out.to_track_quat("Z", "Y").to_matrix().to_4x4())
-    for degrees, rise in ((32, 0.3), (92, 0.1), (150, 0.55), (212, 0.2), (270, 0.6), (332, 0.1), (200, 2.0), (100, 1.4)):
+        tube(1.15, 5.4 if rise >= 0 else 3.6, middle + out * 1.6, out, "FFC61A" if index % 2 == 0 else "FF7A1E", tip=0.0, vertices=5, emission=0.35)
+    for index, (degrees, rise, far, size) in enumerate(((30, 0.5, 6.4, 1.0), (92, -0.1, 6.9, 0.8), (150, 0.45, 6.6, 1.05), (212, -0.15, 6.8, 0.85), (268, 0.5, 6.4, 1.0), (332, -0.1, 7.0, 0.8), (200, 1.9, 6.2, 0.9), (20, 1.7, 6.4, 0.8))):
         x, y = ring(degrees, 1.0)
         out = Vector((x, y, rise)).normalized()
-        gem(0.3, 3.4, middle + out * 3.5, ACCENT_PALE, out, emission=1.5)
-    hoop(5.4, 0.16, middle, GOLD, rotation=(0.25, 0.1, 0), segments=24, emission=1.3)
+        gem(0.95 * size, 3.4 * size, middle + out * far, LEAVES[index % 3], out, roughness=0.25)  # what it threw out
+    hoop(4.6, 0.36, middle, WHITE, rotation=(0.3, 0.12, 0), segments=24, emission=1.4)
+    hoop(6.6, 0.24, middle, "FF7AD0", rotation=(0.3, 0.12, 0), segments=28, emission=1.2)
 
 
 # The two set pieces of a world and what is solid in them: (builder, ((what, x, y, radius, height), ...)), the
@@ -1296,7 +1297,7 @@ SET_PIECES = {
     "Robot Factory": ((robot_arm, (("robot arm", 0, 0, 3.7, 11.7),)), (conveyor, (("conveyor", -3.6, 0, 2.3, 4.6), ("press", 0, 0, 3.0, 8.2), ("conveyor end", 3.6, 0, 2.3, 4.6)))),
     "Alien Jungle": ((snap_pod, (("snapping plant", 0, 0.8, 2.6, 12.5),)), (saucer, (("crashed saucer", 0, 0.6, 5.2, 8.0),))),
     "Black Hole": ((black_hole, (("black hole", 0, 0, 3.8, 11.0),)), (warped_clock, (("bent clock tower", 0, 0, 4.0, 16.0),))),
-    "The Big Bang": ((atom, (("atom", 0, 0, 3.4, 12.0),)), (bang, (("the bang", 0, 0, 3.4, 9.0),))),
+    "The Big Bang": ((atom, (("atom", 0, 0, 3.4, 12.0),)), (bang, (("the bang", 0, 0, 3.4, 12.0),))),
     "Moon": ((lander, (("lander", 0, 0, 3.6, 9.0), ("flag", 3.9, -3.4, 0.5, 6.0))), (dish, (("radar dish", 0, 0, 2.8, 8.0), ("control box", 4.3, 1.4, 1.7, 2.4)))),
     "Mars": ((rover, (("rover wreck", 0, 0, 3.8, 4.4), ("wheel", -4.7, -3.9, 1.4, 1.3))), (habitat, (("habitat", 0, 0, 5.2, 5.6), ("airlock", 0, -4.9, 2.1, 3.6), ("air tanks", 5.1, 1.3, 1.9, 3.6)))),
     "Neptune": ((snowman, (("snowman", 0, 0, 3.0, 11.0),)), (igloo, (("igloo", 0, 0, 5.0, 5.1), ("igloo door", 0, -4.9, 2.4, 3.3), ("snow blocks", 5.1, -2.0, 1.6, 1.4)))),
@@ -1610,7 +1611,7 @@ def pond(reach, fall, bridge):
     elif LIQUID == "energy":  # rings running out over it, sparks standing in it
         for radius in (2.4, 4.4, 6.6):
             hoop(radius, 0.16, (1.0, 0.8, 0.34), WHITE, segments=20, emission=1.6)
-        for x, y, z, size in ((-4.0, 2.5, 1.8, 0.6), (3.2, 4.2, 2.4, 0.5), (4.6, -1.5, 1.6, 0.55)):
+        for x, y, z, size in ((-4.0, 2.5, 2.6, 0.9), (3.2, 4.2, 3.3, 0.75), (4.6, -1.5, 2.3, 0.8)):
             gem(size, size * 3.2, (x, y, z), LEAVES[int(z * 10) % 3], roughness=0.25)
     for x, y, height in ((-7.2, 5.2, 3.6), (-6.2, 6.3, 4.4), (-7.9, 4.2, 3.0), (7.3, 5.0, 4.0), (6.4, 6.0, 3.2)) if CLUTTER else ():  # reeds
         tube(0.16, height, (x, y, 0), (rng.uniform(-0.1, 0.1), 0, 1), GRASS_RIM, vertices=5)
