@@ -429,16 +429,18 @@ def factory_stack(leaf, kind):
 def glow_shroom(leaf, kind):
     """The Alien Jungle's: a giant mushroom with glowing spots, wide and squat with a young one beside it,
     or tall on a bending stalk with a bell cap and lights hanging from its rim."""
-    stalk, glow = "F0DCFF", ACCENT_PALE
+    stalk, glow, spots = "D2A2FF", WATER_LIGHT, "5CF0E0"  # a lilac stalk, lime gills and lights, cyan spots: no toadstool has those
 
     def cap(radius, height, at, tilt, colour, drops=False):
         first = len(made)
         lathe([(0, height), (radius * 0.5, height * 0.86), (radius * 0.88, height * 0.42), (radius, 0), (radius * 0.86, -0.35), (0, -0.2)], colour, segments=12, roughness=0.4)
-        tube(radius * 0.8, 0.3, (0, 0, -0.5), UP, glow, vertices=10, emission=1.0)  # the gills
+        tube(radius * 0.8, 0.3, (0, 0, -0.5), UP, glow, vertices=8, emission=1.2)  # the gills
+        hoop(radius * 0.97, radius * 0.07, (0, 0, 0.02), shade(colour, -0.2), segments=12)  # a fat lip round the rim
         for degrees, share in ((10, 0.3), (130, 0.42), (250, 0.36), (70, 0.72), (190, 0.76), (310, 0.7))[:5 if radius > 3 else 3]:
             x, y = ring(degrees, radius * share)
             out = Vector((x / radius, y / radius, 0.9 * height / radius * (1.1 - share))).normalized()  # roughly the cap's own slope there
-            tube(radius * 0.16, 0.3, Vector((x, y, height * (1 - 0.72 * share * share) - 0.16)), out, glow, tip=radius * 0.1, vertices=6, emission=1.2)
+            wide = radius * (0.2 if share < 0.5 else 0.14)
+            tube(wide, 0.34, Vector((x, y, height * (1 - 0.72 * share * share) - 0.16)), out, spots, tip=wide * 0.6, vertices=5, emission=1.4)
         for index in range(4 if drops else 0):
             x, y = ring(index * 90 + 20, radius * 0.82)
             tube(0.08, 1.7, (x, y, -0.3), (0, 0, -1), glow, vertices=3, emission=1.0)
@@ -446,12 +448,14 @@ def glow_shroom(leaf, kind):
         turned(first, Matrix.Translation(at) @ Matrix.Rotation(tilt, 4, "Y"))
 
     if kind == "round":
-        tube(1.7, 6.6, (0, 0, -0.4), (0.06, 0, 1), stalk, tip=1.1, vertices=8)
+        stalk = "DDF7A0"  # pale lime under the wide cap: lilac goes grey in the gills' lime light
+        tube(1.9, 6.6, (0, 0, -0.4), (0.06, 0, 1), stalk, tip=1.2, vertices=8)
+        tube(1.35, 0.5, (0.27, 0, 4.1), (0.06, 0, 1), glow, vertices=8, emission=1.2)  # a glowing band under the cap
         cap(5.6, 3.4, (0.4, 0, 5.9), 0.1, leaf)
         tube(0.7, 2.6, (3.9, -2.2, -0.3), (0.1, -0.05, 1), stalk, tip=0.5, vertices=6)
         cap(2.1, 1.4, (4.1, -2.3, 2.1), 0.2, shade(leaf, 0.2))
     else:
-        end = bent((0, 0, -0.4), [(0.05, 0, 1), (0.15, 0, 1), (0.3, 0, 1), (0.42, 0, 1)], 1.2, 3.1, (stalk,), taper=0.1)
+        end = bent((0, 0, -0.4), [(0.05, 0, 1), (0.15, 0, 1), (0.3, 0, 1), (0.42, 0, 1)], 1.2, 3.1, (stalk, shade(stalk, -0.12)), taper=0.1, glow=glow)
         cap(3.3, 4.2, end - Vector((0.1, 0, 0.5)), 0.36, leaf, drops=True)
 
 
@@ -1099,12 +1103,12 @@ def conveyor():
 
 def snap_pod():
     """The Alien Jungle: a giant snapping plant on a thick stalk in a rosette of leaves, its jaws open."""
-    green, red, tooth, hinge = "38C898", "E13C5A", "FFF3C8", Vector((0, 3.0, 0))
+    green, red, tooth, hinge = "5CE07A", "E13C5A", "FFF3C8", Vector((0, 3.0, 0))
     for index in range(6):
         turn = math.radians(index * 60 + 15)
         ball(3.3, (math.cos(turn) * 2.8, math.sin(turn) * 2.8, 0.55), WOOD_LIGHT if index % 2 else "8A5CD8", scale=(1, 0.42, 0.16), rotation=(0, -0.22, turn), segments=8)
-    bent((0, 1.6, -0.3), [(0, 0.1, 1), (0, -0.1, 1), (0, -0.3, 1)], 1.4, 2.3, (green, shade(green, -0.15)), taper=0.1)
-    middle = Vector((0, -0.6, 7.6))
+    bent((0, 1.6, -0.3), [(0, 0.1, 1), (0, -0.1, 1), (0, -0.1, 1), (0, -0.3, 1)], 1.5, 2.3, (green, shade(green, -0.15)), taper=0.08, glow=WATER)
+    middle = Vector((0, -0.7, 10.0))
 
     def jaw(frame, upper):
         first = len(made)
@@ -1118,33 +1122,34 @@ def snap_pod():
             ball(0.5, (x, y * 1.2, 1.6 * (1 - 0.7 * share * share) + 0.02), "FFE23A", scale=(1, 1, 0.4), segments=6)
         turned(first, frame)
 
-    swing = Matrix.Translation(middle + hinge)
+    swing = Matrix.Translation(middle + hinge) @ Matrix.Scale(1.2, 4)
     jaw(swing @ Matrix.Rotation(-0.5, 4, "X") @ Matrix.Translation(-hinge), True)
     jaw(swing @ Matrix.Rotation(0.28, 4, "X") @ Matrix.Translation(-hinge) @ Matrix.Rotation(math.pi, 4, "Y"), False)
     ball(1.0, middle + Vector((0, 0.8, 0.5)), WATER, segments=8, emission=1.3)  # its throat glows
     ball(1.0, middle + Vector((0, -1.9, 0.1)), "FF8AC0", scale=(0.8, 1.9, 0.3), segments=8)  # its tongue
     for side in (-1, 1):  # two feelers with a light on each
-        end = bent((side * 2.2, 1.2, 0), [(side * 0.5, 0, 1), (side * 0.9, -0.1, 1), (side * 0.4, -0.3, 1)], 0.5, 2.0, (WOOD,), taper=0.2, vertices=6)
-        ball(0.6, end, LEAVES[2], segments=6, emission=1.3)
+        end = bent((side * 2.2, 1.2, 0), [(side * 0.5, 0, 1), (side * 0.9, -0.1, 1), (side * 0.4, -0.3, 1)], 0.6, 2.2, (WOOD_LIGHT,), taper=0.2, vertices=6)
+        ball(0.8, end, LEAVES[2], segments=6, emission=1.3)
 
 
 def saucer():
     """The Alien Jungle: a flying saucer that came down nose first in the undergrowth, its lights still on,
     vines already over it."""
-    hull, green = "E4D4FF", "38C898"
+    hull, green = "8CD8FF", "38C898"
     dome(5.6, 0.8, (0, 0.2, 0), GRASS_LIGHT, stretch=0.9, sink=0.1, segments=12, roughness=0.9)
     first = len(made)
     lathe([(0, 1.5), (2.6, 1.3), (5.3, 0.25), (5.5, 0.0), (5.3, -0.25), (2.8, -1.1), (0, -1.3)], hull, segments=16, roughness=0.3)
     ball(2.4, (0, 0, 1.2), "5CF0E0", scale=(1, 1, 0.85), segments=12, roughness=0.1)
     hoop(2.45, 0.25, (0, 0, 1.3), "B49CFF", segments=14)
+    hoop(5.45, 0.3, (0, 0, 0), LEAVES[0], segments=16)  # a pink band round its edge
     for index in range(8):
-        x, y = ring(index * 45, 4.3)
-        ball(0.5, (x, y, 0.75), (LEAVES[0], WATER)[index % 2], segments=6, emission=1.4)
+        x, y = ring(index * 45, 4.2)
+        ball(0.62, (x, y, 0.8), (LEAVES[2], WATER)[index % 2], segments=6, emission=1.5)
     tube(0.12, 1.6, (0, 0, 3.1), UP, hull, vertices=5)
     ball(0.38, (0, 0, 4.8), LEAVES[2], segments=6, emission=1.3)
     tube(1.6, 0.8, (0, 0, -1.9), UP, "B49CFF", tip=2.2, vertices=10)
     tube(1.3, 0.2, (0, 0, -2.0), UP, WATER, vertices=10, emission=1.4)  # its engine, still running
-    turned(first, Matrix.Translation((0, 0.4, 2.5)) @ Matrix.Rotation(0.5, 4, "X") @ Matrix.Rotation(0.14, 4, "Y"))
+    turned(first, Matrix.Translation((0, 0.7, 3.5)) @ Matrix.Rotation(0.72, 4, "X") @ Matrix.Rotation(0.14, 4, "Y"))
     for start, leans in (((-4.9, 2.2, 0), [(0.4, -0.2, 1), (1, -0.3, 0.7), (1, -0.4, 0.1)]), ((4.7, 3.0, 0), [(-0.4, -0.3, 1), (-1, -0.2, 0.6), (-1, -0.5, 0.0)])):
         end = bent(start, leans, 0.55, 2.4, (green, shade(green, -0.15)), taper=0.15, vertices=6)
         ball(0.6, end, LEAVES[0], segments=6, emission=1.3)
@@ -1244,7 +1249,7 @@ SET_PIECES = {
     "Nebula": ((telescope, (("telescope", 0, 0, 3.4, 9.0),)), (star_nursery, (("star nursery", 0, 0, 5.2, 4.5),))),
     "Crystal Belt": ((geode, (("geode", 0, 1.2, 4.8, 8.4), ("loose crystals", 4.8, -2.2, 1.4, 3.2), ("loose crystal", -4.9, -2.4, 0.9, 2.6))), (mine_cart, (("mine cart", 0, 0, 3.4, 5.2), ("pickaxe", 3.6, -2.4, 0.6, 5.0)))),
     "Robot Factory": ((robot_arm, (("robot arm", 0, 0, 3.7, 9.6),)), (conveyor, (("conveyor", -3.6, 0, 2.3, 4.6), ("press", 0, 0, 3.0, 8.2), ("conveyor end", 3.6, 0, 2.3, 4.6)))),
-    "Alien Jungle": ((snap_pod, (("snapping plant", 0, 0.8, 2.6, 9.0),)), (saucer, (("crashed saucer", 0, 0.6, 5.2, 5.4),))),
+    "Alien Jungle": ((snap_pod, (("snapping plant", 0, 0.8, 2.6, 12.5),)), (saucer, (("crashed saucer", 0, 0.6, 5.2, 8.0),))),
     "Black Hole": ((black_hole, (("black hole", 0, 0, 3.8, 11.0),)), (warped_clock, (("bent clock tower", 0, 0, 4.0, 14.0),))),
     "The Big Bang": ((atom, (("atom", 0, 0, 3.4, 12.0),)), (bang, (("the bang", 0, 0, 3.4, 9.0),))),
     "Moon": ((lander, (("lander", 0, 0, 3.6, 9.0), ("flag", 3.9, -3.4, 0.5, 6.0))), (dish, (("radar dish", 0, 0, 2.8, 8.0), ("control box", 4.3, 1.4, 1.7, 2.4)))),
@@ -1545,8 +1550,8 @@ def pond(reach, fall, bridge):
         for x, y, size in ((-4.0, 2.5, 0.7), (3.2, 4.2, 0.5), (4.6, -1.5, 0.6)):
             ball(size, (x, y, 0.3), WATER_LIGHT, segments=6, emission=1.4)
     elif LIQUID == "acid":  # bubbles, and a leaf afloat
-        for x, y, size in ((-4.0, 2.5, 0.9), (-2.9, 3.3, 0.5), (3.2, 4.2, 0.7), (4.6, -1.5, 0.8), (5.3, -0.4, 0.45)):
-            ball(size, (x, y, 0.3), WATER_LIGHT, segments=6, emission=1.4)
+        for x, y, size in ((-4.0, 2.5, 1.3), (-2.6, 3.6, 0.7), (3.2, 4.2, 1.0), (4.6, -1.5, 1.2), (5.6, -0.2, 0.6), (0.6, 1.2, 0.8)):
+            ball(size, (x, y, 0.25), "5CF0E0" if size < 0.9 else WATER_LIGHT, segments=6, emission=1.4)
         tube(1.5, 0.16, (-1.6, -3.4, 0.24), UP, LEAVES[1], vertices=7)
     elif LIQUID == "singularity":  # the dark it all falls into, and the last light round it
         tube(3.1, 0.62, (1.0, 0.8, -0.2), UP, HOLE, vertices=20, roughness=0.3)

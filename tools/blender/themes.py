@@ -225,7 +225,7 @@ THEMES = {
         "tree": "factory_stack", "liquid": "coolant", "fence": "pipe_rail",
     },
     "Alien Jungle": {  # jade moss on purple soil, pink and purple glowing caps, lime acid, a lime sky
-        "grass": "1FA882", "grass_light": "38C898", "grass_deep": "18906E", "grass_rim": "0E6A5C",
+        "grass": "14A898", "grass_light": "34CCB0", "grass_deep": "0F8E86", "grass_rim": "0A6670",
         "dirt": "7A3CA8", "dirt_dark": "5A2A88",
         "under": "3E2470", "under_dark": "2C1858", "under_light": "56348E",
         "rock": "7E58C0", "rock_dark": "5E3EA0", "rock_light": "A480E0",
@@ -236,7 +236,7 @@ THEMES = {
         "leaves": ("FF5AB4", "A85CFF", "FFB03C"),
         "petals": ("FF5AB4", "FFF3C8", "FFB03C", "A85CFF", "B4FF2A"),
         "accent": "FF6AC8", "accent_pale": "FFC8EC",
-        "sky_top": "2E9E7A", "sky_horizon": "C8F06A",
+        "sky_top": "14A082", "sky_horizon": "C8F74E",
         "tree": "glow_shroom", "liquid": "acid", "fence": "vine_post",
     },
     "Black Hole": {  # plum rock with a burning orange lip under a crimson-black sky, rings of fire
