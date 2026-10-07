@@ -42,7 +42,7 @@ def spore_puff(c, a):
     tube(1.2, 0.2, (0, 0, 1.38), UP, a, vertices=12)  # gills
     lathe([(0, 2.6), (0.8, 2.47), (1.42, 2.05), (1.62, 1.62), (1.35, 1.45), (0, 1.5)], c, segments=14)
     for x, y, z, r in ((-0.8, -1.02, 2.12, 0.3), (0.5, -1.25, 2.02, 0.24), (1.25, -0.35, 2.12, 0.28), (-1.32, 0.15, 2.05, 0.26), (0.05, -0.62, 2.48, 0.22), (0.3, 1.2, 2.1, 0.3), (-0.3, -1.42, 1.78, 0.17)):
-        ball(r, (x, y, z), "FFF3D0", scale=(1, 1, 0.8), segments=6)
+        ball(r * 1.15, (x * 0.96, y * 0.96, z - 0.05), "FFF3D0", segments=8)
     crater((0, 0, 2.5), 0.5, 0.36, a, "FFF07A", sides=8, glow=2)
     tuft("FFF6A8", ((0.05, 0, 3.02, 0.3), (0.34, 0.1, 3.3, 0.2)), emission=0.8)
     for x, y, z, r in ((-1.6, -0.5, 1.1, 0.15), (1.62, -0.4, 0.7, 0.17), (-1.5, -0.6, 0.35, 0.11)):
@@ -179,7 +179,9 @@ def venom_hydra(c, a):
     lathe([(0, 0.1), (2.0, 0.1), (2.35, 0.0)], ALIEN_JUNGLE_LIME, segments=12, location=(0, -0.5, 0), emission=0.6)
     cube(3.3, 2.8, 1.7, 0.08, c, bevel=0.6, seg=2)
     front = -1.4
-    disc(0.85, (0, front + 0.02, 0.85), shade(a, 0.35), height=0.08, stretch=0.72, sides=10)  # a pale belly
+    disc(1.05, (0, front + 0.03, 0.8), shade(c, 0.5), height=0.07, stretch=0.66, sides=12)  # a pale belly
+    for x, z in ((-0.35, 1.0), (0.4, 0.85), (-0.1, 0.5)):
+        spot((x, front - 0.03, z), 0.13, a)
     for side in (-1, 1):
         box((0.9, 1.0, 0.6), (side * 1.25, -1.1, 0.3), dark, bevel=0.22, segments=1)
         for dx in (-0.2, 0.2):
