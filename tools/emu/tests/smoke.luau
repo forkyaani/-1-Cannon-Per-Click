@@ -2130,6 +2130,85 @@ do
 	check(Minis.precious("hugetycoon") and not Minis.precious("wooden"), "a Huge takes a second press to delete, a wooden one does not")
 	local picks = Minis.resolve({ "wooden~sharp3", "iron" }, { "wooden", "iron", "iron" }, 5)
 	check(#picks == 2 and picks[1] == "wooden~sharp3" and picks[2] == "iron", "a pick that was enchanted away is replaced by its twin")
+	-- The window: cards, the detail pane's buttons, search, delete many.
+	do
+		local window = Windows.byName["MINI CANNONS"]
+		check(window ~= nil, "the MINI CANNONS window is registered")
+		local function press(pattern: string): boolean
+			for _, inst in window.frame:GetDescendants() do
+				if inst:IsA("TextButton") and inst.Visible and string.find(inst.Text, pattern, 1, true) then
+					harness.advance(0.2)
+					harness.click(inst)
+					run(0.5)
+					return true
+				end
+			end
+			return false
+		end
+		local function shownCards(): { Instance }
+			local list = {}
+			for _, inst in window.frame:GetDescendants() do
+				if inst.Name == "Card" and inst.Visible then
+					table.insert(list, inst)
+				end
+			end
+			return list
+		end
+		act("minisBest")
+		window.open()
+		run(0.5)
+		local kinds = 0
+		for _ in Minis.counts(data.pets) do
+			kinds += 1
+		end
+		eq(#shownCards(), kinds, "one card per kind of mini cannon")
+		harness.click(shownCards()[1])
+		run(0.5)
+		local worn = #Game.equipped(player)
+		check(press("UNEQUIP") or press("EQUIP"), "the detail pane has an equip button")
+		check(#Game.equipped(player) ~= worn, "and pressing it changes what is equipped")
+		check(press("LOCK"), "LOCK")
+		check(press("UNLOCK"), "and UNLOCK")
+		-- Search narrows the grid and changes nothing that is owned.
+		local owned = #data.pets
+		local box = window.frame:FindFirstChild("Search", true)
+		box.Text = "iron"
+		run(0.5)
+		eq(#shownCards(), 1, "search shows only the iron one")
+		box.Text = "zzzz"
+		run(0.5)
+		eq(#shownCards(), 0, "and nothing for a word that matches nothing")
+		box.Text = ""
+		run(0.5)
+		eq(#data.pets, owned, "searching deletes nothing")
+		check(press("SORT"), "SORT cycles")
+		check(press("SHOW"), "SHOW cycles")
+		local showButton
+		for _, inst in window.frame:GetDescendants() do
+			if inst:IsA("TextButton") and string.find(inst.Text, "SHOW: ", 1, true) then
+				showButton = inst
+			end
+		end
+		for _ = 1, 30 do
+			if showButton.Text == "SHOW: ALL" then
+				break
+			end
+			harness.click(showButton)
+			run(0.3)
+		end
+		eq(showButton.Text, "SHOW: ALL", "and comes back round to ALL")
+		-- Delete many: tick the iron card, then confirm.
+		box.Text = "iron"
+		run(0.5)
+		local iron = Game.pets.count(data, "iron")
+		check(iron > 0 and press("DELETE MANY"), "delete mode")
+		harness.click(shownCards()[1])
+		run(0.5)
+		check(press("DELETE " .. iron), "the button says how many will go")
+		eq(Game.pets.count(data, "iron"), 0, "and they are deleted")
+		box.Text = ""
+		window.close()
+	end
 	-- Back to automatic, and the pets as they were.
 	act("minisBest")
 	eq(#Game.equipped(player), math.min(slots, #data.pets), "EQUIP BEST is automatic again")

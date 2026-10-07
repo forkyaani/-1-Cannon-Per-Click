@@ -595,6 +595,16 @@ spans -75..75) and `Marketplace.container()` the folder to parent props to. Buil
 A `ProximityPrompt` with the attribute `Window = "<NAME>"` opens that window on the client with no server code.
 One with the attribute `Loot = "<source id>"` opens the loot viewer on that source (see `ctx.Loot`).
 
+### The MINI CANNONS window
+
+A feature of its own: rules `src/shared/Features/Minis.luau`, server `src/server/Features/Minis.luau`, window
+`src/client/Features/Minis.luau` (design at the end of `docs/MINI_CANNON_REVAMP.md`). The core still equips
+the strongest mini cannons by itself, but asks `Game.equipPicker(player, data, slots)` first: the feature
+answers with the player's own picks once they have equipped or unequipped by hand (`Minis.resolve`), and nil
+while they have not. `Game.equipped(player)` and `Game.equipSlots(player)` are for features. Actions:
+`minisEquip`, `minisUnequip`, `minisBest`, `minisUnequipAll`, `minisLock`, `minisDelete`, `minisLoadout`.
+The client reads `State.feature("minis")`: `manual`, `locked`, `loadouts`.
+
 ### The store
 
 The STORE window (`src/client/Windows.luau`) has three tabs: GEMS, ITEMS and PASSES. The catalogue of the
