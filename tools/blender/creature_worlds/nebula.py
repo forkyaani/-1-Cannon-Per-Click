@@ -54,9 +54,9 @@ def nebula_jelly(c, a):
     ball(0.6, (0, 0, 2.86), a, scale=(1, 1, 0.42), segments=10, emission=1)
     for x, y, z in ((-0.85, -0.5, 2.62), (0.9, -0.4, 2.6), (0.2, 0.9, 2.66)):
         spot((x, y, z), 0.2, a, towards=(x, y, 1.2))
-    cone(0.6, 0.9, (0, 0, 1.5), (0, 0, -1), shade(c, 0.4), sides=8)  # the frilly arms in the middle
+    cone(0.7, 0.8, (0, 0, 1.5), (0, 0, -1), shade(c, 0.4), sides=8)  # the frilly arms in the middle
     for index, (x, y) in enumerate(((-0.95, -0.35), (0.95, -0.35), (-0.6, 0.7), (0.6, 0.7), (0, -0.75))):
-        nebula_hang(x, y, 1.2, 1.15 - 0.2 * (index % 2), a, count=5, phase=index * 1.3, emission=0.4)
+        nebula_hang(x, y, 1.2, 0.85 - 0.15 * (index % 2), a, count=4, phase=index * 1.3, start=0.3, end=0.17, sway=0.1, emission=0.4)
     eyes(front, 2.05, 0.46, a, size=0.82)
     mouth(front - 0.02, 1.55, 0.3)
 
@@ -65,19 +65,18 @@ def plasma_sprite(c, a):
     # A ball of plasma with a tail, lightning bolts for ears and arms, an electron on a ring round it.
     ball(1.0, (0, 0, 1.5), c, scale=(1, 0.95, 1), segments=12, roughness=0.25, emission=0.6)
     front = -0.9
-    cone(0.6, 1.0, (0, 0.1, 0.95), (0.2, 0, -1), c, sides=8, emission=0.6)
-    ball(0.16, (0.32, 0.1, -0.2), a, segments=6, emission=1.5)
-    bolt = [(-0.14, 0), (0.22, 0.5), (0.0, 0.5), (0.3, 1.1), (-0.34, 0.38), (-0.1, 0.38)]
+    cone(0.62, 0.75, (0, 0.1, 0.95), (0.25, 0, -1), c, sides=8, emission=0.6)
+    bolt = [(-0.18, 0), (0.28, 0.55), (0.02, 0.55), (0.36, 1.2), (-0.42, 0.4), (-0.12, 0.4)]
     for side in (-1, 1):
         shape = [(x * side, z) for x, z in bolt]
-        plate(shape, a, (side * 0.5, 0, 2.25), thick=0.2, rotation=(0, side * 0.45, 0), emission=1.5)
-        plate(shape, a, (side * 0.85, -0.1, 1.2), thick=0.2, rotation=(0, side * 1.75, 0), emission=1.5)
+        plate(shape, a, (side * 0.5, 0, 2.2), thick=0.26, rotation=(0, side * 0.45, 0), emission=1.5)
+        plate(shape, a, (side * 0.8, -0.1, 1.2), thick=0.26, rotation=(0, side * 1.75, 0), emission=1.5)
     turn = Euler((0.4, 0.3, 0))
-    hoop(1.4, 0.1, (0, 0, 1.5), a, rotation=turn, segments=14, emission=1)
+    hoop(1.4, 0.13, (0, 0, 1.5), a, rotation=turn, segments=14, emission=1)
     for angle, colour in ((-1.2, NEBULA_CYAN), (2.2, WHITE)):
         point = Vector((math.cos(angle) * 1.4, math.sin(angle) * 1.4, 0))
         point.rotate(turn)
-        ball(0.2, (point.x, point.y, point.z + 1.5), colour, segments=8, emission=2)
+        ball(0.26, (point.x, point.y, point.z + 1.5), colour, segments=8, emission=2)
     eyes(front, 1.65, 0.4, "FF7A1E", size=0.8)
     mouth(front, 1.12, 0.32)
 
@@ -115,8 +114,8 @@ def cloud_leviathan(c, a):
         cone(0.36, 1.0, (side * 1.1, -0.5, 2.9), (side * 0.6, 0, 1), a, sides=6, emission=1)
         for index in range(3):
             spot((side * 1.61, -1.1 + index * 0.55, 1.75 + 0.12 * index), 0.2 - 0.03 * index, a, towards=(side, 0, 0))
-        nebula_hang(side * 1.15, -1.6, 0.6, 0.6, a, count=4, phase=side, start=0.2, end=0.12, emission=1)
-        nebula_hang(side * 0.6, -0.4, 0.55, 0.55, a, count=4, phase=2 + side, start=0.18, end=0.1, emission=1)
+        nebula_hang(side * 1.15, -1.6, 0.6, 0.6, a, count=3, phase=side, start=0.28, end=0.18, emission=1)
+        nebula_hang(side * 0.6, -0.4, 0.55, 0.55, a, count=3, phase=2 + side, start=0.26, end=0.16, emission=1)
     tuft(puff, ((-0.9, -0.9, 2.95, 0.5), (0, -1.0, 3.1, 0.6), (0.9, -0.9, 2.95, 0.5), (0, 0, 3.05, 0.6), (-0.7, 0.1, 2.9, 0.45), (0.7, 0.1, 2.9, 0.45),
                 (0, 1.2, 2.8, 0.5), (0, 2.2, 2.6, 0.42), (0, 3.0, 2.65, 0.32)), emission=0.2)
     tuft(puff, ((-1.3, 0.3, 0.6, 0.45), (1.3, 0.3, 0.6, 0.45), (0, 1.3, 0.75, 0.5), (0, 2.3, 1.0, 0.4)), emission=0.2)
@@ -165,4 +164,4 @@ WORLDS["Nebula"] = [
     ("Cloud Leviathan", cloud_leviathan, "4A3CC8", "6FE6FF", "boss floater"),
     ("Nebula Queen", nebula_queen, "7A32D0", "FFD23C", "boss"),
 ]
-BACKDROPS["Nebula"] = "C272A6"
+BACKDROPS["Nebula"] = "8C4A80"
