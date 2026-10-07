@@ -259,6 +259,24 @@ equip and unequip, delete, search, "and other features". The mockup is `docs/ui-
 Open questions for P1: delete gives nothing back, or a few coins or gems? May an equipped one be deleted in one
 step? Is there a limit on locks? How many loadout slots?
 
+## Q. Icons for every item in the game (asked for by Yaani on 7 Oct; PLAN only, not started, nobody has it yet)
+
+Yaani's screenshots of the STORE: every row (passes, gem packs, keys, Boss Chest, boosts) shows a plain
+coloured oval where its picture should be. The same oval is the stand-in everywhere a row is built with
+`UI.row`. Every item needs a real icon. Today 32 icons exist (atlases A and B, `UI.icon`, `assets/ui/`);
+sheets C to E in `docs/UI_VISION.md` section 8 were planned and never made.
+
+- [ ] Q1. **[open]** The list: every thing that shows an oval or an emoji today, from the code: game passes, gem packs, STORE items, backpack items (`Items.get`: powerups, keys, chests, crates, ammo), currencies, island shop rows, Halloween and weekly shop offers, missions, daily rewards, worlds, towers, boosts, enchantments, mastery tracks, menu buttons. Written into `docs/ICONS.md` with a name per icon and which sheet it goes on · **45 min**
+- [ ] Q2. **[open]** Decide per kind how the picture is made (in `docs/ICONS.md`): painted icons on atlas sheets (Kling, about 20 credits a sheet, same Candy Arcade style as sheets A and B) for flat things (boosts, currencies, passes, missions); a 3D render from the Blender model for things that have one (mini cannons, eggs, crates, chests, keys, towers). Yaani says yes before Q3 · **20 min**
+- [ ] Q3. **[open]** Sheet C: boosts, powerups and passes (2x Power, 2x Coins, 2x Luck, Mega Luck, Auto, Mega Damage, Heal Freeze, Supercharge, x3 Egg Opener, x3 Luck, slots, storage, 3x Speed, Huge) · **40 min**
+- [ ] Q4. **[open]** Sheet D: gems and shop things (six gem pack sizes from a few gems to a mountain, Enchantment Key, Shiny Enchantment Key, Boss Chest, Daily Crate, Wooden, Gem, Royal, Pumpkin and Cursed Crates, candy) · **40 min**
+- [ ] Q5. **[open]** Sheet E: ammo kinds, and the twelve world medallions · **40 min**
+- [ ] Q6. **[open]** Cut each sheet into its atlas (`tools/icon_atlas.py`), upload to the group (Astral Crafts) and add the names to `UI.Atlases` / `UI.icon` **[S]** · **30 min**
+- [ ] Q7. **[open]** `UI.row` and the cards show an item's icon: every item table gets an `icon` name (`Items`, `Config.Passes`, `Store.GemPacks`, `Store.Items`, crates, ammo), with the coloured oval kept only as the fallback for a missing one · **1 h 00**
+- [ ] Q8. **[open]** Go through every window and replace what is left: STORE, ISLAND SHOP, SHOP, BACKPACK, AMMO, CRATES, LOOT, MISSIONS, DAILY, WORLDS, the HUD chips and the notifications' emoji · **1 h 30**
+- [ ] Q9. **[open]** Pictures for the Roblox purchase prompts: upload an icon to each of the six gem packs and the seven game passes in Creator Hub (they are blank today) **[S]** · **30 min**
+- [ ] Q10. **[open]** Seen in Studio: every window on a desktop and a phone-sized screen, no oval or emoji left **[S]** · **30 min**
+
 ## After launch
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
