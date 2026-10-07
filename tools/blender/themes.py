@@ -196,8 +196,8 @@ THEMES = {
     },
     "Crystal Belt": {  # teal crystal dust on navy rock, crystals in violet, pink and gold, a night sky
         "grass": "40BEB8", "grass_light": "62D8CE", "grass_deep": "2CA4A4", "grass_rim": "1C7C94",
-        "dirt": "2A6CA8", "dirt_dark": "1E4E8C",
-        "under": "1A3A78", "under_dark": "122A5C", "under_light": "2A54A0",
+        "dirt": "3C82D8", "dirt_dark": "2A62B8",
+        "under": "2448A0", "under_dark": "1A3480", "under_light": "3A68C4",
         "rock": "6A6CC0", "rock_dark": "4C4E9E", "rock_light": "9092DC",
         "sand": "E4FFF8", "sand_dark": "A4E8DC", "cobble": "F2FFFC",
         "stone": "B8A8F0", "stone_dark": "9484D8", "stone_pale": "DCD0FF",

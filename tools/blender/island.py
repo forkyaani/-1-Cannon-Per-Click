@@ -409,9 +409,13 @@ def crystal_cluster(leaf, kind):
     else:
         chunk((2.6, 2.4, 1.5), (0, 0, 0.7), ROCK, detail=1)
         crystals = ((0, 0, 1.8, 16.5, (0.03, 0.02, 1), leaf), (-1.5, 0.3, 1.1, 7.5, (-0.4, 0.05, 1), others[0]), (1.4, -0.5, 1.0, 6.0, (0.45, -0.15, 1), light))
-        for index in range(5):
-            x, y = ring(index * 72 + 10, 3.7)
-            chunk((0.75, 0.75, 0.6), (x, y, 9.0 + 0.9 * math.sin(index * 1.26)), ROCK_LIGHT, detail=1)
+        for index in range(8):  # its belt: rocks and small gems on a tilted ring
+            x, y = ring(index * 45 + 10, 3.3)
+            z = 10.2 + 1.2 * math.sin(math.radians(index * 45 + 10))
+            if index % 2:
+                gem(0.5, 1.5, (x, y, z), others[index // 2 % 2], roughness=0.12)
+            else:
+                chunk((0.95, 0.9, 0.75), (x, y, z), ROCK_LIGHT, detail=1)
     for x, y, radius, length, lean, colour in crystals:
         prism(radius, length, (x, y, 0.4), lean, colour, roughness=0.12)
 
@@ -644,7 +648,7 @@ def themed_fence(step):
             star(1.05, (x, y, z + 3.9), NEBULA_GOLD, depth=0.38, rotation=turn, emission=0.8)
         elif FENCING == "crystal_post":  # Crystal Belt: a stone post with a gem on it
             box((1.2, 1.2, 2.4), (x, y, z + 0.9), STONE, bevel=0.3, rotation=turn, segments=1)
-            gem(0.7, 2.0, (x, y, z + 2.9), LEAVES[index % 3], roughness=0.12)
+            gem(0.85, 2.4, (x, y, z + 3.1), LEAVES[index % 3], roughness=0.12)
         elif FENCING == "pipe_rail":  # Robot Factory: a bollard in hazard stripes
             tube(0.75, 3.5, (x, y, z - 0.3), UP, "FFC21A", vertices=6, roughness=0.4)
             tube(0.8, 1.0, (x, y, z + 1.1), UP, NAVY, vertices=6)
@@ -1022,11 +1026,16 @@ def geode():
     first = len(made)
     lathe([(0, -3.2), (2.8, -1.9), (3.8, 0.6), (4.3, 0.9), (4.7, 0.2), (4.0, -2.9), (0, -4.6)], ROCK, segments=10, rough=0.2, smooth=False)
     lathe([(0, -3.0), (2.7, -1.75), (3.9, 0.75)], "ECD8FF", segments=10, roughness=0.3)  # its pale lining
-    prism(1.3, 5.6, (0, 0, -3.0), UP, LEAVES[0], roughness=0.12, emission=0.7)
+    hoop(4.45, 0.42, (0, 0, 0.72), "FFFFFF", segments=10)  # the cut edge: a white crust all round the hollow
+    prism(1.5, 7.8, (0, 0, -3.0), UP, LEAVES[0], roughness=0.12, emission=0.7)
     for index in range(6):
-        x, y = ring(index * 60 + 15, 2.1)
-        prism(0.85, 3.4 + (index % 2) * 0.9, (x, y, -2.2), (x * 0.16, y * 0.16, 1), LEAVES[(index + 1) % 3], roughness=0.12, emission=0.7)
-    turned(first, Matrix.Translation((0, 0.8, 4.5)) @ Matrix.Rotation(math.radians(55), 4, "X"))
+        x, y = ring(index * 60 + 15, 2.2)
+        prism(1.0, 4.6 + (index % 2) * 1.1, (x, y, -2.2), (x * 0.2, y * 0.2, 1), LEAVES[(index + 1) % 3], roughness=0.12, emission=0.7)
+    for degrees, colour in ((95, LEAVES[1]), (180, LEAVES[2]), (265, LEAVES[0])):  # and three that broke through its back
+        x, y = ring(degrees, 4.2)
+        prism(0.6, 2.4, (x, y, -1.6), (x, y, -0.6), colour, roughness=0.12)
+    # Tipped only a little: the hollow looks up as much as forward, so it shows from every side and from above.
+    turned(first, Matrix.Translation((0, 0.6, 4.25)) @ Matrix.Rotation(math.radians(32), 4, "X"))
     for x, y, radius, length, lean, colour in ((4.5, -2.8, 0.9, 3.6, (0.3, -0.2, 1), LEAVES[1]), (5.2, -1.5, 0.6, 2.3, (-0.2, 0.3, 1), LEAVES[2]), (-4.7, -2.4, 0.75, 2.9, (-0.35, -0.1, 1), LEAVES[0])):
         prism(radius, length, (x, y, -0.2), lean, colour, roughness=0.12)
 
@@ -1041,12 +1050,12 @@ def mine_cart():
         for y in (-1.3, 1.3):
             tube(1.0, 0.5, (x, y - 0.25, 1.5), (0, 1, 0), GOLD, vertices=10, roughness=0.3)
             tube(0.4, 0.7, (x, y - 0.35, 1.5), (0, 1, 0), WOOD_DARK, vertices=6)
-    box((5.6, 3.4, 2.9), (0, 0, 3.5), WOOD, bevel=0.55)
-    box((6.1, 3.9, 0.55), (0, 0, 4.95), WOOD_LIGHT, bevel=0.2, segments=1)
+    box((5.6, 3.4, 2.9), (0, 0, 3.5), "3A7CE8", bevel=0.55)  # bright blue, so it is not one more violet thing
+    box((6.1, 3.9, 0.55), (0, 0, 4.95), GOLD, bevel=0.2, segments=1, roughness=0.3)
     for x in (-1.9, 0, 1.9):
-        box((0.45, 3.56, 2.3), (x, 0, 3.6), WOOD_LIGHT, bevel=0.1, segments=1)
-    for x, y, radius, length, lean, colour in ((0, 0, 1.2, 4.6, (0.05, 0, 1), LEAVES[0]), (-1.5, 0.3, 0.9, 3.5, (-0.45, 0.1, 1), LEAVES[1]), (1.5, -0.2, 0.95, 3.7, (0.45, -0.1, 1), LEAVES[2]),
-                                               (0.4, -0.9, 0.7, 2.9, (0.1, -0.5, 1), LEAVES[1]), (-0.4, 0.9, 0.7, 3.0, (-0.1, 0.5, 1), LEAVES[2])):
+        box((0.45, 3.56, 2.3), (x, 0, 3.6), GOLD, bevel=0.1, segments=1, roughness=0.3)
+    for x, y, radius, length, lean, colour in ((0, 0, 1.45, 6.0, (0.05, 0, 1), LEAVES[0]), (-1.5, 0.3, 1.1, 4.6, (-0.45, 0.1, 1), LEAVES[1]), (1.5, -0.2, 1.15, 4.8, (0.45, -0.1, 1), LEAVES[2]),
+                                               (0.4, -0.9, 0.85, 3.6, (0.1, -0.5, 1), LEAVES[1]), (-0.4, 0.9, 0.85, 3.7, (-0.1, 0.5, 1), LEAVES[2])):
         prism(radius, length, (x, y, 4.3), lean, colour, roughness=0.12, emission=0.5)
     handle, lean = Vector((3.9, -2.7, 0)), Vector((-0.22, 0.2, 1)).normalized()
     tube(0.2, 5.2, handle, lean, "E3B06B", vertices=5)  # the pickaxe
@@ -1269,7 +1278,7 @@ def bang():
 SET_PIECES = {
     "The Void": ((rift, (("rift", 0, 0, 4.2, 12.0),)), (void_eye, (("eye in a claw", 0, 0, 4.4, 10.6),))),
     "Nebula": ((telescope, (("telescope", 0, 0, 3.4, 9.0),)), (star_nursery, (("star nursery", 0, 0, 5.2, 4.5),))),
-    "Crystal Belt": ((geode, (("geode", 0, 1.2, 4.8, 8.4), ("loose crystals", 4.8, -2.2, 1.4, 3.2), ("loose crystal", -4.9, -2.4, 0.9, 2.6))), (mine_cart, (("mine cart", 0, 0, 3.4, 5.2), ("pickaxe", 3.6, -2.4, 0.6, 5.0)))),
+    "Crystal Belt": ((geode, (("geode", 0, 1.2, 4.8, 8.4), ("loose crystals", 4.8, -2.2, 1.4, 3.2), ("loose crystal", -4.9, -2.4, 0.9, 2.6))), (mine_cart, (("mine cart", 0, 0, 3.4, 6.0), ("pickaxe", 3.6, -2.4, 0.6, 5.0)))),
     "Robot Factory": ((robot_arm, (("robot arm", 0, 0, 3.7, 9.6),)), (conveyor, (("conveyor", -3.6, 0, 2.3, 4.6), ("press", 0, 0, 3.0, 8.2), ("conveyor end", 3.6, 0, 2.3, 4.6)))),
     "Alien Jungle": ((snap_pod, (("snapping plant", 0, 0.8, 2.6, 9.0),)), (saucer, (("crashed saucer", 0, 0.6, 5.2, 5.4),))),
     "Black Hole": ((black_hole, (("black hole", 0, 0, 3.8, 11.0),)), (warped_clock, (("bent clock tower", 0, 0, 4.0, 14.0),))),
@@ -1560,8 +1569,11 @@ def pond(reach, fall, bridge):
             for dx, dy, share in ((0, 0, 1.0), (1.3, 0.3, 0.7), (-1.1, 0.5, 0.6)):
                 ball(size * share, (x + dx * size * 0.8, y + dy * size * 0.8, 0.5), colour, scale=(1, 1, 0.7), segments=10, roughness=1.0)
     elif LIQUID == "prism":  # crystals growing out of it
-        for x, y, radius, length, lean, colour in ((-4.0, 2.5, 0.9, 3.8, (-0.2, 0.1, 1), LEAVES[0]), (-3.0, 3.4, 0.6, 2.4, (0.3, 0.2, 1), LEAVES[1]), (3.2, 4.2, 0.8, 3.2, (0.2, 0.1, 1), LEAVES[2]), (4.6, -1.5, 0.7, 2.6, (0.25, -0.2, 1), LEAVES[1])):
+        for x, y, radius, length, lean, colour in ((-4.2, 3.2, 1.3, 7.0, (-0.1, 0.05, 1), LEAVES[0]), (-2.9, 4.1, 0.9, 4.4, (0.4, 0.2, 1), LEAVES[1]), (-5.3, 2.1, 0.8, 3.6, (-0.5, -0.1, 1), LEAVES[2]),
+                                                   (4.0, 4.0, 1.0, 5.0, (0.15, 0.1, 1), LEAVES[2]), (5.1, 3.0, 0.7, 3.0, (0.5, -0.1, 1), LEAVES[1]), (4.8, -2.0, 0.7, 2.6, (0.25, -0.2, 1), LEAVES[0])):
             prism(radius, length, (x, y, 0), lean, colour, roughness=0.12)
+        solids.append(("pond crystals", -4.2, 3.2, 1.9, 6.4))  # in the pond's own space, like the palm
+        solids.append(("pond crystals", 4.3, 3.7, 1.5, 4.6))
     elif LIQUID == "coolant":  # the pipe it runs out of, and bubbles
         tube(1.5, 4.2, (0, 12.4, 2.0), (0, -1, -0.12), WOOD, vertices=10, roughness=0.35)
         hoop(1.55, 0.3, (0, 8.3, 1.5), "FFC21A", rotation=(math.pi / 2 - 0.12, 0, 0), segments=10)
@@ -1604,6 +1616,11 @@ def pond(reach, fall, bridge):
     ribbon(path, 4.4, WATER, lift=0.3, **WET)
     for shift, width, skip in ((-1.1, 0.8, 1), (0.9, 0.6, 2), (0.0, 0.5, 4)):  # lighter streaks down the fall
         ribbon(path[skip:], width, WATER_LIGHT, thickness=0.3, shift=shift, lift=0.5, **WET)
+    if LIQUID == "prism":  # cut like a gem: facets in rings round a pale table, and the fall splits into colours
+        for radius, lift, colour, turn in ((7.7, 0.02, "D29CFF", 0), (5.9, 0.07, "FF9CDC", 30), (4.0, 0.12, "FFE08A", 0), (2.2, 0.17, "F2FFFC", 30)):
+            tube(radius, 0.5, (0.4, 0.3, -0.2 + lift), UP, colour, vertices=6, roughness=0.1).rotation_euler = (0, 0, math.radians(turn))
+        for shift, colour, skip in ((-1.85, PETALS[0], 2), (1.7, PETALS[2], 1), (-0.55, PETALS[3], 3)):
+            ribbon(path[skip:], 0.45, colour, thickness=0.3, shift=shift, lift=0.5, roughness=0.15)
     if LIQUID in ("ice", "prism"):  # frozen: icicles where it would tip over, no foam
         for x, radius, length in ((-1.7, 0.6, 3.4), (-0.5, 0.45, 2.4), (0.8, 0.7, 4.2), (1.8, 0.4, 2.0)):
             tube(radius, length, (x, -drop[0] - 0.9, drop[1] - 0.2), (0, 0, -1), WATER_LIGHT, tip=0.0, vertices=5, roughness=0.15)
