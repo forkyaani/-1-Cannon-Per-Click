@@ -210,17 +210,17 @@ needs a second pass doubles its job.
 - [x] L8. **[Yaani]** (done 7 Oct: `assets/models/bases/the_big_bang_base.*`; photos looked at; not yet imported, see L9) The Big Bang base: render, check the photos · **20 min**
 - [ ] L9. **[open]** Import the seven bases and see each in a play test **[S]** · **45 min**
 
-## M. Monsters and bosses for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
+## M. Monsters and bosses for worlds 6 to 12 (asked for by Yaani on 7 Oct; taken by Yaani on 7 Oct 19:49)
 
 Each world: its 5 monsters, mid boss and final boss (names in `Config.Worlds`), built with `tools/blender/creatures.py <World>`.
 
-- [ ] M1. **[open]** The Void: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M2. **[open]** Nebula: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M3. **[open]** Crystal Belt: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M4. **[open]** Robot Factory: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M5. **[open]** Alien Jungle: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M6. **[open]** Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M7. **[open]** The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M1. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) The Void: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M2. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Nebula: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M3. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Crystal Belt: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M4. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Robot Factory: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M5. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Alien Jungle: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M6. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M7. **[Yaani]** (taken: Yaani, 7 Oct 19:49, a workflow) The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
 - [ ] M8. **[open]** Import the seven batches and watch a wave in each world **[S]** · **1 h 00**
 
 ## N. Egg opening (asked for by Yaani on 7 Oct; PLAN only, not started, nobody has it yet)

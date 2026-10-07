@@ -896,6 +896,14 @@ WORLDS = {
     ],
 }
 
+# The worlds after The Sun have a file each in creature_worlds/ (the_void.py ...), so that several can be worked
+# on at once. A file is run here, with everything above to hand: it defines its design functions and adds its
+# world with  WORLDS["The Void"] = [(name, design, colour, accent, kind), ...]  and  BACKDROPS["The Void"] = "RRGGBB".
+for _file in sorted(os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "creature_worlds"))):
+    if _file.endswith(".py"):
+        _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "creature_worlds", _file)
+        exec(compile(open(_path).read(), _path, "exec"))
+
 
 def stage(name, design, colour, accent, kind, x):
     """Builds one creature as its own group, sizes it (a floater: lifts it over its puddle) and stands it at
