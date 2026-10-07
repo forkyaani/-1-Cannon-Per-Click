@@ -371,7 +371,7 @@ Config.Level = {
 	-- player its target time (docs/BALANCE.md).
 	-- Fitted 7 Oct (after the towers' and mini cannons' buffs of that day) to Yaani's pace: about 30 minutes a world, the last four 40, 50, 60 and 70 on the average
 	-- of six seeds. One player's world can take twice its average, and none should pass 1:30.
-	worldPay = { 0.2748, 151, 3.916e+05, 4.665e+08, 4.659e+10, 2.497e+14, 9.938e+16, 1.002e+21, 2.265e+22, 6.096e+25, 4.111e+29, 3.945e+32 },
+	worldPay = { 0.2748, 151, 3.456e+05, 5.99e+08, 1.843e+11, 4.117e+14, 2.701e+17, 4.733e+20, 1.477e+23, 1.657e+26, 2.493e+29, 1.451e+32 },
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
 	-- pads and towers come quickly, and the grind sets in as the head start runs out.
