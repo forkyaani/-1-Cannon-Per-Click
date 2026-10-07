@@ -180,8 +180,7 @@ def venom_hydra(c, a):
     cube(3.3, 2.8, 1.7, 0.08, c, bevel=0.6, seg=2)
     front = -1.4
     disc(1.05, (0, front + 0.03, 0.8), shade(c, 0.5), height=0.07, stretch=0.66, sides=12)  # a pale belly
-    for x, z in ((-0.35, 1.0), (0.4, 0.85), (-0.1, 0.5)):
-        spot((x, front - 0.03, z), 0.13, a)
+    spot((0.3, front - 0.03, 0.75), 0.15, a)
     for side in (-1, 1):
         box((0.9, 1.0, 0.6), (side * 1.25, -1.1, 0.3), dark, bevel=0.22, segments=1)
         for dx in (-0.2, 0.2):
