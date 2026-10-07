@@ -253,11 +253,11 @@ equip and unequip, delete, search, "and other features". The mockup is `docs/ui-
 - [ ] P5. **[open]** Delete: DELETE on one, and a delete mode to tick several cards and remove them in one go, with a confirm that names what goes; never an equipped, a Huge, a Secret or an enchanted one without a second confirm; a lock toggle per mini cannon that delete skips · **1 h 15**
 - [ ] P6. **[open]** Search and sort: a search box (by name), filter chips (rarity, world or egg, enchanted, fused tier), and sort by damage, rarity, newest or name; the choice is remembered · **1 h 00**
 - [ ] P7. **[open]** The detail pane: big 3D preview, name, rarity, damage, enchantments, fuse tier and what the next tier needs, where it hatches, how many owned, and the buttons (equip, delete, lock; FUSE and ENCHANT jump to those machines' islands) · **1 h 00**
-- [ ] P8. **[open]** Other features, each a yes or no from Yaani in P1: auto-delete by rarity while hatching; a storage bar with the +500 pass offer when nearly full; "new" dots on ones not yet looked at; loadouts (saved sets of equipped mini cannons) · sized after P1
+- [ ] P8. **[open]** Other features, DECIDED by Yaani on 7 Oct: (a) **loadouts**: saved sets of equipped mini cannons, save the current set under a slot and switch with one press (how many slots is for P1); (b) **a storage bar**: "183 / 250 stored", turning orange when nearly full, with the +500 Mini Cannon Storage pass offered beside it. NOT wanted for launch: auto-delete while hatching, "new" dots · **1 h 30**
 - [ ] P9. **[open]** Tests in the emulator for every new action (equip, unequip, delete one and many, lock, search does not change what is owned), then seen in Studio on a desktop and a phone-sized screen **[S]** · **1 h 00**
 
 Open questions for P1: delete gives nothing back, or a few coins or gems? May an equipped one be deleted in one
-step? Is there a limit on locks? Which of P8's four extras are wanted for launch?
+step? Is there a limit on locks? How many loadout slots?
 
 ## After launch
 
