@@ -123,7 +123,7 @@ Huge.PassPet = "hugetycoon"
 do
 	local pet = Config.Pets[Huge.PassPet]
 	Config.Passes[Huge.PassKey] = {
-		id = 0,
+		id = 2013380339, -- created in the group's experience on 7 Oct 2026, on sale at 1,499 Robux
 		order = 0, -- first in the store
 		name = `HUGE {pet.short} Cannon`,
 		-- Short: the store's row has two small lines for it.

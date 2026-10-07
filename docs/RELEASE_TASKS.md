@@ -237,7 +237,7 @@ shows instead: that is what Yaani saw.
 
 ## O. Things for sale that have no Roblox id yet (7 Oct)
 
-- [ ] O1. **[Yaani]** (taken: Yaani, 7 Oct) HUGE Tycoon Cannon game pass, 1,499 Robux: create it in the group's experience and paste its id into `Huge.Pass` (`src/shared/Features/Huge.luau`, `id = 0`). The STORE says "not on sale yet" until then · **15 min**
+- [x] O1. **[Yaani]** (done 7 Oct: pass 2013380339 created, on sale at 1,499 Robux, Managed Pricing off; a real purchase has not been tried) HUGE Tycoon Cannon game pass, 1,499 Robux: create it in the group's experience and paste its id into `Huge.Pass` (`src/shared/Features/Huge.luau`, `id = 0`). The STORE says "not on sale yet" until then · **15 min**
 - [ ] O2. **[open]** Decide and then create or remove the other things still at `product = 0`: the Royal Crate (99 Robux, `Features/Crates`), the three powerup packs (49 / 129 / 399 Robux, `Features/Powerups`) and the old Robux Shiny key (`Enchant.ShinyProduct`, dropped in favour of gems). Not started: needs Yaani's call
 
 ## After launch
