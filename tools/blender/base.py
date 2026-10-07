@@ -138,7 +138,7 @@ LOOKS = {
                          monsters=("FF7AD0", "FFD24A", "B46CFF", "FFFFFF")),
     "Robot Factory": dict(road="sand", road_edge="sand_dark", kerb="2C3870", kerb_glow=0.0, band="sand_dark", hot="FF3C3C", ember="FFC21A", lair="under_dark",
                           roof="tank", knob="bolt", window="accent", iron="2C3870", board="242E8C", landmark="robot_arm", cloud="FFF6D0", ambient=0.85, sun=2.6,
-                          hills=("2E64DA", "3458C8", "2A52C0", "2840A0"), lamp_glow=True, monsters=("FF6A2A", "50FFAA", "FFC21A", "FF7AD0")),
+                          hills=("3E74EA", "386ADF", "3360D4", "2E54C4"), lamp_glow=True, monsters=("FF6A2A", "50FFAA", "FFC21A", "FF7AD0")),
     "Alien Jungle": dict(road="sand", road_edge="sand_dark", kerb="rock", kerb_glow=0.0, band="sand_dark", hot="3CD8FF", ember="B4FF2A", lair="under",
                          roof="cap", knob="pod", window="accent", iron="wood_dark", board="2C1858", landmark="snap_pod", cloud="E8FFB0", ambient=0.85, sun=2.6,
                          lamp_glow=True, monsters=("FF5AB4", "FFB03C", "A85CFF", "FFFFFF")),
@@ -531,6 +531,7 @@ def tree_crystal_cluster(tone=0, variant=0):
 def tree_factory_stack(tone=0, variant=0):
     """The Robot Factory: a bolted tank with a gauge and a pipe, or a striped chimney with a puff of steam."""
     leaf = LEAVES[tone]
+    first = len(made)
     if not variant:
         tube(3.5, 0.7, (0, 0, -0.3), UP, NAVY, vertices=10)
         tube(3.0, 5.4, (0, 0, 0.4), UP, leaf, vertices=10, roughness=0.35)
@@ -540,7 +541,8 @@ def tree_factory_stack(tone=0, variant=0):
             for degrees in (130, 230):  # (island.py has six bolts a band, a rim round the gauge and twelve sides: thirty of these share one mesh of 10,000 triangles)
                 x, y = ring(degrees, 3.2)
                 slab((0.5, 0.5, 0.34), (x, y, z), GOLD, rotation=(0, 0, -math.radians(degrees)), roughness=0.3)
-        tube(1.1, 0.35, (0, -2.95, 3.1), (0, -1, 0), WHITE, vertices=8)  # the gauge
+        tube(1.45, 0.2, (0, -2.95, 3.1), (0, -1, 0), NAVY, vertices=8)  # the gauge, in its rim
+        tube(1.1, 0.35, (0, -2.95, 3.1), (0, -1, 0), WHITE, vertices=8)
         slab((0.16, 0.12, 0.85), (0.2, -3.36, 3.3), RED, rotation=(0, 0.6, 0))
         tube(0.6, 2.4, (0, 0, 7.0), UP, T["stone"], vertices=6)  # the pipe out of its top, with an elbow
         ball(0.78, (0, 0, 9.4), T["stone_dark"], segments=6)
@@ -556,6 +558,7 @@ def tree_factory_stack(tone=0, variant=0):
         tube(1.1, 0.3, (0, 0, z), UP, ACCENT, vertices=8, emission=1.3)
         for x, y, rise, radius in ((0.2, 0, 1.6, 1.3), (1.5, 0.4, 3.0, 1.05), (3.0, 0.2, 3.9, 0.75)):  # drifting off, not a stack
             ball(radius, (x, y, z + rise), "F4F8FF", segments=6, roughness=1.0)
+    moved(first, Matrix.Scale(1.25, 4))  # on the island they are the size of a house: on the hills they have to show from the road
 
 
 def tree_glow_shroom(tone=0, variant=0):
@@ -920,6 +923,7 @@ def geode():
 def robot_arm():
     """The Robot Factory: a robot arm on a base in hazard stripes, a glowing power cell in its claw."""
     yellow, orange, steel = "FFC21A", "FF6A2A", T["stone"]
+    tube(3.9, 3.2, (0, 0, -3.2), UP, NAVY, tip=3.7, vertices=12)  # a plinth down into the hill: the hill falls away under so wide a base
     tube(3.7, 0.8, (0, 0, 0), UP, NAVY, vertices=12)
     for index in range(0, 12, 2):
         x, y = ring(index * 30, 3.6)
@@ -1032,7 +1036,7 @@ def grown(build, size):
 
 
 LANDMARK = {"windmill": windmill, "rocket": rocket, "arch": arch, "igloo": igloo, "volcano": volcano,
-            "rift": grown(rift, 1.35), "telescope": grown(telescope, 1.45), "geode": grown(geode, 1.8), "robot_arm": grown(robot_arm, 1.55),
+            "rift": grown(rift, 1.35), "telescope": grown(telescope, 1.45), "geode": grown(geode, 1.8), "robot_arm": grown(robot_arm, 1.85),
             "snap_pod": grown(snap_pod, 1.45), "black_hole": grown(black_hole, 1.6), "bang": grown(bang, 1.3)}[LOOK["landmark"]]
 
 
