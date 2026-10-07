@@ -20,7 +20,7 @@
   "road": "A868F0",
   "kerb": "F8ECFF",
   "kerb_glows": false,
-  "stone": "E4CCFF",
+  "stone": "C9A0FF",
   "wood": "E8A020",
   "portal_glow": "FF3C6E",
   "roofs": "burst",
@@ -734,20 +734,20 @@
      -0.25
     ],
     "high": [
-     84.19,
+     86.54,
      167.84,
-     38.5
+     43.55
     ]
    },
    "box": {
     "low": [
-     -84.19,
+     -86.54,
      -0.25,
      -37.46
     ],
     "high": [
      80.88,
-     38.5,
+     43.55,
      167.84
     ]
    },

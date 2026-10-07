@@ -149,7 +149,7 @@ LOOKS = {
                        monsters=("FF3C8C", "5ADCE6", "B45CFF", "FFFFFF")),
     "The Big Bang": dict(road="sand_dark", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="FF3C6E", ember="3C9CFF", lair="under_dark",
                          roof="burst", knob="spark", window="accent", iron="wood_dark", board="8A3CC0", landmark="bang", cloud="FFFFFF", ambient=0.85, sun=2.5,
-                         stone=("E4CCFF", "BE96F0", "F8ECFF"), lamp_glow=True, monsters=("FF4A5A", "3C9CFF", "FFD83A", "FFFFFF")),
+                         stone=("C9A0FF", "9A68E8", "EBD8FF"), crags=("8A3CC0", "B45CE0", "9858E8", "B478F4", "CC98FF"), lamp_glow=True, monsters=("FF4A5A", "3C9CFF", "FFD83A", "FFFFFF")),
 }
 LOOK = {key: T.get(value, value) if isinstance(value, str) else value for key, value in LOOKS[WORLD].items()}
 ROAD, ROAD_EDGE, KERB_COLOUR = LOOK["road"], LOOK["road_edge"], LOOK["kerb"]
@@ -1033,7 +1033,7 @@ def grown(build, size):
 
 LANDMARK = {"windmill": windmill, "rocket": rocket, "arch": arch, "igloo": igloo, "volcano": volcano,
             "rift": grown(rift, 1.35), "telescope": grown(telescope, 1.45), "geode": grown(geode, 1.8), "robot_arm": grown(robot_arm, 1.55),
-            "snap_pod": grown(snap_pod, 1.45), "black_hole": grown(black_hole, 1.6), "bang": grown(bang, 1.3)}[LOOK["landmark"]]
+            "snap_pod": grown(snap_pod, 1.45), "black_hole": grown(black_hole, 1.6), "bang": grown(bang, 1.6)}[LOOK["landmark"]]
 
 
 # ---------------------------------------------------------------------------------------------------
