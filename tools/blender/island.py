@@ -369,22 +369,32 @@ def void_shard(leaf, kind):
         void_gem(1.45, 6.4, (0.4, 0, 12.9), (0.04, 0, 1), leaf)
 
 
+NEBULA_GOLD = "FFC42E"  # Nebula's stars: a deep gold, so that their glow stays yellow in the photos
+
+
+def nova(size, at, colour=NEBULA_GOLD):
+    """Nebula: a star that reads from every side (its props are turned every which way): two crossed."""
+    for turn in (0, math.pi / 2):
+        star(size, at, colour, depth=size * 0.4, rotation=(0, 0, turn), emission=0.8)
+
+
 def gas_cloud(leaf, kind):
-    """Nebula's: a heap of gas puffs with a ring round it and newborn stars in it, or a plume of them
-    twisting up to a star."""
-    deep, light, gold = shade(leaf, -0.14), shade(leaf, 0.35), "FFE27A"
+    """Nebula's: a heap of gas puffs with newborn stars in it (the pink ones with a ring of teal light
+    round them), or a plume of puffs twisting up to a star."""
+    deep, light = shade(leaf, -0.14), shade(leaf, 0.35)
     if kind == "round":
-        for x, y, z, radius, colour in ((0, 0, 3.0, 3.7, leaf), (-2.9, -0.5, 2.1, 2.5, deep), (2.8, 0.7, 2.3, 2.6, deep), (0.7, -1.0, 6.6, 2.7, light), (-1.5, 1.0, 5.8, 2.2, leaf), (1.7, 0.5, 9.0, 1.8, light)):
-            ball(radius, (x, y, z), colour, scale=(1, 1, 0.88), segments=8, roughness=1.0)
-        hoop(5.2, 0.28, (0, 0, 4.6), ACCENT_PALE, rotation=(0.32, 0.18, 0), segments=14, emission=1.0)
-        for x, y, z, size in ((0.9, -0.4, 12.0, 1.5), (-3.9, -1.5, 5.6, 0.9), (4.0, -0.9, 6.4, 1.0)):
-            star(size, (x, y, z), gold, depth=size * 0.35, emission=1.3)
+        for x, y, z, radius, colour, segments in ((0, 0, 3.1, 3.9, leaf, 12), (-3.0, -0.5, 2.1, 2.6, deep, 10), (2.9, 0.7, 2.3, 2.7, deep, 10), (0.6, -0.9, 6.7, 2.9, light, 10), (-1.3, 0.9, 9.3, 1.9, light, 10)):
+            ball(radius, (x, y, z), colour, scale=(1, 1, 0.88), segments=segments, roughness=1.0)
+        if leaf == LEAVES[0]:
+            hoop(5.6, 0.42, (0, 0, 4.4), ACCENT, rotation=(0.3, 0.16, 0), segments=20, emission=0.7)
+        for x, y, z, size in ((-1.0, -0.5, 12.6, 1.7), (-4.3, -1.6, 6.2, 1.0), (4.2, -1.2, 6.8, 1.15)):
+            nova(size, (x, y, z))
     else:
-        for index in range(7):
-            turn, radius = index * 1.1, 2.7 - index * 0.25
-            ball(radius, (math.cos(turn) * 0.9, math.sin(turn) * 0.9, 1.6 + index * 2.0), (deep, leaf, light)[index % 3], scale=(1, 1, 0.9), segments=8, roughness=1.0)
-        hoop(3.0, 0.22, (0, 0, 8.6), ACCENT_PALE, rotation=(0.3, -0.2, 0), segments=12, emission=1.0)
-        star(1.7, (0, 0, 16.3), gold, depth=0.6, emission=1.3)
+        for index in range(5):
+            turn, radius = index * 1.25, 3.0 - index * 0.38
+            ball(radius, (math.cos(turn) * 1.1, math.sin(turn) * 1.1, 1.9 + index * 2.55), (deep, leaf, light)[index % 3], scale=(1, 1, 0.92), segments=10, roughness=1.0)
+        nova(1.9, (0.3, -0.3, 15.6))
+        nova(0.9, (-2.9, -1.4, 9.4))
 
 
 def crystal_cluster(leaf, kind):
@@ -630,7 +640,8 @@ def themed_fence(step):
             gem(0.5, 1.4, (x, y, z + 3.5), LEAVES[index % 3], emission=1.4)
         elif FENCING == "star_rope":  # Nebula: a post with a star on it
             tube(0.45, 3.2, (x, y, z - 0.3), UP, WOOD_LIGHT, vertices=6)
-            star(0.95, (x, y, z + 3.7), "FFE27A", depth=0.3, rotation=turn, emission=1.2)
+            ball(0.5, (x, y, z + 2.95), PETALS[0], segments=6)
+            star(1.05, (x, y, z + 3.9), NEBULA_GOLD, depth=0.38, rotation=turn, emission=0.8)
         elif FENCING == "crystal_post":  # Crystal Belt: a stone post with a gem on it
             box((1.2, 1.2, 2.4), (x, y, z + 0.9), STONE, bevel=0.3, rotation=turn, segments=1)
             gem(0.7, 2.0, (x, y, z + 2.9), LEAVES[index % 3], roughness=0.12)
@@ -977,33 +988,32 @@ def void_eye():
 
 def telescope():
     """Nebula: a fat telescope on a stone pier, aimed over the pad at the sky."""
-    body, aim_at, pivot = "FF8AD0", Vector((0, -0.74, 0.67)).normalized(), Vector((0, 0.6, 5.4))
+    body, band, aim_at, pivot = "6A4CF0", NEBULA_GOLD, Vector((0, -0.74, 0.67)).normalized(), Vector((0, 0.6, 5.6))
     tube(3.6, 0.7, (0, 0, 0), UP, STONE_DARK, vertices=12)
-    tube(1.6, 3.8, (0, 0, 0.7), UP, STONE, tip=1.1, vertices=10)
+    tube(1.7, 4.0, (0, 0, 0.7), UP, STONE, tip=1.2, vertices=10)
     for side in (-1, 1):  # the fork it swings in
-        box((0.7, 1.6, 3.0), (side * 2.2, 0.6, 5.0), WOOD, bevel=0.25, segments=1)
-        tube(0.6, 0.5, (side * 2.3, 0.6, 5.4), (side, 0, 0), GOLD, vertices=8, roughness=0.3)
-    box((5.0, 1.8, 0.8), (0, 0.6, 3.9), WOOD, bevel=0.3, segments=1)
-    tube(1.6, 8.6, pivot - aim_at * 3.4, aim_at, body, tip=2.0, vertices=12, roughness=0.3)
-    for along, radius in ((-3.3, 1.72), (0.4, 1.95), (4.7, 2.15)):
-        tube(radius, 0.55, pivot + aim_at * along, aim_at, GOLD, vertices=12, roughness=0.3)
-    tube(1.75, 0.2, pivot + aim_at * 5.25, aim_at, ACCENT, vertices=12, roughness=0.1, emission=1.2)  # the lens
-    tube(0.6, 1.5, pivot - aim_at * 4.8, aim_at, WOOD_DARK, vertices=8)  # the eyepiece
-    tube(0.45, 3.8, pivot + Vector((1.5, 0, 1.4)) - aim_at * 1.5, aim_at, "6CE0E8", vertices=8, roughness=0.3)  # the finder
-    star(0.9, (3.6, -2.2, 3.4), "FFE27A", depth=0.35, emission=1.3)  # a star on a stick, to practise on
-    tube(0.14, 2.6, (3.6, -2.2, 0), UP, WOOD_LIGHT, vertices=5)
+        box((0.8, 1.7, 3.2), (side * 2.35, 0.6, 5.1), "38B4B8", bevel=0.25, segments=1)
+        tube(0.7, 0.5, (side * 2.5, 0.6, 5.6), (side, 0, 0), band, vertices=8, roughness=0.3)
+    box((5.4, 1.9, 0.8), (0, 0.6, 3.9), "38B4B8", bevel=0.3, segments=1)
+    tube(1.7, 9.2, pivot - aim_at * 3.6, aim_at, body, tip=2.25, vertices=12, roughness=0.3)
+    for along, radius in ((-3.5, 1.85), (0.5, 2.12), (5.1, 2.42)):
+        tube(radius, 0.6, pivot + aim_at * along, aim_at, band, vertices=12, roughness=0.3)
+    tube(2.0, 0.2, pivot + aim_at * 5.65, aim_at, ACCENT, vertices=12, roughness=0.1, emission=1.0)  # the lens
+    tube(0.65, 1.5, pivot - aim_at * 5.0, aim_at, "FF7AD0", vertices=8)  # the eyepiece
+    tube(0.5, 4.0, pivot + Vector((1.75, 0, 1.3)) - aim_at * 1.5, aim_at, "FF7AD0", vertices=8, roughness=0.3)  # the finder
+    star(1.0, (3.6, -2.2, 3.6), NEBULA_GOLD, depth=0.4, emission=0.8)  # a star on a stick, to practise on
+    tube(0.16, 2.8, (3.6, -2.2, 0), UP, WOOD_LIGHT, vertices=5)
 
 
 def star_nursery():
     """Nebula: a nest of gas where stars are born: a big one hatching in the middle, small ones adrift round it."""
-    pink, teal, lilac, gold = LEAVES[0], LEAVES[1], LEAVES[2], "FFE27A"
-    for x, y, z, radius, colour in ((0, 0.4, 1.8, 3.4, pink), (-3.2, 0.4, 1.4, 2.4, teal), (3.2, -0.2, 1.5, 2.5, lilac), (0.5, 3.0, 1.3, 2.3, teal), (-0.5, -2.9, 1.1, 2.0, lilac), (2.4, 2.4, 1.2, 1.8, pink), (-2.5, -2.2, 1.0, 1.7, pink)):
-        ball(radius, (x, y, z), colour, scale=(1, 1, 0.8), segments=10, roughness=1.0)
-    ball(1.7, (0, 0, 6.2), "FFF6C8", segments=10, emission=1.6)
-    star(3.3, (0, -0.2, 6.2), gold, depth=1.0, emission=1.3)
-    hoop(5.0, 0.24, (0, 0, 5.6), ACCENT_PALE, rotation=(0.3, 0.15, 0), segments=18, emission=1.0)
-    for x, y, z, size in ((-4.3, -1.2, 5.8, 1.1), (4.4, -0.8, 7.6, 1.2), (-2.4, 0.6, 10.4, 0.9), (2.2, 0.8, 11.0, 1.0)):
-        star(size, (x, y, z), gold if size > 1 else WHITE, depth=size * 0.35, emission=1.3)
+    pink, teal, lilac = LEAVES[0], LEAVES[1], LEAVES[2]
+    for x, y, z, radius, colour in ((-3.3, 0.4, 1.5, 2.6, teal), (3.3, -0.2, 1.6, 2.7, lilac), (0.5, 3.2, 1.5, 2.6, pink), (-0.4, -3.1, 1.1, 2.1, pink), (2.6, 2.6, 1.3, 2.0, teal), (-2.7, -2.4, 1.1, 1.9, lilac), (2.5, -2.6, 1.0, 1.7, teal), (-2.6, 2.7, 1.3, 2.0, lilac)):
+        ball(radius, (x, y, z), colour, scale=(1, 1, 0.82), segments=10, roughness=1.0)
+    ball(2.6, (0, 0, 1.6), shade(pink, 0.35), scale=(1, 1, 0.7), segments=10, roughness=1.0)  # the bed it hatches from
+    nova(3.9, (0, 0, 6.2))
+    for x, y, z, size, colour in ((-4.6, -1.4, 5.6, 1.15, WHITE), (4.7, -1.0, 7.4, 1.3, NEBULA_GOLD), (-2.9, 0.4, 10.6, 1.0, NEBULA_GOLD), (2.6, 0.6, 11.6, 0.85, WHITE)):
+        nova(size, (x, y, z), colour)
 
 
 def geode():
@@ -1548,7 +1558,7 @@ def pond(reach, fall, bridge):
     elif LIQUID == "gas":  # puffs drifting on it
         for x, y, size, colour in ((-4.0, 2.5, 1.5, LEAVES[0]), (3.2, 4.2, 1.2, WHITE), (4.6, -1.5, 1.3, LEAVES[2])):
             for dx, dy, share in ((0, 0, 1.0), (1.3, 0.3, 0.7), (-1.1, 0.5, 0.6)):
-                ball(size * share, (x + dx * size * 0.8, y + dy * size * 0.8, 0.5), colour, scale=(1, 1, 0.7), segments=8, roughness=1.0)
+                ball(size * share, (x + dx * size * 0.8, y + dy * size * 0.8, 0.5), colour, scale=(1, 1, 0.7), segments=10, roughness=1.0)
     elif LIQUID == "prism":  # crystals growing out of it
         for x, y, radius, length, lean, colour in ((-4.0, 2.5, 0.9, 3.8, (-0.2, 0.1, 1), LEAVES[0]), (-3.0, 3.4, 0.6, 2.4, (0.3, 0.2, 1), LEAVES[1]), (3.2, 4.2, 0.8, 3.2, (0.2, 0.1, 1), LEAVES[2]), (4.6, -1.5, 0.7, 2.6, (0.25, -0.2, 1), LEAVES[1])):
             prism(radius, length, (x, y, 0), lean, colour, roughness=0.12)
