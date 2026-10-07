@@ -190,8 +190,33 @@ needs a second pass doubles its job.
 - [ ] K8. **[Yaani]** (taken: Yaani, 7 Oct) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
 - [ ] K9. **[Yaani]** Import the seven islands and look at each in a play test **[S]** · **45 min**
 
+## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
+
+- [ ] L1. **[open]** Base looks for the seven themes in `tools/blender/base.py` (gate, monster portal, backdrop per world; the themes come from K1) · **1 h 00**
+- [ ] L2. **[open]** The Void base: render, check the photos · **20 min**
+- [ ] L3. **[open]** Nebula base: render, check the photos · **20 min**
+- [ ] L4. **[open]** Crystal Belt base: render, check the photos · **20 min**
+- [ ] L5. **[open]** Robot Factory base: render, check the photos · **20 min**
+- [ ] L6. **[open]** Alien Jungle base: render, check the photos · **20 min**
+- [ ] L7. **[open]** Black Hole base: render, check the photos · **20 min**
+- [ ] L8. **[open]** The Big Bang base: render, check the photos · **20 min**
+- [ ] L9. **[open]** Import the seven bases and see each in a play test **[S]** · **45 min**
+
+## M. Monsters and bosses for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
+
+Each world: its 5 monsters, mid boss and final boss (names in `Config.Worlds`), built with `tools/blender/creatures.py <World>`.
+
+- [ ] M1. **[open]** The Void: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M2. **[open]** Nebula: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M3. **[open]** Crystal Belt: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M4. **[open]** Robot Factory: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M5. **[open]** Alien Jungle: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M6. **[open]** Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M7. **[open]** The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
+- [ ] M8. **[open]** Import the seven batches and watch a wave in each world **[S]** · **1 h 00**
+
 ## After launch
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
-6 Oct), worlds 6 to 12 (monsters, islands, bases), the remaining feature windows, Auto Hatch and Fast Hatch passes,
+6 Oct), the remaining feature windows, Auto Hatch and Fast Hatch passes,
 Huge models, mini cannons for worlds 2 to 12.
