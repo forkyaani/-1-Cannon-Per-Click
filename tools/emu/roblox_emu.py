@@ -1305,8 +1305,10 @@ class World:
             "GetPropertyChangedSignal": prop_signal, "GetAttributeChangedSignal": lambda i, n: i.signal("Attr_" + n),
             "IsDescendantOf": lambda i, a: any(p is a for p in ancestors(i)),
             "GetFullName": lambda i: i.full_name(), "ClearAllChildren": lambda i: [destroy(c) for c in list(i.children)] and None,
-            "PivotTo": lambda i, cf: None, "GetPivot": lambda i: CFrame(), "SetPrimaryPartCFrame": lambda i, cf: None,
-            "GetExtentsSize": extents_size,
+            # A part's pivot is its CFrame here (no PivotOffset, as CFrames carry no rotation); a model's does not move.
+            "PivotTo": lambda i, cf: i.lua_set("CFrame", cf) if i.is_a("BasePart") else None,
+            "GetPivot": lambda i: i.lua_get("CFrame") if i.is_a("BasePart") else CFrame(), "SetPrimaryPartCFrame": lambda i, cf: None,
+            "GetExtentsSize": extents_size, "GetBoundingBox": lambda i: [CFrame(), extents_size(i)],
             "FindFirstAncestor": lambda i, n: next((p for p in ancestors(i) if p.props["Name"] == n), None),
             "AddTag": world.add_tag, "RemoveTag": world.remove_tag,
             "HasTag": lambda i, tag: tag in i.tags, "GetTags": lambda i: array(i.tags),

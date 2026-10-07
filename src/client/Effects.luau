@@ -446,6 +446,160 @@ local RARE_HOLD_SECONDS = 2.5 -- and how long neither a tap nor the next hatch c
 local OVERLAY_COLOR = Color3.new(0, 0, 0)
 local OVERLAY_TRANSPARENCY = 0.2
 local EGG_OUTLINE = 4
+-- The opening, for an egg with a Blender model (ReplicatedStorage.EggModels; a flat stand-in just swaps as it
+-- always did). The egg hops as it rocks; at the crack it flashes, its top half flies off (EggHalves, from
+-- tools/blender/egg_halves.py; an egg without halves bursts whole), pieces of shell fly out, and the mini cannon
+-- jumps up out of the bottom half with a spin and lands where the egg stood. A Secret or a Huge gets rays.
+local OPEN_SECONDS = 0.95
+local SHARDS = 9
+local RAYS = 10
+local CRACK_AT = 0.54 -- how far up an egg its crack runs (egg_halves.py)
+local VIEW_FROM = Vector3.new(-0.5, 0.35, -1).Unit -- where UI.preview's camera stands, seen from its subject
+local MINI_FACING = CFrame.Angles(0, math.rad(90), 0) -- a mini cannon's face and barrel towards the camera
+
+-- A copy of an egg's piece (the whole egg, or a half) standing on the stage's middle.
+local function eggPiece(folderName: string, name: string): BasePart?
+	local folder = ReplicatedStorage:FindFirstChild(folderName)
+	local template = folder and folder:FindFirstChild(name)
+	if not template or not template:IsA("BasePart") then
+		return nil
+	end
+	local piece = template:Clone()
+	piece:PivotTo(CFrame.new())
+	return piece
+end
+
+-- How tall a piece stands, however the importer turned its mesh inside the part.
+local function standingHeight(piece: BasePart): number
+	local frame, size = piece.CFrame, piece.Size
+	return math.abs(frame.RightVector.Y) * size.X + math.abs(frame.UpVector.Y) * size.Y + math.abs(frame.LookVector.Y) * size.Z
+end
+
+-- Moves a piece whose pivot is under its foot: `frame` is where that foot goes.
+local function movePiece(piece: BasePart, frame: CFrame)
+	piece:PivotTo(frame)
+end
+
+-- 0 to 1, fast at first.
+local function easeOut(x: number): number
+	x = math.clamp(x, 0, 1)
+	return 1 - (1 - x) * (1 - x)
+end
+
+-- The opening in three parts, so that it can be played a frame at a time (Effects.hatch does; so does the
+-- emulator's test, which cannot wait). A stage is { scene, egg, height, camera, mini, miniSize, rare? }.
+-- beginOpening swaps the egg for its two halves (or keeps it whole, to be thrown off, where the place has no
+-- halves for it), makes the pieces of shell and puts the mini cannon, small, inside the bottom half.
+local GRAVITY = 9 -- in egg heights a second, a second
+local function beginOpening(stage, eggId: string, shellColor: Color3, index: number)
+	local height = stage.height
+	local crack = height * CRACK_AT
+	local top = eggPiece("EggHalves", `{eggId}_Top`)
+	local bottom = top and eggPiece("EggHalves", `{eggId}_Bottom`)
+	if top and bottom then
+		stage.egg:Destroy()
+		top.Parent, bottom.Parent = stage.scene, stage.scene
+		stage.top, stage.bottom = top, bottom
+	else
+		if top then
+			top:Destroy()
+		end
+		stage.top, stage.bottom = stage.egg, nil
+	end
+	stage.side = if index % 2 == 0 then -1 else 1
+	stage.shards = {}
+	for shard = 1, SHARDS do
+		local turn = (shard / SHARDS) * math.pi * 2 + index
+		local piece = Instance.new("WedgePart")
+		piece.Size = Vector3.one * height * (0.07 + 0.05 * ((shard * 7) % 3) / 2)
+		piece.Color = shellColor
+		piece.Material = Enum.Material.SmoothPlastic
+		piece.Anchored, piece.CanCollide, piece.CastShadow = true, false, false
+		piece.Parent = stage.scene
+		local out = 1.1 + 0.5 * (shard % 3)
+		table.insert(stage.shards, {
+			part = piece,
+			from = Vector3.new(math.cos(turn), 0, math.sin(turn)) * height * 0.3 + Vector3.new(0, crack, 0),
+			speed = Vector3.new(math.cos(turn) * out, 1.6 + 0.5 * (shard % 4), math.sin(turn) * out) * height,
+			spin = Vector3.new(7 + shard, 5 + shard * 2, 3 + shard),
+		})
+	end
+	stage.inside = crack * 0.6 -- how high in the bottom half the mini cannon starts
+	stage.rest = Vector3.new(0, height * 0.5, 0) -- and where it ends: where the egg's middle was
+	stage.mini.Size = stage.miniSize * 0.3
+	stage.mini:PivotTo(CFrame.new(0, stage.inside, 0) * MINI_FACING)
+	stage.mini.Parent = stage.scene
+	-- The camera ends where UI.preview would put it for the mini cannon alone.
+	local size = stage.miniSize
+	stage.cameraFrom = stage.camera.CFrame
+	stage.cameraTo = CFrame.lookAt(stage.rest + VIEW_FROM * (math.max(size.X, size.Y, size.Z) * 0.66 / math.tan(math.rad(15))), stage.rest)
+end
+
+-- The opening `t` seconds in (0 to OPEN_SECONDS).
+local function stepOpening(stage, t: number)
+	local height = stage.height
+	local share = math.clamp(t / OPEN_SECONDS, 0, 1)
+	-- The top is thrown up and to one side, tumbling, and fades as it falls.
+	local fade = math.clamp((t - 0.3) / 0.45, 0, 1)
+	movePiece(stage.top, CFrame.new(stage.side * 1.3 * height * t, (2.6 * t - GRAVITY * 0.5 * t * t) * height, -0.4 * height * t)
+		* CFrame.Angles(-3.2 * t, 0, -stage.side * 5 * t))
+	stage.top.Transparency = fade
+	if stage.bottom then
+		-- The bottom half sinks away once the mini cannon is out of it.
+		local sink = math.clamp((t - 0.25) / 0.5, 0, 1)
+		movePiece(stage.bottom, CFrame.new(0, -sink * sink * height * 0.9, 0))
+		stage.bottom.Transparency = math.clamp((t - 0.45) / 0.4, 0, 1)
+	end
+	for _, shard in stage.shards do
+		local at = shard.from + shard.speed * t + Vector3.new(0, -GRAVITY * 0.5 * t * t * height, 0)
+		shard.part.CFrame = CFrame.new(at) * CFrame.Angles(shard.spin.X * t, shard.spin.Y * t, shard.spin.Z * t)
+		shard.part.Transparency = fade
+	end
+	-- The mini cannon: up out of the shell, one and a half turns, and down to where the egg stood.
+	local settle = easeOut(share)
+	local jump = math.sin(math.pi * math.clamp(share * 1.15, 0, 1)) * height * 0.55
+	stage.mini.Size = stage.miniSize * (0.3 + 0.7 * easeOut(share * 1.6))
+	stage.mini:PivotTo(CFrame.new(0, stage.inside + (stage.rest.Y - stage.inside) * settle + jump, 0) * CFrame.Angles(0, (1 - settle) * math.pi * 3, 0) * MINI_FACING)
+	stage.camera.CFrame = stage.cameraFrom:Lerp(stage.cameraTo, easeOut(math.clamp((t - 0.1) / (OPEN_SECONDS - 0.1), 0, 1)))
+end
+
+-- The shell is gone and the mini cannon stands alone. A Secret or a Huge (stage.rare is its rarity's colour)
+-- gets rays that Effects.hatch turns behind it for as long as it is held up (turnRays).
+local function turnRays(stage, angle: number)
+	for _, ray in stage.rays do
+		ray.part.CFrame = stage.raysAt * CFrame.Angles(0, 0, ray.turn + angle) * CFrame.new(0, stage.height * 0.95, 0)
+	end
+end
+local function finishOpening(stage)
+	stage.top:Destroy()
+	if stage.bottom then
+		stage.bottom:Destroy()
+	end
+	for _, shard in stage.shards do
+		shard.part:Destroy()
+	end
+	stage.mini.Size = stage.miniSize
+	stage.mini:PivotTo(CFrame.new(stage.rest) * MINI_FACING)
+	stage.camera.CFrame = stage.cameraTo
+	if stage.rare then
+		-- Behind the mini cannon as the camera sees it, facing the camera.
+		stage.raysAt = CFrame.lookAt(stage.rest - VIEW_FROM * stage.height * 0.9, stage.rest)
+		stage.rays = {}
+		for ray = 1, RAYS do
+			local beam = Instance.new("Part")
+			beam.Size = Vector3.new(stage.height * 0.1, stage.height * 1.5, 0.05)
+			beam.Color = stage.rare
+			beam.Material = Enum.Material.Neon
+			beam.Transparency = 0.35
+			beam.Anchored, beam.CanCollide, beam.CastShadow = true, false, false
+			beam.Parent = stage.scene
+			table.insert(stage.rays, { part = beam, turn = ray / RAYS * math.pi * 2 })
+		end
+		turnRays(stage, 0)
+	end
+end
+-- For the emulator's test (tools/emu/tests/hatch_open.luau): the game itself only calls Effects.hatch.
+Effects.opening = { begin = beginOpening, step = stepOpening, finish = finishOpening, turnRays = turnRays, seconds = OPEN_SECONDS, piece = eggPiece }
 
 local overlay = UI.make("TextButton", {
 	Name = "Hatch",
@@ -486,6 +640,17 @@ for _ = 1, MAX_REVEALS do
 		-- shows for an egg or a mini cannon that has no model yet.
 		view = UI.preview({ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(330, 330), Parent = shell }),
 		pop = UI.make("UIScale", { Parent = shell }),
+		-- The crack's flash, over the egg.
+		flash = UI.make("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(300, 300),
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			ZIndex = 3,
+			Parent = shell,
+		}, { UI.make("UICorner", { CornerRadius = UDim.new(0.5, 0) }) }),
 		title = UI.text({ Position = UDim2.new(0, 0, 1, 25), Size = UDim2.new(1, 0, 0, 46), Parent = frame }),
 		detail = UI.text({
 			Position = UDim2.new(0, 0, 1, 77),
@@ -561,12 +726,19 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		card.egg.Rotation = 0
 		card.outline.Thickness = EGG_OUTLINE
 		card.outline.Color = OVERLAY_COLOR
-		local eggTemplate = eggId and ReplicatedStorage:FindFirstChild("EggModels") and ReplicatedStorage.EggModels:FindFirstChild(eggId)
-		local eggModel = if index <= #reveals and eggTemplate and eggTemplate:IsA("BasePart") then eggTemplate:Clone() else nil
+		-- The stage: one model that holds the egg and, later, everything that comes out of it, so the picture's
+		-- camera is set once and the opening is played in front of it.
+		local eggModel = if index <= #reveals and eggId then eggPiece("EggModels", eggId) else nil
+		card.stage = nil
+		card.flash.BackgroundTransparency = 1
 		if eggModel then
-			eggModel:PivotTo(CFrame.new())
+			local scene = Instance.new("Model")
+			eggModel.Parent = scene
+			card.view.show(scene)
+			card.stage = { scene = scene, egg = eggModel, height = standingHeight(eggModel), camera = card.view.frame.CurrentCamera }
+		else
+			card.view.show(nil)
 		end
-		card.view.show(eggModel)
 		card.egg.BackgroundTransparency = if eggModel then 1 else 0
 		card.outline.Transparency = if eggModel then 1 else 0
 		card.pop.Scale = 1
@@ -591,6 +763,19 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 			tweens[index] = TweenService:Create(cards[index].egg, TweenInfo.new(SHAKE_SECONDS), goal)
 			tweens[index]:Play()
 		end
+		-- A modelled egg hops with every swing, higher each time.
+		for index in reveals do
+			local stage = cards[index].stage
+			if stage then
+				local hop = stage.height * 0.012 * swing
+				movePiece(stage.egg, CFrame.new(0, hop, 0))
+				task.delay(SHAKE_SECONDS * 0.5, function()
+					if token == hatchToken and stage.egg.Parent then
+						movePiece(stage.egg, CFrame.new())
+					end
+				end)
+			end
+		end
 		tweens[1].Completed:Wait()
 	end
 	if token ~= hatchToken then
@@ -608,11 +793,20 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		if mini then
 			mini:PivotTo(CFrame.Angles(0, math.rad(90), 0)) -- its face and barrel towards the camera
 		end
-		card.view.show(mini)
+		local stage = card.stage
+		if stage and mini then
+			-- The opening below brings it out of the egg.
+			stage.mini, stage.miniSize, stage.rare = mini, mini.Size, (pet.hidden or pet.huge) and color or nil
+			card.flash.BackgroundTransparency = 0.05
+			TweenService:Create(card.flash, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
+		else
+			card.stage = nil
+			card.view.show(mini)
+			card.pop.Scale = 0.4
+			TweenService:Create(card.pop, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		end
 		card.egg.BackgroundTransparency = if mini then 1 else 0
 		card.outline.Transparency = if mini then 1 else 0
-		card.pop.Scale = 0.4
-		TweenService:Create(card.pop, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 		card.title.Text = if pet.huge then "HUGE!" else `{string.upper(pet.rarity)}!`
 		card.title.TextColor3 = color
 		-- An ordinary one adds its own damage per second. A Huge multiplies tower damage instead, fires Huge
@@ -645,6 +839,35 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		card.detail.Text = detail
 	end
 
+	-- The opening, for every card with a modelled egg and a modelled mini cannon, all at once.
+	local staged = {}
+	for index in reveals do
+		local stage = cards[index].stage
+		if stage and stage.mini then
+			beginOpening(stage, eggId :: string, egg.color, index)
+			table.insert(staged, stage)
+		end
+	end
+	if #staged > 0 then
+		local started = os.clock()
+		while token == hatchToken do
+			local t = os.clock() - started
+			for _, stage in staged do
+				stepOpening(stage, t)
+			end
+			if t >= OPEN_SECONDS then
+				break
+			end
+			task.wait()
+		end
+		if token ~= hatchToken then
+			return
+		end
+		for _, stage in staged do
+			finishOpening(stage)
+		end
+	end
+
 	if rarest then
 		local color = Config.RarityColors[rarest]
 		local shownUntil = os.clock() + RARE_SECONDS
@@ -659,6 +882,10 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 				-- A Huge's title runs through the rainbow.
 				if reveal.pet.huge then
 					cards[index].title.TextColor3 = Color3.fromHSV(os.clock() * 0.5 % 1, 0.7, 1)
+				end
+				local stage = cards[index].stage
+				if stage and stage.rays then
+					turnRays(stage, os.clock() * 0.9)
 				end
 			end
 			task.wait()
