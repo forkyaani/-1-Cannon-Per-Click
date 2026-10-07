@@ -447,7 +447,7 @@ def factory_stack(leaf, kind):
             z += height
         tube(1.6, 0.6, (0, 0, z - 0.4), UP, NAVY, vertices=10)
         tube(1.1, 0.3, (0, 0, z), UP, ACCENT, vertices=10, emission=1.3)
-        for x, y, rise, radius in ((0.3, 0, 1.8, 1.3), (1.1, 0.3, 3.5, 1.0), (0.4, -0.3, 4.9, 0.7)):
+        for x, y, rise, radius in ((0.2, 0, 1.6, 1.3), (1.5, 0.4, 3.0, 1.05), (3.0, 0.2, 3.9, 0.75)):  # drifting off, not a stack
             ball(radius, (x, y, z + rise), "F4F8FF", segments=8, roughness=1.0)
 
 
@@ -1074,25 +1074,25 @@ def robot_arm():
         x, y = ring(index * 30, 3.6)
         box((1.7, 0.3, 0.62), (x, y, 0.42), yellow, bevel=0.06, rotation=(0, 0, -math.radians(index * 30)), segments=1)
     tube(2.5, 1.6, (0, 0, 0.8), UP, yellow, tip=2.0, vertices=10, roughness=0.35)
-    shoulder, elbow, wrist = Vector((0, 0.6, 3.3)), Vector((0, -0.4, 8.8)), Vector((0, -4.1, 6.9))
-    ball(1.5, shoulder, NAVY, segments=10)
-    tube(0.95, (elbow - shoulder).length, shoulder, elbow - shoulder, orange, vertices=8, roughness=0.35)
-    ball(1.25, elbow, NAVY, segments=10)
-    tube(0.75, (wrist - elbow).length, elbow, wrist - elbow, yellow, vertices=8, roughness=0.35)
-    ball(0.95, wrist, NAVY, segments=8)
-    for joint, reach in ((shoulder, 1.45), (elbow, 1.2)):
+    shoulder, elbow, wrist = Vector((0, 0.8, 3.4)), Vector((0, 0.2, 10.2)), Vector((0, -4.3, 8.4))
+    ball(1.7, shoulder, NAVY, segments=10)
+    tube(1.25, (elbow - shoulder).length, shoulder, elbow - shoulder, orange, vertices=8, roughness=0.35)
+    ball(1.5, elbow, NAVY, segments=10)
+    tube(1.0, (wrist - elbow).length, elbow, wrist - elbow, yellow, vertices=8, roughness=0.35)
+    ball(1.2, wrist, NAVY, segments=8)
+    for joint, reach in ((shoulder, 1.65), (elbow, 1.45)):
         for side in (-1, 1):
-            tube(0.5, 0.3, joint + Vector((side * reach, 0, 0)), (side, 0, 0), GOLD, vertices=8, roughness=0.3)
+            tube(0.6, 0.35, joint + Vector((side * reach, 0, 0)), (side, 0, 0), GOLD, vertices=8, roughness=0.3)
     piston = shoulder + Vector((0, -1.3, 0.2))
     tube(0.3, (elbow - piston).length * 0.6, piston, shoulder + (elbow - shoulder) * 0.62 - piston, STONE, vertices=6, roughness=0.3)
-    tube(0.5, 1.1, wrist, (0, 0, -1), STONE, vertices=8)
-    box((2.9, 0.8, 0.55), wrist + Vector((0, 0, -1.3)), orange, bevel=0.15, segments=1)
+    tube(0.6, 1.3, wrist, (0, 0, -1), STONE, vertices=8)
+    box((3.7, 1.1, 0.7), wrist + Vector((0, 0, -1.5)), orange, bevel=0.2, segments=1)
     for side in (-1, 1):
-        box((0.5, 0.8, 1.9), wrist + Vector((side * 1.25, 0, -2.3)), orange, bevel=0.15, rotation=(0, side * 0.12, 0), segments=1)
-    cell = wrist + Vector((0, 0, -2.9))
-    box((1.9, 1.9, 1.9), cell, ACCENT, bevel=0.3, emission=0.9)
-    for z in (-0.6, 0.6):
-        box((2.05, 2.05, 0.3), cell + Vector((0, 0, z)), NAVY, bevel=0.08, segments=1)
+        box((0.65, 1.1, 2.3), wrist + Vector((side * 1.6, 0, -2.7)), orange, bevel=0.2, rotation=(0, side * 0.12, 0), segments=1)
+    cell = wrist + Vector((0, 0, -3.3))
+    box((2.5, 2.5, 2.5), cell, ACCENT, bevel=0.4, emission=0.9)
+    for z in (-0.8, 0.8):
+        box((2.68, 2.68, 0.36), cell + Vector((0, 0, z)), NAVY, bevel=0.08, segments=1)
     tube(0.16, 1.5, (1.5, 1.3, 2.3), UP, STONE, vertices=5)  # a warning light
     ball(0.5, (1.5, 1.3, 4.0), RED, segments=6, emission=1.3)
 
@@ -1279,7 +1279,7 @@ SET_PIECES = {
     "The Void": ((rift, (("rift", 0, 0, 4.2, 12.0),)), (void_eye, (("eye in a claw", 0, 0, 4.4, 10.6),))),
     "Nebula": ((telescope, (("telescope", 0, 0, 3.4, 9.0),)), (star_nursery, (("star nursery", 0, 0, 5.2, 4.5),))),
     "Crystal Belt": ((geode, (("geode", 0, 1.2, 4.8, 8.4), ("loose crystals", 4.8, -2.2, 1.4, 3.2), ("loose crystal", -4.9, -2.4, 0.9, 2.6))), (mine_cart, (("mine cart", 0, 0, 3.4, 6.0), ("pickaxe", 3.6, -2.4, 0.6, 5.0)))),
-    "Robot Factory": ((robot_arm, (("robot arm", 0, 0, 3.7, 9.6),)), (conveyor, (("conveyor", -3.6, 0, 2.3, 4.6), ("press", 0, 0, 3.0, 8.2), ("conveyor end", 3.6, 0, 2.3, 4.6)))),
+    "Robot Factory": ((robot_arm, (("robot arm", 0, 0, 3.7, 11.7),)), (conveyor, (("conveyor", -3.6, 0, 2.3, 4.6), ("press", 0, 0, 3.0, 8.2), ("conveyor end", 3.6, 0, 2.3, 4.6)))),
     "Alien Jungle": ((snap_pod, (("snapping plant", 0, 0.8, 2.6, 9.0),)), (saucer, (("crashed saucer", 0, 0.6, 5.2, 5.4),))),
     "Black Hole": ((black_hole, (("black hole", 0, 0, 3.8, 11.0),)), (warped_clock, (("bent clock tower", 0, 0, 4.0, 14.0),))),
     "The Big Bang": ((atom, (("atom", 0, 0, 3.4, 12.0),)), (bang, (("the bang", 0, 0, 3.4, 9.0),))),
