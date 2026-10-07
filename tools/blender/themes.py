@@ -191,7 +191,7 @@ THEMES = {
         "leaves": ("FF9CE0", "6CE0E8", "B49CFF"),
         "petals": ("FF7AD0", "FFFFFF", "FFE27A", "6CE0E8", "B49CFF"),
         "accent": "78F0FF", "accent_pale": "D8FBFF",
-        "sky_top": "5A3AB8", "sky_horizon": "F08ACC",
+        "sky_top": "6A2CD0", "sky_horizon": "FF82CC",
         "tree": "gas_cloud", "liquid": "gas", "fence": "star_rope",
     },
     "Crystal Belt": {  # teal crystal dust on navy rock, crystals in violet, pink and gold, a night sky
