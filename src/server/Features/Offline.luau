@@ -28,13 +28,18 @@ function Feature.start(Game)
 		local bossDamage = Game.value(player, "bossDamage")
 		-- The mini cannons' own damage per second: they hit the base's lead monster wherever the player is, away
 		-- from the game too, so it counts in full. It is flat: the towers' multipliers do not touch it.
-		local pets = Game.value(player, "petDps")
+		-- Crits count as what they add on average (Game.critMean), as in Cannon Power.
+		local towerCrit, petCrit = 1, 1
+		if typeof(Game.critMean) == "function" then
+			towerCrit, petCrit = Game.critMean(player)
+		end
+		local pets = Game.value(player, "petDps") * petCrit
 		-- Cannon Power as the core counts it, and the same on a boss level (a Sniper hits bosses harder).
 		local normal, boss = 0, 0
 		for _, tower in state.towerList do
 			local own = tower.base * tower.def.rate
-			normal += own
-			boss += own * (tower.def.boss or 1)
+			normal += own * towerCrit
+			boss += own * towerCrit * (tower.def.boss or 1)
 		end
 		-- What the player's bonuses leave of a level's healing (Heal Block, Hex). It can only be read off a
 		-- level that heals: on any other the farmed level's healing counts in full.

@@ -63,7 +63,7 @@ local modifiers = {}
 for _, kind in {
 	"perClick", "damage", "coins", "heal", "autoShots", "luck",
 	"towerRate", "towerRange", "bossDamage", "lives", "monsterSpeed", "upgradeCost", "petShots", "crateDrops", "gems",
-	"equipSlots", "petRange", "petDps", "offlineCap", "offlineShare",
+	"equipSlots", "petRange", "petDps", "offlineCap", "offlineShare", "towerCrit", "petCrit", "petCritDamage",
 } do
 	modifiers[kind] = {}
 end
@@ -319,7 +319,7 @@ CORE.petDps = {
 
 -- Shots per second from the equipped mini cannons, all together. It only says how their damage is cut up:
 -- more shots are smaller shots (see `simulate`).
--- Rapid Fire perk: a mini cannon that has it fires that many times as fast.
+-- (A Huge Gatling fires several times as fast; a fused mini cannon's perk is more DPS, not more shots.)
 CORE.autoShots = {
 	base = 0,
 	value = function(_player: Player, _data, state, sources): number
@@ -357,6 +357,12 @@ CORE.petShots = plain(1, atLeast(0))
 CORE.petRange = plain(1, between(0.25, 4)) -- multiplier on Defense.petRange
 CORE.crateDrops = plain(1, atLeast(0))
 CORE.gems = plain(0, atLeast(0))
+-- Crits (the core rolls them in `shoot`): the chance that a tower's shot deals double damage, the chance that
+-- a mini cannon's shot is a crit, and what a mini cannon's crit multiplies its damage by. Nothing crits
+-- without a feature (Mastery: Tower Crit, Mini Crit, Crit Power).
+CORE.towerCrit = plain(0, between(0, 1))
+CORE.petCrit = plain(0, between(0, 1))
+CORE.petCritDamage = plain(Config.CritDamage, between(1, 10))
 CORE.lives = plain(Defense.lives, function(value: number): number
 	return math.clamp(math.floor(value + 0.5), 1, MAX_LIVES)
 end)
@@ -444,6 +450,21 @@ local function petDps(data, state): number
 	return if state.petBase > 0 then derived("petDps", data, state) else 0
 end
 
+-- What crits make of damage on average: x (1 + chance x (crit multiplier - 1)). A tower's crit is always
+-- double damage. Cannon Power, STATS and offline earnings count crits as this average; the fight rolls them.
+local function towerCritMean(data, state): number
+	return 1 + derived("towerCrit", data, state) * (Config.CritDamage - 1)
+end
+
+local function petCritMean(data, state): number
+	return 1 + derived("petCrit", data, state) * (derived("petCritDamage", data, state) - 1)
+end
+
+-- One roll: the crit's multiplier, or nil for an ordinary shot. No dice are thrown while the chance is 0.
+local function rollCrit(chance: number, mult: number): number?
+	return if chance > 0 and mult ~= 1 and rng:NextNumber() < chance then mult else nil
+end
+
 -- How many mini cannons the player can store: the base, plus every pass they own that adds storage.
 local function petStorage(player: Player): number
 	local count = Config.MaxPets
@@ -493,7 +514,9 @@ local function sync(player: Player)
 	local level, into, need = Config.veteranLevel(data.masteryKills)
 	local power = powerMult(data, state)
 	local rate = derived("towerRate", data, state)
-	local fromTowers, fromPets = towerDps(state, power, rate), petDps(data, state)
+	-- Crits are counted as what they add on average, so the headline number moves with a crit track.
+	local fromTowers = towerDps(state, power, rate) * towerCritMean(data, state)
+	local fromPets = petDps(data, state) * petCritMean(data, state)
 	local dps = fromTowers + fromPets
 	state.dps = dps -- for the leaderboard: the save does not hold it
 	-- The leaderboard's Cannon Power leaves timed powerups out: it is only taken while no boost is running, so
@@ -1055,12 +1078,18 @@ local function shotValue(data, state, damage: number): number
 end
 
 -- One shot from a tower or from a mini cannon, through the `damage` modifiers and the `shot` hook.
-local function shoot(player: Player, data, state, target, damage: number, source: string, tower)
+-- crit is what a critical hit multiplies it by (rollCrit: the `towerCrit`, `petCrit` and `petCritDamage`
+-- modifiers), nil for an ordinary shot.
+local function shoot(player: Player, data, state, target, damage: number, source: string, tower, crit: number?)
 	state.hp, state.maxHp = target.hp, target.max
-	-- Features may change shot.damage before it lands (a crit, an ammo type).
+	if crit then
+		damage *= crit
+	end
+	-- Features may change shot.damage before it lands (a crit of their own, an ammo type).
 	local shot = {
 		manual = false,
 		damage = shotValue(data, state, damage),
+		crit = crit ~= nil, -- the core's own crit: already in `damage`
 		source = source,
 		kind = if tower then tower.kind else nil,
 		pad = if tower then tower.pad else nil,
@@ -1142,6 +1171,7 @@ local function simulate(player: Player, data, state, dt: number)
 	local rate = derived("towerRate", data, state)
 	local reach = derived("towerRange", data, state)
 	local reach2 = reach * reach
+	local towerCrit = derived("towerCrit", data, state)
 	for _, tower in state.towerList do
 		tower.cd -= dt
 		local shots = 0
@@ -1157,7 +1187,7 @@ local function simulate(player: Player, data, state, dt: number)
 			if bossLevel and tower.def.boss then
 				damage *= tower.def.boss
 			end
-			shoot(player, data, state, target, damage, "tower", tower)
+			shoot(player, data, state, target, damage, "tower", tower, rollCrit(towerCrit, Config.CritDamage))
 		end
 		if tower.cd < 0 then
 			tower.cd = 0
@@ -1167,8 +1197,8 @@ local function simulate(player: Player, data, state, dt: number)
 	-- Mini cannons: each equipped one deals its own damage per second to the monster furthest along, wherever
 	-- the player is (on the base, in the marketplace, on an island, on a visit): no range is asked for. The
 	-- damage is flat (CORE.petDps) and comes in shots of DPS / shots per second, so a faster mini cannon fires
-	-- smaller shots and adds up to the same. Each shot goes through the `damage` modifiers and the `shot` hook
-	-- like a tower's. What the client draws of it is its own affair (Effects.luau: only near the player).
+	-- smaller shots and adds up to the same. Every shot rolls for a crit (`petCrit`, worth `petCritDamage`),
+	-- then goes through the `damage` modifiers and the `shot` hook like a tower's. What the client draws of it is its own affair (Effects.luau: only near the player).
 	local fromPets = petDps(data, state)
 	if fromPets > 0 then
 		local grown = fromPets / state.petBase -- what the features made of it (Bond): the same share on each
@@ -1177,6 +1207,7 @@ local function simulate(player: Player, data, state, dt: number)
 			quick = 1 -- no shots at all would be no damage: the damage is owed whatever the fire rate says
 		end
 		local own, owed = state.petOwn, state.petOwed
+		local petCrit, petCritDamage = derived("petCrit", data, state), derived("petCritDamage", data, state)
 		for index, id in state.equipped do
 			local dps = own[index] or 0
 			if dps > 0 then
@@ -1191,7 +1222,7 @@ local function simulate(player: Player, data, state, dt: number)
 					end
 					shots += 1
 					loaded -= 1
-					shoot(player, data, state, target, dps * grown / shotsPerSecond, "pet", nil)
+					shoot(player, data, state, target, dps * grown / shotsPerSecond, "pet", nil, rollCrit(petCrit, petCritDamage))
 				end
 				-- Shots are not saved up while there is nothing to shoot at: one stays loaded, as a tower's does,
 				-- also over the break between two levels.
@@ -2056,7 +2087,12 @@ Game.sync = syncAll
 --   lives              the lives a level starts with (Config.Defense.lives); read when a level starts
 --   autoShots          mini cannon shots per second, all together. More shots are smaller shots: the damage per
 --                      second is `petDps`, whatever this says
---   petShots           multiplier on that (1)
+--   petShots           multiplier on that (1). Like autoShots it changes how the damage looks, not how much
+--   towerCrit          chance (0 to 1; 0) that a tower's shot is a crit: double damage (Config.CritDamage)
+--   petCrit            chance (0 to 1; 0) that a mini cannon's shot is a crit
+--   petCritDamage      what a mini cannon's crit multiplies its damage by (Config.CritDamage = 2; 1 to 10)
+--                      The core rolls the crits (shot.crit says so to the `shot` hook) and counts their
+--                      average in Cannon Power; Game.critMean gives that average
 --   petRange           multiplier on how far from the player their mini cannons are drawn shooting and a Huge
 --                      fires its Huge Shot (1; Config.Defense.petRange). The mini cannons' damage needs no range
 --   luck               luck when hatching (1, or the pass's 3)
@@ -2084,6 +2120,16 @@ function Game.value(player: Player, kind: string): number
 	assert(CORE[kind], `Game.value: there is no number called "{kind}"`)
 	local data, state = Data.get(player), states[player]
 	return if data and state then derived(kind, data, state) else 0
+end
+
+-- What crits make of damage on average, for a feature that works out damage per second (STATS, offline
+-- earnings): the towers' multiplier, the mini cannons'. 1, 1 until the player is ready or with no crit.
+function Game.critMean(player: Player): (number, number)
+	local data, state = Data.get(player), states[player]
+	if not data or not state then
+		return 1, 1
+	end
+	return towerCritMean(data, state), petCritMean(data, state)
 end
 
 -- Where a number comes from, for the STATS window: { base, total, sources = { { label, value, mult, add } } }.
@@ -2277,7 +2323,8 @@ function Game.shoot(player: Player, _manual: boolean?)
 	local target = leadMonster(state)
 	if target then
 		state.busy += 1
-		shoot(player, data, state, target, petShot(data, state), "pet", nil)
+		local crit = rollCrit(derived("petCrit", data, state), derived("petCritDamage", data, state))
+		shoot(player, data, state, target, petShot(data, state), "pet", nil, crit)
 		state.busy -= 1
 		sweep(player, data, state)
 	end

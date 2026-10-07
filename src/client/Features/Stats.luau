@@ -67,10 +67,12 @@ local function start(ctx)
 		return text
 	end
 
-	-- A stat's total: "x6.3", "12", "1.5/s", "1.5%/s".
+	-- A stat's total: "x6.3", "12", "1.5/s", "1.5%/s", "12%".
 	local function totalText(unit: string, value: any): string
 		if unit == "x" then
 			return "x" .. num(value)
+		elseif unit == "chance" then
+			return num((if typeof(value) == "number" then value else 0) * 100) .. "%"
 		elseif unit == "rate" then
 			return num(value) .. "/s"
 		elseif unit == "share" then
@@ -80,8 +82,13 @@ local function start(ctx)
 	end
 
 	-- What one source did, and whether that is good for the player: "+40%", "x2", "-15%", "+2".
-	local function effect(source, lowGood: boolean?): (string, Color3)
+	-- unit "chance": the source added points of a percentage ("+12%").
+	local function effect(source, lowGood: boolean?, unit: string?): (string, Color3)
 		local mult = source.mult
+		if unit == "chance" then
+			local add = if typeof(source.add) == "number" then source.add else 0
+			return `{if add >= 0 then "+" else "-"}{num(math.abs(add) * 100)}%`, if add == 0 then FAINT elseif add > 0 then GOOD else BAD
+		end
 		if source.how == "mult" and typeof(mult) == "number" then
 			local good = (mult >= 1) ~= (lowGood == true)
 			local color = if mult == 1 then FAINT elseif good then GOOD else BAD
@@ -400,7 +407,7 @@ local function start(ctx)
 			local count = 0
 			for _, source in sources do
 				count += 1
-				local text, color = effect(source, section.lowGood)
+				local text, color = effect(source, section.lowGood, section.unit)
 				entry.lines.write(count, tostring(source.label), source.left, "", FAINT, text, color)
 			end
 			if count == 0 then

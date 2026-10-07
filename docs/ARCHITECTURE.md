@@ -72,7 +72,10 @@ the modifier changed is shared out by weight and every part is listed as a sourc
 | `monsterSpeed` | Multiplier on how fast monsters walk (1; kept between 0.2 and 3). It stacks with a Frost tower's slow |
 | `lives` | The lives a level starts with (`Config.Defense.lives`). Read when a level starts; add to it |
 | `autoShots` | Shots per second from the mini cannons, all together. It only cuts their damage up: more shots are smaller shots, the damage per second is `petDps` |
-| `petShots` | Multiplier on that (1) |
+| `petShots` | Multiplier on that (1). Like `autoShots` it changes how the damage looks, never how much: nothing in the game uses it since 7 Oct (the Mastery track that did is Mini Crit now) |
+| `towerCrit` | Chance that a tower's shot is a crit: double damage, `Config.CritDamage` (0; kept between 0 and 1). The core rolls it in `shoot` and sets `shot.crit` for the `shot` hook |
+| `petCrit` | Chance that a mini cannon's shot is a crit (0; kept between 0 and 1) |
+| `petCritDamage` | What a mini cannon's crit multiplies its damage by (`Config.CritDamage`, 2; kept between 1 and 10). Crits are counted in Cannon Power, STATS and offline earnings as what they add on average, x (1 + chance x (multiplier - 1)): `Game.critMean(player)` gives the towers' and the mini cannons' |
 | `petRange` | Multiplier on how far from the player their mini cannons are drawn shooting and a Huge fires its Huge Shot (1; kept between 0.25 and 4; the distance is `Config.Defense.petRange`). The client reads it as the `PetRange` attribute. The mini cannons' damage needs no range, and nothing in the game changes this number today |
 | `luck` | Luck multiplier when hatching (1 = normal) |
 | `crateDrops` | Multiplier on crate drop chances (1). The core does not use it: the Crates feature reads `Game.value(player, "crateDrops")` |
@@ -217,14 +220,17 @@ as they scaled the bonus.
 
 - **Flat.** Nothing that multiplies tower damage touches it: not the Veteran level, rebirths, 2x Power,
   Mastery Attack, Sharp, or a Huge's x3. Sources of "more mini cannon damage" are the `petDps` modifiers:
-  Mastery Bond (+3% a level), the Bond enchantment (that one mini cannon's own DPS) and Long Shot (+3 / 6 /
+  Mastery Bond (+10% a level), the Bond enchantment (that one mini cannon's own DPS) and Long Shot (+3 / 6 /
   10% for all of them).
 - **Everywhere.** The server deals it to the lead monster of the owner's base all the time: with the player
   on the base, in the marketplace, on an island, on a visit, and (as a number) while they are offline. Only a
   paused plot stops it. No range is asked for.
-- **In shots.** Each mini cannon's shot is its DPS / its shots per second, so Rapid Fire, Mastery Rapid and
-  the `autoShots` / `petShots` modifiers change how it looks, never what it adds up to. A shot goes through
-  `bossDamage`, the `damage` modifiers and the `shot` hook (`source = "pet"`) like a tower's. What features
+- **In shots.** Each mini cannon's shot is its DPS / its shots per second, so the `autoShots` / `petShots`
+  modifiers (a Huge Gatling aside) change how it looks, never what it adds up to. Every shot rolls for a crit
+  (`petCrit`, worth `petCritDamage`: Mastery Mini Crit and Crit Power), then goes through
+  `bossDamage`, the `damage` modifiers and the `shot` hook (`source = "pet"`) like a tower's.
+  A fused mini cannon's Silver perk, Overcharge, is +25% of its own DPS (`Config.FuseTiers`, `dpsBonus`;
+  Gold and Diamond keep it). It was Rapid Fire until 7 Oct: twice the shots of half the size. What features
   did to `petDps` is shared out evenly over the mini cannons' shots. One mini cannon's damage comes in at most
   10 shots a second.
 - **A Huge** still multiplies all tower damage by `Config.HugePower` (x3; `Config.hugeMult`), keeps its
@@ -262,19 +268,36 @@ as they scaled the bonus.
 
 ### Mastery (`Features/Mastery.luau` x3)
 
-Thirteen tracks bought level by level with gems at the shrine on the Mars island (`Mastery.ISLAND` = 3): a Model
+Eighteen tracks bought level by level with gems at the shrine on the Mars island (`Mastery.ISLAND` = 3): a Model
 `MasteryShrine` in the island's `mastery` spot, whose altar prompt opens the MASTERY window. Every number is in
 `src/shared/Features/Mastery.luau` (`Mastery.Tracks`, `cost`, `apply`, `describe`; the table is in
 `docs/BALANCE.md`, section 5c). The action is `masteryBuy(trackId)`: the player must have reached Mars
 (`bestCleared`, so it stays open after a rebirth) and be standing on that island; the server works out the level
-and the price. Saved as `data.features.mastery = { levels = { [trackId] = level }, spent }` and published as
-`Meta_mastery` (`levels`, `spent`, `off`: tracks the core cannot apply, none today). Each track is one labelled
-modifier ("Mastery: Attack IV"), so it shows in STATS. Every track is sold, Slots included: it adds to the
-core's `equipSlots` modifier (+1 at levels 3, 6 and 9, `Mastery.slots`) and calls `Game.refreshPets`, so a mini
-cannon is equipped into the new slot at once. `off` only fills in on a core without a modifier of a track's
-kind; the window then reads COMING SOON for it. Lives count from the next level started. The Offline
-track (Survival) adds an hour to the offline earnings cap per level (`offlineCap`; 4 levels, 8 hours to 12),
-counted from the next time the player is away.
+and the price. Saved as `data.features.mastery = { levels = { [trackId] = level }, spent, gemDay, gems }` and
+published as `Meta_mastery` (`levels`, `spent`, `off`: tracks the core cannot apply, none today). Each track is
+one labelled modifier ("Mastery: Attack IV"; a level past 39 is a plain number, "Mastery: Attack 45"), so it
+shows in STATS.
+
+- **What a level does** is the track's `how`: `more` (x (1 + per x level)), `less` (x (1 - per x level), with
+  per x cap well under 1), `add` (+ per x level, a count), `points` (+ per x level, read as a percentage: a
+  crit chance, the offline share) or `slots`.
+- **Crits.** Tower Crit (`towerCrit`), Mini Crit (`petCrit`) and Crit Power (`petCritDamage`) use the core's
+  crit kinds: the core rolls every shot and counts the average in Cannon Power. Mini Crit is the track that
+  was Rapid: its id is still `rapid`, so the levels a player bought count. Crit Power has `needs = "rapid"`:
+  it is not sold before Mini Crit has a level (`Mastery.missing`; the card reads NEEDS MINI CRIT).
+- **Slots** adds to `equipSlots` (+1 at levels 3, 6, 9, 14 and 20, `Mastery.slots`) and calls
+  `Game.refreshPets`, so a mini cannon is equipped into the new slot at once.
+- **Gem Hunter** adds to `gems` (the gems a boss drops) and caps itself: `perDay` (3) gems a level per UTC day,
+  counted in the save by a `kill` hook, the way the Gem Finder enchantment does. Past the limit the modifier
+  gives nothing and STATS stops listing it.
+- **Crate Finder** multiplies `crateDrops` (read by `Features/Crates.luau`; every pool keeps its own limit a day).
+- **Lives** count from the next level started. **Offline** (hours, `offlineCap`) and **Night Shift** (the
+  share that is paid, `offlineShare`) count from the next time the player is away.
+- **Saves.** A track's `id` is the key of its saved level: never change or reuse one, and only raise a cap.
+  `Mastery.level` reads any save as a whole level from 0 to the cap. The `ready` hook throws nothing away: a
+  level of a track this build does not know, or above this build's cap, stays in the save untouched.
+- **The window** draws one level bar per card ("Lv 12/50"), not a pip per level, in a list that scrolls.
+- `off` only fills in on a core without a modifier of a track's kind; the window then reads COMING SOON.
 
 ### Offline earnings (`Features/Offline.luau` x3)
 
@@ -480,7 +503,7 @@ State.feature("stats") = {
 - The POWER tab writes the towers' chain, then one `+` line per mini cannon with its own DPS and one per
   `petDps` modifier, down to Cannon Power. Mini cannons are never a multiplier in the chain.
 - The sections are listed in `Stats.SECTIONS` (server): tower damage (`power` and `damage`), fire rate, range, boss
-  damage, coins, luck, lives, monster speed, mini cannon DPS (`petDps`), mini cannon shots (`autoShots` x `petShots`), mini cannon range
+  damage, coins, luck, lives, monster speed, mini cannon DPS (`petDps`), mini cannon shots (`autoShots` x `petShots`), tower crit chance, mini cannon crit chance and crit damage (only while something changes them; a chance reads as a percentage, unit `chance`), mini cannon range
   (`petRange`, only while something changes it), equip slots, and, only
   while something changes them, upgrade price, gems per boss, crate drops and monster healing, then offline
   hours (`offlineCap`) and offline earnings (`offlineShare`). A new modifier kind needs a line there to be shown.
