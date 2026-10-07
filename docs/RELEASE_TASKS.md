@@ -229,7 +229,7 @@ Today the hatch reveal (`Effects.hatch` in `src/client/Effects.luau`) rocks the 
 for the mini cannon. Where an egg or a mini cannon has no Blender model in the place, a flat coloured circle
 shows instead: that is what Yaani saw.
 
-- [ ] N1. **[open]** Find out which eggs and mini cannons still show as circles: list `ReplicatedStorage.EggModels` and `MiniCannons` in the group's place against `Config.Eggs` and `Config.Pets` **[S]** · **15 min**
+- [ ] N1. **[d1v]** (taken: d1v, 7 Oct 18:20) Find out which eggs and mini cannons still show as circles: list `ReplicatedStorage.EggModels` and `MiniCannons` in the group's place against `Config.Eggs` and `Config.Pets` **[S]** · **15 min**
 - [ ] N2. **[open]** Model what N1 finds missing, in d1v's style (`minis.py ... worlds`), and import it **[S]** · depends on N1
 - [ ] N3. **[open]** Eggs that can open: each egg exported as two meshes, top and bottom, split along a zigzag crack (same pivot), so the game can lift the top off. Needs a change to how eggs are modelled and filed (`minis.py`, `add_minis.luau`) · **1 h 30**
 - [ ] N4. **[open]** The opening animation in `Effects.hatch`: the egg rocks harder with a squash, cracks (a flash), the top flies off and shell pieces fly out, the mini cannon jumps up out of the bottom half with a spin and lands; rare ones get rays and a longer hold. Works with one-piece eggs too (the whole shell bursts) until N3 lands · **1 h 30**
