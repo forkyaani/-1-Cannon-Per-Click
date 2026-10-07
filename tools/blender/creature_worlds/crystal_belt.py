@@ -92,13 +92,13 @@ def geode_roller(c, a):
         chunk((0.3, 0.26, 0.3), (0, math.sin(angle) * 1.12, 1.25 + math.cos(angle) * 1.2), dark, detail=1)
     way = Vector((0.5, -0.3, 1)).normalized()
     middle = Vector((0, 0, 1.25)) + way * 1.12
-    disc(0.9, middle, "FFF2FF", height=0.2, sink=0.25, towards=way, sides=9)
-    disc(0.68, middle + way * 0.12, shade(a, -0.45), height=0.14, sink=0.1, towards=way, sides=9)
-    for dx, dy, lean, r, h in ((0, 0, (0, 0, 0), 0.3, 1.15), (0.34, 0.1, (0.5, 0.1, 0), 0.22, 0.8), (-0.34, 0.05, (-0.5, 0, 0), 0.22, 0.75), (0, -0.34, (0, -0.5, 0), 0.2, 0.6), (0.05, 0.36, (0, 0.5, 0), 0.2, 0.7)):
-        crystal_belt_shard(middle + Vector((dx, dy, 0.05)), way + Vector(lean) * 0.7, r, h, a if r > 0.2 else shade(a, 0.35), emission=1.2, roughness=0.2)
+    disc(1.05, middle - way * 0.05, "FFF2FF", height=0.2, sink=0.3, towards=way, sides=9)
+    disc(0.8, middle + way * 0.1, shade(a, -0.5), height=0.12, sink=0.1, towards=way, sides=9)
+    for dx, dy, lean, r, h in ((0, 0, (0, 0, 0), 0.34, 1.3), (0.42, 0.1, (0.6, 0.1, 0), 0.26, 0.95), (-0.42, 0.05, (-0.6, 0, 0), 0.26, 0.9), (0, -0.42, (0, -0.6, 0), 0.2, 0.65), (0.05, 0.44, (0, 0.6, 0), 0.2, 0.8)):
+        crystal_belt_shard(middle + Vector((dx, dy, 0.05)), way + Vector(lean) * 0.7, r, h, a if r > 0.2 else shade(a, 0.35), emission=0.4, roughness=0.2)
     for side in (-1, 1):  # the cut ends of the geode, one at each side: an axle cap of crystal
         disc(0.6, (side * 1.16, 0, 1.25), "FFF2FF", height=0.16, sink=0.2, towards=(side, 0, 0), sides=8)
-        disc(0.4, (side * 1.3, 0, 1.25), a, height=0.14, sink=0.05, towards=(side, 0, 0), sides=6, emission=1.2)
+        disc(0.4, (side * 1.3, 0, 1.25), a, height=0.14, sink=0.05, towards=(side, 0, 0), sides=6, emission=0.4)
     rocks(dark, ((-1.5, 0.9, 0.2, 0.24), (1.45, 1.0, 0.16, 0.18)))  # what it kicks up
     eyes(front, 1.3, 0.46, a, size=0.86)
     mouth(front, 0.72, 0.4)
@@ -164,7 +164,7 @@ def crystal_monarch(c, a):
     plate([(-1.75, 3.1), (1.75, 3.1), (2.15, 0.25), (1.1, 0.5), (0, 0.2), (-1.1, 0.5), (-2.15, 0.25)], shade(a, -0.3), (0, 1.38, 0), thick=0.26)
     for side in (-1, 1):
         ball(0.8, (side * 1.7, 0, 2.85), GOLD, scale=(1, 1, 0.7), segments=10, roughness=0.3)
-        crystal_belt_shard((side * 1.75, 0, 3.1), (side * 0.5, 0, 1), 0.3, 1.0, a, emission=0.5)
+        crystal_belt_shard((side * 1.75, 0, 3.1), (side * 0.5, 0, 1), 0.3, 1.0, a, emission=0.15)
         box((0.65, 0.8, 1.2), (side * 1.85, -0.1, 1.75), pale, bevel=0.25, segments=2)
         ball(0.5, (side * 1.95, -0.3 - 0.25 * (side > 0), 1.0), c, segments=8)
     box((3.1, 2.6, 0.36), (0, 0, 0.95), GOLD, bevel=0.12, segments=1, roughness=0.3)
@@ -173,15 +173,15 @@ def crystal_monarch(c, a):
     tube(1.12, 0.42, (0, 0, 3.25), UP, GOLD, vertices=12, roughness=0.3)
     for index in range(6):
         x, y = ring(index * 60 + 30, 0.88)
-        crystal((x, y, 3.6), 0.3, 1.15 if index % 2 else 0.85, a, lean=(x * 16, y * 16), emission=0.5)
+        crystal((x, y, 3.6), 0.3, 1.15 if index % 2 else 0.85, a, lean=(x * 16, y * 16), emission=0.15)
         gx, gy = ring(index * 60, 1.14)
         ball(0.14, (gx, gy, 3.46), "6EF0E6", segments=6, emission=1)
     crystal((0, 0, 3.6), 0.42, 1.9, "FFFFFF", sides=6, emission=0.8)
     # The sceptre, in its right fist.
     tube(0.14, 3.2, (2.35, -0.9, 0.3), UP, GOLD, vertices=6, roughness=0.3)
     ball(0.28, (2.35, -0.9, 3.5), GOLD, segments=8, roughness=0.3)
-    crystal_belt_shard((2.35, -0.9, 4.05), UP, 0.5, 1.05, a, sides=6, emission=0.8)
-    crystal_belt_shard((2.35, -0.9, 4.05), (0, 0, -1), 0.5, 0.7, a, sides=6, emission=0.8)
+    crystal_belt_shard((2.35, -0.9, 4.05), UP, 0.5, 1.05, a, sides=6, emission=0.3)
+    crystal_belt_shard((2.35, -0.9, 4.05), (0, 0, -1), 0.5, 0.7, a, sides=6, emission=0.3)
     eyes(front, 2.35, 0.68, a, size=1.1, brow=shade(a, -0.3), tilt=-22)
     mouth(front, 1.6, 0.8, "grin")
 
