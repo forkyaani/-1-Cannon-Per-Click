@@ -470,7 +470,7 @@
    "name": "Base_Gate",
    "kind": "shell",
    "origin": "the middle of its own base on the ground, front towards Blender -Y",
-   "triangles": 8948,
+   "triangles": 9276,
    "box_blender": {
     "low": [
      -55.5,
@@ -819,7 +819,7 @@
    "white_for_tinting": false
   }
  ],
- "total_triangles": 47745,
+ "total_triangles": 48073,
  "shells": {
   "Pad": {
    "meshes": [
@@ -1453,7 +1453,7 @@
    1.0,
    10.0
   ],
-  "biggest_mesh": 8948
+  "biggest_mesh": 9276
  },
  "not_as_the_code": [
   "The road runs round the outside of each of its eight bends in an arc (radius 4, with the kerb 4.8): inside the square corner the game's slabs make, never outside it.",
