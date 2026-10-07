@@ -1,20 +1,27 @@
-"""The look of the five launch worlds, for island.py, base.py and creatures.py: `THEMES[world][key]`.
+"""The look of the twelve worlds, for island.py, base.py and creatures.py: `THEMES[world][key]`.
 
     import os, sys
     sys.path.insert(0, os.path.dirname(__file__))
     from themes import THEMES
-    theme = THEMES["Moon"]          # "Earth", "Moon", "Mars", "Neptune", "The Sun" (Config.Worlds' names)
+    theme = THEMES["Moon"]          # Config.Worlds' names: "Earth", "Moon", "Mars", "Neptune", "The Sun",
+                                    # "The Void", "Nebula", "Crystal Belt", "Robot Factory", "Alien Jungle",
+                                    # "Black Hole", "The Big Bang"
     box(size, at, theme["stone"])
 
 Plain data: no Blender needed to import it. Colours are hex strings as kit.py takes them. Every world has
 the same keys. Earth's values are the constants earth_island.py was built with: change one and the live
 Earth island changes. The others follow Config.Worlds (floor, backdrop) and the THEMES of Islands.luau and
-Plots.luau, pushed to the chunky, saturated candy look: no dull greys anywhere.
+Plots.luau, pushed to the chunky, saturated candy look: no dull greys anywhere. The dark worlds (The Void,
+Black Hole) are deep saturated colour under a strong glow, never grey or black; the Robot Factory's metal
+is blue steel, hazard yellow and orange paint.
 
 What each key is for (a world without the real thing has a stand-in under the same key)
   grass, grass_light, grass_deep, grass_rim
         the ground you walk on: its main colour, the lighter and darker patches on it, and the darker lip
-        that hangs over the edge in drips. Moon dust, Mars sand, Neptune snow, the Sun's glowing crust.
+        that hangs over the edge in drips. Moon dust, Mars sand, Neptune snow, the Sun's glowing crust, the
+        Void's violet glass, Nebula's pink gas, the Belt's teal crystal dust, the Factory's blue plate with
+        a hazard-yellow lip, the Jungle's jade moss, the Black Hole's plum rock with a burning lip, the Big
+        Bang's cream-gold light.
   dirt, dirt_dark
         the two bands under the ground's lip, on the island's side.
   under, under_dark, under_light
@@ -27,7 +34,9 @@ What each key is for (a world without the real thing has a stand-in under the sa
         what is built: pedestals, steps, arches, lamp feet, walls.
   wood, wood_light, wood_dark
         timber and its stand-in: fences, counters, trunks, bridges, crates. Moon: brushed blue metal. Mars:
-        dark red ironwood. Neptune: frozen deep-blue timber. The Sun: charred obsidian.
+        dark red ironwood. Neptune: frozen deep-blue timber. The Sun: charred obsidian. The Void: indigo
+        void-stone. Nebula: indigo star-metal. Crystal Belt: amethyst. Robot Factory: orange painted steel.
+        Alien Jungle: purple vine-wood. Black Hole: dark plum rock. The Big Bang: gold.
   water, water_light
         the liquid in ponds and streams, and the lighter streaks and middles on it. See `liquid`.
   leaves
@@ -47,13 +56,36 @@ What each key is for (a world without the real thing has a stand-in under the sa
         "mesa_spire"   Mars: a flat-topped spire of stacked rock layers in the `leaves` tones
         "ice_spike"    Neptune: a cluster of leaning ice shards
         "lava_spire"   The Sun: a basalt spire with glowing cracks and a molten tip (`leaves`, emissive)
+        "void_shard"   The Void: shards of rock hanging over their stump round a glowing core, or a broken
+                       obelisk whose pieces float apart (`leaves` is the glow)
+        "gas_cloud"    Nebula: a heap of gas puffs with a ring and newborn stars, or a plume up to a star
+        "crystal_cluster"  Crystal Belt: six-sided crystals in the three `leaves` colours out of a chunk
+                       of asteroid; the tall one has a belt of small rocks round it
+        "factory_stack"    Robot Factory: a bolted tank with a gauge and a pipe, or a striped chimney with
+                       a puff of steam (`leaves` is the paint)
+        "glow_shroom"  Alien Jungle: a giant mushroom with glowing spots, wide and squat, or tall with a
+                       bell cap and hanging lights (`leaves` is the cap)
+        "bent_rock"    Black Hole: rock pulled out of shape, a horn bending to a tiny black hole or two
+                       claws closing over one (`leaves` is the ring of fire)
+        "spark_burst"  The Big Bang: a spark with shards flying out of it, stopped mid-burst, or a beam
+                       with rings of them (`leaves` is the shards)
   liquid
         what `water` is: "water" (Earth), "stardust" (Moon: a glowing lilac pool, emissive), "oasis" (Mars:
-        turquoise water), "ice" (Neptune: frozen, no ripples, no fall mist), "lava" (The Sun: emissive)
+        turquoise water), "ice" (Neptune: frozen, no ripples, no fall mist), "lava" (The Sun: emissive),
+        "rift" (The Void: a glowing magenta tear, shards hanging over it), "gas" (Nebula: glowing teal gas
+        with puffs on it), "prism" (Crystal Belt: liquid crystal set hard, crystals growing out of it, no
+        mist), "coolant" (Robot Factory: glowing green, out of a pipe), "acid" (Alien Jungle: glowing lime,
+        bubbling), "singularity" (Black Hole: a ring of fire round a dark core), "energy" (The Big Bang:
+        white-gold). All of the new seven but "prism" are emissive.
   fence
         the rim's fence: "wood_rail" (Earth: posts and two rails), "metal_rail" (Moon: posts with a glowing
         bulb and one rail), "rope_post" (Mars: stone posts and sagging ropes), "ice_post" (Neptune: shards
-        with a rail of ice), "basalt_chain" (The Sun: basalt posts with ember tops and chains)
+        with a rail of ice), "basalt_chain" (The Sun: basalt posts with ember tops and chains),
+        "rift_post" (The Void: obelisks with a floating gem and a beam of light), "star_rope" (Nebula: posts
+        with a star on top and a sagging rope), "crystal_post" (Crystal Belt: stone posts with a gem and a
+        rail), "pipe_rail" (Robot Factory: striped bollards and two pipes), "vine_post" (Alien Jungle:
+        thorns with a glowing pod and hanging vines), "orbit_post" (Black Hole: posts with a ringed ball and
+        a glowing chain), "spark_post" (The Big Bang: gold posts with a spark and a lightning rail)
 """
 
 THEMES = {
@@ -131,6 +163,111 @@ THEMES = {
         "accent": "FFC83C", "accent_pale": "FFF0A8",
         "sky_top": "FF7A1E", "sky_horizon": "FFE27A",
         "tree": "lava_spire", "liquid": "lava", "fence": "basalt_chain",
+    },
+    "The Void": {  # deep violet-indigo under a black-violet sky, lit magenta by the rift
+        "grass": "5632B4", "grass_light": "6C46D2", "grass_deep": "44249A", "grass_rim": "8A2ACC",
+        "dirt": "4A22A0", "dirt_dark": "361880",
+        "under": "2A1270", "under_dark": "1E0C56", "under_light": "3C1C96",
+        "rock": "5A34B8", "rock_dark": "42249A", "rock_light": "7A52DA",
+        "sand": "7A5AE8", "sand_dark": "5A3CC8", "cobble": "9C7CFF",
+        "stone": "6A48D0", "stone_dark": "4E30AE", "stone_pale": "9274F0",
+        "wood": "2E1470", "wood_light": "4A28A0", "wood_dark": "200C54",
+        "water": "FF3CC8", "water_light": "FFA8F0",
+        "leaves": ("E05CFF", "FF3C8C", "78DCFF"),
+        "petals": ("FF3C8C", "F6C2FF", "78DCFF", "E05CFF", "A050FF"),
+        "accent": "E05CFF", "accent_pale": "F6C2FF",
+        "sky_top": "0C0618", "sky_horizon": "3A1A7A",
+        "tree": "void_shard", "liquid": "rift", "fence": "rift_post",
+    },
+    "Nebula": {  # pink gas on purple, teal rock, a pink dawn
+        "grass": "F08AD8", "grass_light": "FFAEE8", "grass_deep": "E070C8", "grass_rim": "B04CC0",
+        "dirt": "9A58D8", "dirt_dark": "7444C0",
+        "under": "4E3AA8", "under_dark": "3A2A8A", "under_light": "6A54C4",
+        "rock": "5AD8D0", "rock_dark": "38B4B8", "rock_light": "9AF0E4",
+        "sand": "FFE4F8", "sand_dark": "F4BCE8", "cobble": "FFF2FC",
+        "stone": "D8C8FF", "stone_dark": "B4A0F0", "stone_pale": "F0E8FF",
+        "wood": "6A54C4", "wood_light": "9A84E8", "wood_dark": "4A389A",
+        "water": "5CE8E0", "water_light": "C8FFF8",
+        "leaves": ("FF9CE0", "6CE0E8", "B49CFF"),
+        "petals": ("FF7AD0", "FFFFFF", "FFE27A", "6CE0E8", "B49CFF"),
+        "accent": "78F0FF", "accent_pale": "D8FBFF",
+        "sky_top": "5A3AB8", "sky_horizon": "F08ACC",
+        "tree": "gas_cloud", "liquid": "gas", "fence": "star_rope",
+    },
+    "Crystal Belt": {  # teal crystal dust on navy rock, crystals in violet, pink and gold, a night sky
+        "grass": "40BEB8", "grass_light": "62D8CE", "grass_deep": "2CA4A4", "grass_rim": "1C7C94",
+        "dirt": "2A6CA8", "dirt_dark": "1E4E8C",
+        "under": "1A3A78", "under_dark": "122A5C", "under_light": "2A54A0",
+        "rock": "6A6CC0", "rock_dark": "4C4E9E", "rock_light": "9092DC",
+        "sand": "E4FFF8", "sand_dark": "A4E8DC", "cobble": "F2FFFC",
+        "stone": "B8A8F0", "stone_dark": "9484D8", "stone_pale": "DCD0FF",
+        "wood": "5A3CB0", "wood_light": "8A68E0", "wood_dark": "3E2888",
+        "water": "C08CFF", "water_light": "ECD8FF",
+        "leaves": ("B46CFF", "FF7AD0", "FFD24A"),
+        "petals": ("FF7AD0", "FFFFFF", "FFD24A", "8CF0E6", "B46CFF"),
+        "accent": "C08CFF", "accent_pale": "ECD8FF",
+        "sky_top": "101E4A", "sky_horizon": "2E6C9C",
+        "tree": "crystal_cluster", "liquid": "prism", "fence": "crystal_post",
+    },
+    "Robot Factory": {  # blue steel plate with a hazard-yellow lip, orange paint, green coolant, a yellow sky
+        "grass": "5C8CEA", "grass_light": "7CA8F8", "grass_deep": "4878D6", "grass_rim": "FFC21A",
+        "dirt": "E8862A", "dirt_dark": "C2621E",
+        "under": "3E4C8C", "under_dark": "2C3870", "under_light": "5668AC",
+        "rock": "5668AC", "rock_dark": "3E4C8C", "rock_light": "7C8ED0",
+        "sand": "D4E0F8", "sand_dark": "FFC21A", "cobble": "EEF4FF",
+        "stone": "C4D2F0", "stone_dark": "8C9CCC", "stone_pale": "E8EEFC",
+        "wood": "E8582A", "wood_light": "FF8A3C", "wood_dark": "A83A20",
+        "water": "50FFAA", "water_light": "C8FFE4",
+        "leaves": ("FFC21A", "FF6A2A", "4AD8FF"),
+        "petals": ("FFC21A", "FFFFFF", "FF6A2A", "4AD8FF", "50FFAA"),
+        "accent": "50FFAA", "accent_pale": "C8FFE4",
+        "sky_top": "F0A82A", "sky_horizon": "FFE48A",
+        "tree": "factory_stack", "liquid": "coolant", "fence": "pipe_rail",
+    },
+    "Alien Jungle": {  # jade moss on purple soil, pink and purple glowing caps, lime acid, a lime sky
+        "grass": "1FA882", "grass_light": "38C898", "grass_deep": "18906E", "grass_rim": "0E6A5C",
+        "dirt": "7A3CA8", "dirt_dark": "5A2A88",
+        "under": "3E2470", "under_dark": "2C1858", "under_light": "56348E",
+        "rock": "7E58C0", "rock_dark": "5E3EA0", "rock_light": "A480E0",
+        "sand": "D8F28A", "sand_dark": "A8D45A", "cobble": "ECFAB8",
+        "stone": "CFEFC0", "stone_dark": "9CCF98", "stone_pale": "EAFBE0",
+        "wood": "8A3CA0", "wood_light": "C068D0", "wood_dark": "5E2478",
+        "water": "B4FF2A", "water_light": "F0FF9A",
+        "leaves": ("FF5AB4", "A85CFF", "FFB03C"),
+        "petals": ("FF5AB4", "FFF3C8", "FFB03C", "A85CFF", "B4FF2A"),
+        "accent": "FF6AC8", "accent_pale": "FFC8EC",
+        "sky_top": "2E9E7A", "sky_horizon": "C8F06A",
+        "tree": "glow_shroom", "liquid": "acid", "fence": "vine_post",
+    },
+    "Black Hole": {  # plum rock with a burning orange lip under a crimson-black sky, rings of fire
+        "grass": "5A1E4E", "grass_light": "74285E", "grass_deep": "481640", "grass_rim": "E0481E",
+        "dirt": "8A1E3C", "dirt_dark": "641432",
+        "under": "3A1030", "under_dark": "280A24", "under_light": "541A40",
+        "rock": "6A2458", "rock_dark": "4A1840", "rock_light": "8E3A74",
+        "sand": "FFB46A", "sand_dark": "F0782E", "cobble": "FFD49A",
+        "stone": "7A2E66", "stone_dark": "5A1E4C", "stone_pale": "A04A86",
+        "wood": "3A1030", "wood_light": "5E2050", "wood_dark": "260A20",
+        "water": "FF6A1E", "water_light": "FFD24A",
+        "leaves": ("FF8A1E", "FF3C8C", "FFD24A"),
+        "petals": ("FF8A1E", "FFE8C0", "FF3C8C", "FFD24A", "5ADCE6"),
+        "accent": "FF8A28", "accent_pale": "FFD8A0",
+        "sky_top": "1A0616", "sky_horizon": "A01C40",
+        "tree": "bent_rock", "liquid": "singularity", "fence": "orbit_post",
+    },
+    "The Big Bang": {  # white paving on pale gold, violet underneath, shards in red, blue and purple, a pink dawn
+        "grass": "FFE080", "grass_light": "FFF2BC", "grass_deep": "FFCE58", "grass_rim": "FF9E2E",
+        "dirt": "FFB84A", "dirt_dark": "F0902E",
+        "under": "B45CE0", "under_dark": "8A3CC0", "under_light": "D488F4",
+        "rock": "FFF8E8", "rock_dark": "FFD890", "rock_light": "FFFFFF",
+        "sand": "FFFFFF", "sand_dark": "FFD24A", "cobble": "FFFBEA",
+        "stone": "FFF6E0", "stone_dark": "F4D898", "stone_pale": "FFFFFF",
+        "wood": "E8A020", "wood_light": "FFD24A", "wood_dark": "B87410",
+        "water": "FFC83C", "water_light": "FFFFFF",
+        "leaves": ("FF4A5A", "3C9CFF", "B45CFF"),
+        "petals": ("FF4A5A", "FFFFFF", "3C9CFF", "B45CFF", "28C8B4"),
+        "accent": "FFD83A", "accent_pale": "FFFBD0",
+        "sky_top": "FF9EC4", "sky_horizon": "FFF4D8",
+        "tree": "spark_burst", "liquid": "energy", "fence": "spark_post",
     },
 }
 
