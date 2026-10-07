@@ -20,6 +20,14 @@ UI.TITLE_FONT = Enum.Font.LuckiestGuy
 UI.Atlases = {
 	a = "rbxassetid://75982409729652",
 	b = "rbxassetid://89091306681120",
+	-- Sheets C to H (docs/ICONS.md, assets/ui/atlas-c.png ...): "" until the image is uploaded to Roblox and its
+	-- id pasted here. An icon on a sheet without an id is simply not drawn, and the old oval shows.
+	c = "",
+	d = "",
+	e = "",
+	f = "",
+	g = "",
+	h = "",
 }
 
 local hex = Color3.fromHex
@@ -654,7 +662,30 @@ function UI.row(parent: Instance, height: number, order: number)
 		Size = UDim2.fromOffset(132, height - 18),
 		Parent = frame,
 	})
-	return { frame = frame, icon = icon, title = title, sub = sub, button = button }
+	local row = { frame = frame, icon = icon, title = title, sub = sub, button = button }
+	-- The row's picture: an icon by name (UI.icon), drawn over the coloured oval, which stays as what shows
+	-- for a name without an icon. Safe to call on every refresh.
+	local picture: ImageLabel? = nil
+	local shown: string? = nil
+	function row.setIcon(name: string?)
+		if name == shown then
+			return
+		end
+		shown = name
+		if picture then
+			picture:Destroy()
+			picture = nil
+		end
+		picture = UI.icon(name, {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0, 30, 0.5, 0),
+			Size = UDim2.fromOffset(52, 52),
+			ZIndex = 2,
+			Parent = frame,
+		})
+		icon.Visible = picture == nil
+	end
+	return row
 end
 
 -- A section heading inside a list.
@@ -683,6 +714,31 @@ local ICONS = {
 	story = { "b", 0, 1 }, index = { "b", 1, 1 }, loot = { "b", 2, 1 }, gift = { "b", 3, 1 },
 	lock = { "b", 0, 2 }, clock = { "b", 1, 2 }, skull = { "b", 2, 2 }, crown = { "b", 3, 2 },
 	heart = { "b", 0, 3 }, tap = { "b", 1, 3 }, check = { "b", 2, 3 }, flame = { "b", 3, 3 },
+	-- Sheets C to H, in the order of docs/ICONS.md. An item's icon has the item's own id as its name where it can.
+	power2x = { "c", 0, 0 }, coins2x = { "c", 1, 0 }, candy2x = { "c", 2, 0 }, luck2x = { "c", 3, 0 },
+	megaluck = { "c", 0, 1 }, autotap = { "c", 1, 1 }, megadamage = { "c", 2, 1 }, healfreeze = { "c", 3, 1 },
+	supercharge = { "c", 0, 2 }, pass_triplehatch = { "c", 1, 2 }, pass_tripleluck = { "c", 2, 2 }, pass_slots = { "c", 3, 2 },
+	pass_storage = { "c", 0, 3 }, pass_speed = { "c", 1, 3 }, pass_huge = { "c", 2, 3 }, slot = { "c", 3, 3 },
+	gems1 = { "d", 0, 0 }, gems2 = { "d", 1, 0 }, gems3 = { "d", 2, 0 }, gems4 = { "d", 3, 0 },
+	gems5 = { "d", 0, 1 }, gems6 = { "d", 1, 1 }, enchantkey = { "d", 2, 1 }, shinykey = { "d", 3, 1 },
+	bosschest = { "d", 0, 2 }, crate_daily = { "d", 1, 2 }, crate_wooden = { "d", 2, 2 }, crate_gem = { "d", 3, 2 },
+	crate_royal = { "d", 0, 3 }, crate_pumpkin = { "d", 1, 3 }, crate_cursed = { "d", 2, 3 }, silver = { "d", 3, 3 },
+	ammo_double = { "e", 0, 0 }, ammo_golden = { "e", 1, 0 }, ammo_flame = { "e", 2, 0 }, ammo_poison = { "e", 3, 0 },
+	ammo_frost = { "e", 0, 1 }, ammo_lucky = { "e", 1, 1 }, ammo_boss = { "e", 2, 1 }, ammo_candy = { "e", 3, 1 },
+	ammo_void = { "e", 0, 2 }, ammo_rainbow = { "e", 1, 2 }, monster = { "e", 2, 2 }, boss = { "e", 3, 2 },
+	wave = { "e", 0, 3 }, shield = { "e", 1, 3 }, speed = { "e", 2, 3 }, sale = { "e", 3, 3 },
+	world_earth = { "f", 0, 0 }, world_moon = { "f", 1, 0 }, world_mars = { "f", 2, 0 }, world_neptune = { "f", 3, 0 },
+	world_thesun = { "f", 0, 1 }, world_thevoid = { "f", 1, 1 }, world_nebula = { "f", 2, 1 }, world_crystalbelt = { "f", 3, 1 },
+	world_robotfactory = { "f", 0, 2 }, world_alienjungle = { "f", 1, 2 }, world_blackhole = { "f", 2, 2 }, world_thebigbang = { "f", 3, 2 },
+	island = { "f", 0, 3 }, base = { "f", 1, 3 }, portal = { "f", 2, 3 }, fusion = { "f", 3, 3 },
+	tower_cannon = { "g", 0, 0 }, tower_gatling = { "g", 1, 0 }, tower_mortar = { "g", 2, 0 }, tower_sniper = { "g", 3, 0 },
+	tower_frost = { "g", 0, 1 }, tower_flame = { "g", 1, 1 }, tower_tesla = { "g", 2, 1 }, tower_rocket = { "g", 3, 1 },
+	tower_laser = { "g", 0, 2 }, tower_venom = { "g", 1, 2 }, tower_blizzard = { "g", 2, 2 }, tower_railgun = { "g", 3, 2 },
+	tower_storm = { "g", 0, 3 }, tower_meteor = { "g", 1, 3 }, upgrade = { "g", 2, 3 }, hatch = { "g", 3, 3 },
+	ench_sharp = { "h", 0, 0 }, ench_rapid = { "h", 1, 0 }, ench_reach = { "h", 2, 0 }, ench_slayer = { "h", 3, 0 },
+	ench_splinter = { "h", 0, 1 }, ench_frostbite = { "h", 1, 1 }, ench_ember = { "h", 2, 1 }, ench_chain = { "h", 3, 1 },
+	ench_executioner = { "h", 0, 2 }, ench_greed = { "h", 1, 2 }, ench_treasure = { "h", 2, 2 }, ench_gemfinder = { "h", 3, 2 },
+	ench_lucky = { "h", 0, 3 }, ench_sweettooth = { "h", 1, 3 }, ench_longshot = { "h", 2, 3 }, ench_guardian = { "h", 3, 3 },
 }
 
 -- A picture from the atlas. `fallback` is what stands in for it (a glyph, a code-drawn shape): it stays

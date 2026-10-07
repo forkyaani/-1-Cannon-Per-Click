@@ -112,6 +112,7 @@ local function start(ctx)
 				continue
 			end
 			row.icon.BackgroundColor3 = item.color or Colors.white
+			row.setIcon(id)
 			row.title.Text = item.name
 			row.title.TextColor3 = Config.RarityColors[item.rarity] or Colors.white
 			row.sub.Text = `{item.desc or ""}\n{ROW_NOTES[kind]}`

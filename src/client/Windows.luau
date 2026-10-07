@@ -550,6 +550,10 @@ local Store = require(ReplicatedStorage.Shared:WaitForChild("Features"):WaitForC
 local Items = require(ReplicatedStorage.Shared:WaitForChild("Items"))
 
 local STORE_TABS = { "GEMS", "ITEMS", "PASSES" }
+local PASS_ICONS = {
+	tripleHatch = "pass_triplehatch", tripleLuck = "pass_tripleluck", slots3 = "pass_slots", slots5 = "pass_slots",
+	storage500 = "pass_storage", gameSpeed = "pass_speed", hugeStarter = "pass_huge",
+}
 -- 21000 -> "21,000": prices and pack sizes are shown in full.
 local function commas(n: number): string
 	local text = tostring(math.floor(n))
@@ -581,6 +585,7 @@ local packRows = {}
 for order, pack in Store.GemPacks do
 	local row = UI.row(storeLists.GEMS, 70, order)
 	row.icon.BackgroundColor3 = GEM_BLUE
+	row.setIcon(pack.id)
 	row.button.Activated:Connect(function()
 		act("storeBuyPack", pack.id)
 	end)
@@ -603,6 +608,7 @@ local function ensurePassRows()
 		if not passRows[key] then
 			local row = UI.row(storeLists.PASSES, 70, pass.order)
 			row.icon.BackgroundColor3 = Colors.gold
+			row.setIcon(PASS_ICONS[key])
 			row.title.Text = pass.name
 			row.sub.Text = pass.desc
 			row.button.Activated:Connect(function()
@@ -638,6 +644,7 @@ function refreshStore()
 		row.frame.Visible = item ~= nil
 		if item then
 			row.icon.BackgroundColor3 = item.color or Colors.white
+			row.setIcon(entry.item)
 			row.title.Text = if entry.amount > 1 then `{item.name} x{entry.amount}` else item.name
 			row.title.TextColor3 = Config.RarityColors[item.rarity] or Colors.white
 			row.sub.Text = entry.note
