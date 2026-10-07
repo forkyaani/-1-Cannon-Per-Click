@@ -32,7 +32,7 @@ Six new sheets, 16 cells each: about **120 Kling credits** if every sheet is rig
 ## The sheets
 
 **C. Boosts and passes (16):** power2x (2x Power), coins2x (2x Coins), candy2x (2x Candy), luck2x (2x Luck),
-megaluck (Mega Luck), autotap (Auto), megadamage (Mega Damage), healfreeze (Heal Freeze), supercharge
+megaluck (Mega Luck), autotap (Overdrive), megadamage (Mega Damage), healfreeze (Deep Freeze), supercharge
 (Supercharge), pass_triplehatch (x3 Egg Opener), pass_tripleluck (x3 Luck), pass_slots (+3 and +5 Mini
 Cannon Slots, one icon with the number written by the game), pass_storage (+500 Storage), pass_speed (3x
 Speed), pass_huge (HUGE Tycoon Cannon), slot (the weekly shop's +1 slot)
