@@ -339,23 +339,34 @@ def bent(start, leans, radius, length, colours, taper=0.12, vertices=8, glow=Non
     return at
 
 
+def void_gem(radius, height, at, lean, glow):
+    """The Void's hanging shard: rock above, and the point it was torn off at still glowing below."""
+    lean = Vector(lean).normalized()
+    tube(radius, height * 0.62, at, lean, ROCK_LIGHT, tip=0.0, vertices=5, roughness=0.3)
+    tube(radius, height * 0.38, at, -lean, glow, tip=0.0, vertices=5, emission=1.2)
+
+
 def void_shard(leaf, kind):
     """The Void's: shards of rock torn loose, hanging over the stump they came from round a glowing core;
     or a broken obelisk whose pieces float apart, light in the gaps."""
     pale = shade(leaf, 0.4)
     if kind == "round":
         chunk((3.3, 3.1, 1.5), (0, 0, 0.6), ROCK_DARK)
-        ball(1.5, (0, 0, 5.6), leaf, segments=8, emission=1.5)
-        hoop(2.7, 0.2, (0, 0, 5.6), pale, rotation=(0.45, 0.25, 0), segments=12, emission=1.2)
-        for x, y, z, radius, height, lean in ((2.9, 1.6, 6.4, 1.35, 6.0, (0.25, 0.1, 1)), (-3.1, 0.9, 5.0, 1.15, 4.6, (-0.3, 0.05, 1)), (0.4, -3.0, 7.6, 1.1, 4.8, (0.05, -0.3, 1)), (-0.5, 0.8, 11.2, 1.2, 5.2, (-0.08, 0.05, 1))):
-            gem(radius, height, (x, y, z), ROCK_LIGHT, lean, sides=5, roughness=0.3)
+        tube(1.9, 0.5, (0, 0, 1.6), UP, leaf, tip=1.2, vertices=6, emission=1.3)  # the wound it left, still glowing
+        ball(1.7, (0, 0, 5.6), leaf, segments=8, emission=1.5)
+        hoop(3.0, 0.26, (0, 0, 5.6), pale, rotation=(0.45, 0.25, 0), segments=12, emission=1.2)
+        for x, y, z, radius, height, lean in ((2.9, 1.6, 6.4, 1.5, 6.0, (0.25, 0.1, 1)), (-3.1, 0.9, 5.0, 1.3, 4.6, (-0.3, 0.05, 1)), (0.4, -3.0, 7.6, 1.25, 4.8, (0.05, -0.3, 1)), (-0.5, 0.8, 11.2, 1.35, 5.2, (-0.08, 0.05, 1))):
+            void_gem(radius, height, (x, y, z), lean, leaf)
     else:
-        tube(2.1, 3.2, (0, 0, -0.4), UP, ROCK_DARK, tip=1.7, vertices=5)
-        ball(1.0, (0, 0, 3.6), leaf, segments=6, emission=1.5)
-        tube(1.7, 4.6, (0.15, 0, 4.5), (0.03, 0, 1), ROCK, tip=1.35, vertices=5, roughness=0.3)
-        ball(0.85, (0.3, 0, 9.8), leaf, segments=6, emission=1.5)
-        hoop(2.3, 0.18, (0.3, 0, 9.8), pale, rotation=(0.3, 0.15, 0), segments=12, emission=1.2)
-        gem(1.3, 6.4, (0.4, 0, 12.8), ROCK_LIGHT, (0.04, 0, 1), sides=5, roughness=0.3)
+        tube(2.3, 3.2, (0, 0, -0.4), UP, ROCK_DARK, tip=1.85, vertices=5)
+        tube(2.12, 0.3, (0, 0, 1.3), UP, leaf, vertices=5, emission=1.3)  # a band of runes
+        ball(1.15, (0, 0, 3.6), leaf, segments=6, emission=1.5)
+        tube(1.85, 4.6, (0.15, 0, 4.5), (0.03, 0, 1), ROCK, tip=1.45, vertices=5, roughness=0.3)
+        for z, radius in ((5.5, 1.84), (7.0, 1.72), (8.4, 1.6)):
+            tube(radius, 0.28, (0.15 + (z - 4.5) * 0.03, 0, z), (0.03, 0, 1), pale if z == 7.0 else leaf, vertices=5, emission=1.3)
+        ball(0.95, (0.3, 0, 9.9), leaf, segments=6, emission=1.5)
+        hoop(2.6, 0.24, (0.3, 0, 9.9), pale, rotation=(0.3, 0.15, 0), segments=12, emission=1.2)
+        void_gem(1.45, 6.4, (0.4, 0, 12.9), (0.04, 0, 1), leaf)
 
 
 def gas_cloud(leaf, kind):
@@ -650,7 +661,7 @@ def themed_fence(step):
         elif FENCING == "ice_post":
             tube(0.3, (b - a).length, a + Vector((0, 0, 1.5)), b - a, ROCK_LIGHT, vertices=4, roughness=0.15)
         elif FENCING == "rift_post":  # a beam of light
-            tube(0.17, (b - a).length, a + Vector((0, 0, 1.7)), b - a, ACCENT, vertices=4, emission=1.0)
+            tube(0.24, (b - a).length, a + Vector((0, 0, 1.7)), b - a, ACCENT, vertices=4, emission=1.0)
         elif FENCING == "star_rope":
             sag(a, b, 2.7, 1.0, 0.24, PETALS[0])
         elif FENCING == "crystal_post":
@@ -925,17 +936,21 @@ def rift():
     glow, pale = "FF3CC8", "FFC2F4"
     jags = (1.0, 0.55, 0.8, 0.5, 0.95, 0.6, 0.75, 0.5, 1.0, 0.55, 0.85, 0.5, 0.9, 0.6)
 
-    def tear(wide, high, depth, colour, **look):
-        plate([(math.sin(index * math.tau / len(jags)) * reach * wide, 6.6 + math.cos(index * math.tau / len(jags)) * reach * high) for index, reach in enumerate(jags)], depth, colour, **look)
+    def tear(wide, high, depth, colour, turn=0.0, **look):
+        plate([(math.sin(index * math.tau / len(jags)) * reach * wide, 6.8 + math.cos(index * math.tau / len(jags)) * reach * high) for index, reach in enumerate(jags)], depth, colour, rotation=(0, 0, turn), **look)
 
     chunk((4.8, 2.6, 1.2), (0, 0, 0.4), ROCK_DARK)
-    tear(2.7, 5.8, 0.5, glow, emission=1.5)
-    tear(1.7, 4.4, 0.8, pale, emission=1.8)
-    tear(0.75, 3.0, 1.0, "1A0A4A")  # the dark you see through it
+    tear(3.1, 6.0, 0.5, glow, emission=1.5)
+    tear(2.1, 4.7, 0.8, pale, emission=1.8)
+    tear(1.05, 3.3, 1.0, "1A0A4A")  # the dark you see through it
+    # the tear runs both ways, so that it is a tear from the side too
+    tear(3.0, 5.6, 0.5, glow, math.pi / 2, emission=1.5)
+    tear(2.0, 4.4, 0.8, pale, math.pi / 2, emission=1.8)
+    tear(1.0, 3.1, 1.0, "1A0A4A", math.pi / 2)
     for side in (-1, 1):
         bent((side * 3.5, 0.2, 0.2), [(side * 0.35, 0, 1), (-side * 0.05, 0, 1), (-side * 0.5, 0, 1)], 1.5, 3.9, (ROCK, ROCK_LIGHT), taper=0.28, vertices=5)
-    for x, y, z, radius, height, lean in ((-4.9, 0.5, 10.4, 0.8, 2.8, (-0.2, 0, 1)), (4.7, -0.4, 11.6, 0.65, 2.2, (0.25, 0, 1)), (0.3, 0.3, 13.6, 0.7, 2.4, (0.05, 0, 1))):
-        gem(radius, height, (x, y, z), ROCK_LIGHT, lean, sides=5, roughness=0.3)
+    for x, y, z, radius, height, lean in ((-4.9, 0.5, 10.4, 0.9, 2.8, (-0.2, 0, 1)), (4.7, -0.4, 11.6, 0.75, 2.2, (0.25, 0, 1)), (0.3, 0.3, 14.4, 0.8, 2.4, (0.05, 0, 1))):
+        void_gem(radius, height, (x, y, z), lean, glow)
     for x, y, z in ((-2.7, -0.6, 12.4), (2.6, 0.4, 12.9), (-4.6, -0.5, 6.4), (4.9, 0.3, 7.4)):
         gem(0.35, 1.1, (x, y, z), pale, emission=1.5)
 
@@ -948,14 +963,16 @@ def void_eye():
         x, y = ring(index * 90 + 45, 2.5)
         out = Vector((x, y, 0)).normalized()
         bent((x, y, 1.2), [out * 0.6 + Vector(UP), out * 0.1 + Vector(UP), -out * 0.6 + Vector(UP)], 1.0, 2.2, (ROCK, ROCK_LIGHT), taper=0.28, vertices=5)
-    ball(3.2, (0, 0, 7.4), WOOD_LIGHT, segments=14, roughness=0.3)
-    ball(2.4, (0, -2.0, 7.4), "F6C2FF", scale=(1, 0.5, 1), segments=12, roughness=0.3)  # the white of the eye
-    ball(1.6, (0, -2.75, 7.4), "FF3C8C", scale=(1, 0.4, 1), segments=12, emission=1.4)
-    ball(0.75, (0, -3.2, 7.4), "1A0A4A", scale=(0.55, 0.4, 1.5), segments=8)  # a slit for a pupil
-    ball(0.3, (-0.6, -3.35, 8.1), WHITE, scale=(1, 0.4, 1), segments=6, emission=1.0)
-    hoop(4.3, 0.2, (0, 0, 7.4), ACCENT, rotation=(0.35, 0.2, 0), segments=18, emission=1.2)
-    for x, y, z, radius, height in ((0, 0, 12.2, 0.9, 2.8), (-2.7, 0.5, 11.3, 0.6, 1.9), (2.7, 0.5, 11.3, 0.6, 1.9)):
-        gem(radius, height, (x, y, z), ROCK_LIGHT, sides=5, roughness=0.3)
+    ball(3.2, (0, 0, 7.4), "F6C2FF", segments=14, roughness=0.3)  # the white of the eye, all round: an eye from any side
+    gaze, middle = 0.95, Vector((0, 0, 7.4))  # it looks past the pad towards the pond, so that the island's photo sees its iris too
+    look = Vector((math.sin(gaze), -math.cos(gaze), 0))
+    ball(2.1, middle + look * 2.15, "FF3C8C", scale=(1, 0.62, 1), rotation=(0, 0, gaze), segments=12, emission=1.4)
+    ball(1.0, middle + look * 3.05, "1A0A4A", scale=(0.5, 0.45, 1.5), rotation=(0, 0, gaze), segments=8)  # a slit for a pupil
+    ball(0.34, middle + look * 3.3 + Vector((-0.75 * math.cos(gaze), -0.75 * math.sin(gaze), 0.95)), WHITE, segments=6, emission=1.0)
+    ball(3.3, middle - look * 1.6 + Vector((0, 0, 0.3)), WOOD_LIGHT, scale=(1, 1, 0.92), rotation=(0, 0, gaze), segments=14, roughness=0.3)  # the socket it sits in
+    hoop(4.4, 0.26, (0, 0, 7.4), ACCENT, rotation=(0.35, 0.2, 0), segments=18, emission=1.2)
+    for x, y, z, radius, height in ((0, 0, 12.6, 0.95, 2.8), (-2.7, 0.5, 11.5, 0.65, 1.9), (2.7, 0.5, 11.5, 0.65, 1.9)):
+        void_gem(radius, height, (x, y, z), UP, "FF3C8C")
 
 
 def telescope():
@@ -1526,7 +1543,7 @@ def pond(reach, fall, bridge):
         palm(-10.6, 3.6)
     elif LIQUID == "rift":  # shards of rock hanging over the tear
         for x, y, z, radius, height, lean in ((-4.0, 2.5, 2.6, 0.9, 3.2, (0.2, 0, 1)), (3.2, 4.2, 3.4, 0.7, 2.6, (-0.15, 0.1, 1)), (4.6, -1.5, 2.2, 0.8, 2.8, (0.1, -0.2, 1)), (-0.6, -2.4, 4.4, 0.6, 2.0, (0, 0, 1))):
-            gem(radius, height, (x, y, z), ROCK_LIGHT, lean, sides=5, roughness=0.3)
+            void_gem(radius, height, (x, y, z), lean, WATER_LIGHT)
         tube(3.0, 0.62, (1.0, 0.8, -0.2), UP, "1A0A4A", vertices=7)  # the dark in the middle of it
     elif LIQUID == "gas":  # puffs drifting on it
         for x, y, size, colour in ((-4.0, 2.5, 1.5, LEAVES[0]), (3.2, 4.2, 1.2, WHITE), (4.6, -1.5, 1.3, LEAVES[2])):

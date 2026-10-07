@@ -167,8 +167,8 @@ THEMES = {
     "The Void": {  # deep violet-indigo under a black-violet sky, lit magenta by the rift
         "grass": "5632B4", "grass_light": "6C46D2", "grass_deep": "44249A", "grass_rim": "8A2ACC",
         "dirt": "4A22A0", "dirt_dark": "361880",
-        "under": "2A1270", "under_dark": "1E0C56", "under_light": "3C1C96",
-        "rock": "5A34B8", "rock_dark": "42249A", "rock_light": "7A52DA",
+        "under": "5A2CC8", "under_dark": "4220A4", "under_light": "7A48E8",
+        "rock": "4438C8", "rock_dark": "30289E", "rock_light": "5E5AF0",
         "sand": "7A5AE8", "sand_dark": "5A3CC8", "cobble": "9C7CFF",
         "stone": "6A48D0", "stone_dark": "4E30AE", "stone_pale": "9274F0",
         "wood": "2E1470", "wood_light": "4A28A0", "wood_dark": "200C54",
