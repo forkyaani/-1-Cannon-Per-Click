@@ -139,9 +139,9 @@ LOOKS = {
     "Robot Factory": dict(road="sand", road_edge="sand_dark", kerb="2C3870", kerb_glow=0.0, band="sand_dark", hot="FF3C3C", ember="FFC21A", lair="under_dark",
                           roof="tank", knob="bolt", window="accent", iron="2C3870", board="242E8C", landmark="robot_arm", cloud="FFF6D0", ambient=0.85, sun=2.6,
                           hills=("3E74EA", "386ADF", "3360D4", "2E54C4"), lamp_glow=True, monsters=("FF6A2A", "50FFAA", "FFC21A", "FF7AD0")),
-    "Alien Jungle": dict(road="sand", road_edge="sand_dark", kerb="rock", kerb_glow=0.0, band="sand_dark", hot="3CD8FF", ember="B4FF2A", lair="under",
+    "Alien Jungle": dict(road="sand", road_edge="sand_dark", kerb="rock", kerb_glow=0.0, band="sand_dark", hot="3CD8FF", ember="B4FF2A", lair="6A38B0",
                          roof="cap", knob="pod", window="accent", iron="wood_dark", board="2C1858", landmark="snap_pod", cloud="E8FFB0", ambient=0.85, sun=2.6,
-                         lamp_glow=True, monsters=("FF5AB4", "FFB03C", "A85CFF", "FFFFFF")),
+                         hills=("16B290", "12A488", "0F9682", "0D887C"), lamp_glow=True, monsters=("FF5AB4", "FFB03C", "A85CFF", "FFFFFF")),
     "Black Hole": dict(road="sand", road_edge="sand_dark", kerb="water_light", kerb_glow=1.0, band="sand_dark", hot="5ADCE6", ember="B06BFF", lair="wood_light",
                        roof="claw", knob="orbit", window="accent", iron="wood_dark", board="360A3A", landmark="black_hole", cloud="A02848", ambient=1.0, fill=5.0, sun=3.1,
                        stone=("B84A8A", "8A3070", "E070A8"), crags=("6A1C78", "7C2488", "641E6E", "78267E", "902E8E"), hills=("962C90", "882884", "7A2478", "8A2A6C"), stars=("FFD8A0", "FF8A28", "FF7AA8"), lamp_glow=True,
@@ -1336,6 +1336,13 @@ def gate(tint=OWNER):
             star(0.72, (x, front * 4.02, 12.5), GOLD, depth=0.16, roughness=0.3)
         tube(0.16, 4.2, (x, 0, tip - 0.2), UP, IRON, vertices=5)
         ball(0.5, (x, 0, tip), GOLD, segments=8, roughness=0.3)
+        if LOOK["roof"] == "cap":  # Alien Jungle: the roof is one of its mushrooms, with their lime gills and cyan spots
+            tube(4.5, 0.35, (x, 0, 19.15), UP, WATER_LIGHT, vertices=14, emission=1.2)
+            for start, radius, z, out, wide in ((20, 3.3, 23.75, (0.648, 0.762), 1.0), (50, 4.85, 21.75, (0.902, 0.431), 0.82)):
+                for degrees in range(start, 360, 120 if radius < 4 else 60):
+                    a, b = ring(degrees, 1)
+                    lean = Vector((a * out[0], b * out[0], out[1]))
+                    tube(wide, 0.5, Vector((x + a * radius * 0.97, b * radius * 0.97, z)) - lean * 0.2, lean, "5CF0E0", tip=wide * 0.6, vertices=5, emission=1.4)
         ball(0.3, (x, 0, tip + 4.1), GOLD, segments=6, roughness=0.3)
         with part("GateTrim"):
             lathe(roof, tint, segments=sides, smooth=smooth, location=(x, 0, 0))
