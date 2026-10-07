@@ -741,7 +741,10 @@ end
 -- Recomputes which mini cannons are equipped (always the strongest) and rebuilds their models.
 local function refreshPets(player: Player)
 	local data, state = Data.get(player), states[player]
-	state.equipped = Config.equippedPets(data.pets, equipSlots(player, data))
+	-- A feature may pick what is equipped (Features/Minis: the player's own picks); nil leaves it to the rule.
+	local slots = equipSlots(player, data)
+	local picked = Game.equipPicker and Game.equipPicker(player, data, slots)
+	state.equipped = if typeof(picked) == "table" then picked else Config.equippedPets(data.pets, slots)
 	refreshPetDps(state)
 	state.petOwed = {} -- [index in state.equipped] = the part of a shot that mini cannon has loaded
 	if state.petsModel then
@@ -2474,6 +2477,21 @@ function Game.pets.swap(player: Player, give: { string }, get: string): boolean
 	refreshPets(player)
 	state.metaDirty = true
 	return true
+end
+
+-- Set by a feature: (player, data, slots) -> the mini cannons to equip, or nil for the strongest.
+Game.equipPicker = nil :: ((Player, any, number) -> { string }?)?
+
+-- What the player has equipped right now (a list of ids; do not change it).
+function Game.equipped(player: Player): { string }
+	local state = states[player]
+	return if state and state.equipped then state.equipped else {}
+end
+
+-- How many mini cannons the player can equip at once.
+function Game.equipSlots(player: Player): number
+	local data = Data.get(player)
+	return if data and states[player] then equipSlots(player, data) else 0
 end
 
 -- Picks the equipped mini cannons again and rebuilds their models: for a feature whose `equipSlots` modifier

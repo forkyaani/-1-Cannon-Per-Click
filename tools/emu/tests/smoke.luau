@@ -2064,6 +2064,83 @@ do
 	noErrors("pausing")
 end
 
+T.section("mini cannons: equip by hand, delete, lock, loadouts")
+do
+	local Minis = require(game.ReplicatedStorage.Shared.Features.Minis)
+	local before = table.clone(data.pets)
+	local slots = Game.equipSlots(player)
+	check(slots >= 2, "there are slots to equip into")
+	-- A known set: plenty of wooden, two iron, one gold.
+	for _ = 1, slots + 2 do
+		Game.pets.add(player, "wooden", true)
+	end
+	Game.pets.add(player, "iron", true)
+	Game.pets.add(player, "iron", true)
+	act("minisBest")
+	local auto = table.clone(Game.equipped(player))
+	eq(#auto, math.min(slots, #data.pets), "automatic fills every slot it can")
+	-- Unequip one: exactly that one is gone, and nothing takes its place.
+	local dropped = auto[#auto]
+	act("minisUnequip", dropped)
+	eq(#Game.equipped(player), #auto - 1, "unequip leaves a slot empty")
+	eq(Minis.counts(Game.equipped(player))[dropped] or 0, (Minis.counts(auto)[dropped] or 0) - 1, "the one unequipped is the one gone")
+	-- A new hatch is not equipped for a player who picks by hand.
+	Game.pets.add(player, "wooden", true)
+	eq(#Game.equipped(player), #auto - 1, "picking by hand: a new one is not equipped for you")
+	-- Equip it back; then the slots are full.
+	act("minisEquip", dropped)
+	eq(#Game.equipped(player), #auto, "equip fills the free slot")
+	local full = table.clone(Game.equipped(player))
+	act("minisEquip", "wooden")
+	eq(#Game.equipped(player), #full, "no free slot, nothing equipped")
+	act("minisEquip", "nope")
+	act("minisEquip", 5)
+	eq(#Game.equipped(player), #full, "junk equips nothing")
+	-- Unequip all, then loadouts.
+	act("minisLoadout", { slot = 1, save = true })
+	act("minisUnequipAll")
+	eq(#Game.equipped(player), 0, "unequip all")
+	act("minisLoadout", { slot = 2 })
+	eq(#Game.equipped(player), 0, "an empty loadout equips nothing")
+	act("minisLoadout", { slot = 1 })
+	eq(#Game.equipped(player), #full, "a loadout brings the set back")
+	act("minisLoadout", { slot = 9, save = true })
+	act("minisLoadout", "x")
+	-- Locks and deleting.
+	local wooden = Game.pets.count(data, "wooden")
+	act("minisLock", "wooden")
+	act("minisDelete", { wooden = 1 })
+	eq(Game.pets.count(data, "wooden"), wooden, "a locked kind is not deleted")
+	act("minisLock", "wooden")
+	act("minisDelete", { wooden = wooden + 1 })
+	eq(Game.pets.count(data, "wooden"), wooden, "more than is owned deletes nothing")
+	act("minisDelete", { wooden = 0.5 })
+	act("minisDelete", { nope = 1 })
+	act("minisDelete", "x")
+	eq(Game.pets.count(data, "wooden"), wooden, "junk deletes nothing")
+	local coins, gems = data.coins, data.diamonds
+	act("minisDelete", { wooden = 2, iron = 1 })
+	eq(Game.pets.count(data, "wooden"), wooden - 2, "two deleted")
+	check(data.coins == coins and data.diamonds == gems, "deleting gives nothing back")
+	-- What was equipped and is gone is dropped or replaced by its twin; never more than is owned.
+	local worn, have = Minis.counts(Game.equipped(player)), Minis.counts(data.pets)
+	for id, count in worn do
+		check(count <= (have[id] or 0), "nothing equipped that is not owned: " .. id)
+	end
+	check(Minis.precious("hugetycoon") and not Minis.precious("wooden"), "a Huge takes a second press to delete, a wooden one does not")
+	local picks = Minis.resolve({ "wooden~sharp3", "iron" }, { "wooden", "iron", "iron" }, 5)
+	check(#picks == 2 and picks[1] == "wooden~sharp3" and picks[2] == "iron", "a pick that was enchanted away is replaced by its twin")
+	-- Back to automatic, and the pets as they were.
+	act("minisBest")
+	eq(#Game.equipped(player), math.min(slots, #data.pets), "EQUIP BEST is automatic again")
+	table.clear(data.pets)
+	for _, id in before do
+		table.insert(data.pets, id)
+	end
+	Game.refreshPets(player)
+end
+noErrors("mini cannons by hand")
+
 T.section("the store: items for gems, gem packs")
 do
 	local Store = require(game.ReplicatedStorage.Shared.Features.Store)
