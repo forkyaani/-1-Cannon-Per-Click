@@ -923,7 +923,7 @@ def geode():
 def robot_arm():
     """The Robot Factory: a robot arm on a base in hazard stripes, a glowing power cell in its claw."""
     yellow, orange, steel = "FFC21A", "FF6A2A", T["stone"]
-    tube(3.9, 3.2, (0, 0, -3.2), UP, NAVY, tip=3.7, vertices=12)  # a plinth down into the hill: the hill falls away under so wide a base
+    tube(3.9, 3.2, (0, 0, -3.2), UP, T["rock"], tip=3.7, vertices=12)  # a plinth down into the hill: the hill falls away under so wide a base
     tube(3.7, 0.8, (0, 0, 0), UP, NAVY, vertices=12)
     for index in range(0, 12, 2):
         x, y = ring(index * 30, 3.6)
