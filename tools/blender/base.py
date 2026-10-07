@@ -598,6 +598,7 @@ def tree_bent_rock(tone=0, variant=0):
     """The Black Hole: rock pulled out of shape. Two claws closing over a small black hole, or a spire that
     breaks up at the top, its pieces falling in an arc into one."""
     leaf = LEAVES[tone]
+    ROCK_DARK, ROCK, ROCK_LIGHT = "4E1670", "64209A", "8434BE"  # on a base they stand on plum hills: the island's rock, a step lighter and bluer, so the claws show
 
     def hole(spot, radius):  # a dark ball in a thin ring of fire, well clear of it and nearly level (close to it or tilted at you, it is an eye)
         ball(radius, spot, HOLE, segments=10, roughness=0.3)
@@ -989,6 +990,7 @@ def black_hole():
     """The Black Hole: one in miniature. A dark ball in a tilted ring of fire, the light behind it bent into
     a halo, held in three claws of rock."""
     orange, hot, pink = "FF7A1E", "FFE08A", "FF3C8C"
+    whole = len(made)
     middle = Vector((0, 0, 8.2))
     tube(3.8, 0.7, (0, 0, 0), UP, T["stone_dark"], vertices=9)
     for index in range(3):
@@ -1004,6 +1006,23 @@ def black_hole():
         x, y = ring(degrees, distance)
         chunk((0.55, 0.5, 0.45), (x, y, 0.35), ROCK_LIGHT, detail=1)
     moved(first, Matrix.Translation(middle) @ Matrix.Rotation(0.38, 4, "X") @ Matrix.Rotation(0.15, 4, "Y"))
+    moved(whole, Matrix.Scale(1.3, 4))  # a base's landmark is seen from across the plot: bigger than the island's
+
+
+def black_hole_backdrop(buttes, rock):
+    """The Black Hole's rock behind the portal, made the island's: every butte gets the island's burning lip
+    under its cap, and a ring of fire hangs round the big rock, over the world's sign. `buttes` is
+    (x, z, radius, height) in plot space, `rock` the big rock's (x, z, radius, height, stretch)."""
+    for x, z, radius, height in buttes:
+        low = height - 2.3
+        first = len(made)
+        lathe([(radius * 0.62, low + 1.5), (radius * 0.83, low + 1.2), (radius * 0.87, low + 0.6), (radius * 0.8, low), (radius * 0.62, low)], GRASS_RIM, segments=12, stretch=SQUASH, emission=0.9)
+        moved(first, Matrix.Translation(at(x, z)))
+    x, z, radius, height, stretch = rock
+    first = len(made)
+    lathe([(radius * 0.74, 0.3), (radius * 0.98, 0.14), (radius * 0.98, -0.14), (radius * 0.74, -0.3), (radius * 0.74, 0.3)], "FF7A1E", segments=28, stretch=stretch, emission=1.5)
+    lathe([(radius * 0.68, 0.36), (radius * 0.78, 0.36), (radius * 0.78, -0.36), (radius * 0.68, -0.36), (radius * 0.68, 0.36)], "FFE08A", segments=28, stretch=stretch, emission=1.8)
+    moved(first, Matrix.Translation(at(x, z, height * 0.84)) @ Matrix.Rotation(0.16, 4, "Y"))
 
 
 def bang():
@@ -1646,6 +1665,8 @@ for x, z, radius, height, colour, kind in CRAGS:
 # The world's liquid falls down the butte to the right of the portal, into a pool at its foot (outside the ground).
 place(waterfall, (22, 164), face=180, fall=[(5.2, 27.6), (6.5, 26.9), (7.3, 25.0), (8.0, 21.5), (9.3, 12.0), (10.2, 1.2), (10.75, 0.25)], pool=1.8, reach=11.1)
 place(monolith, (0, BEHIND + 15 * 0.85), radius=15, height=45, colour=FAR, stretch=0.85)
+if WORLD == "Black Hole":
+    black_hole_backdrop([(x, max(z, BEHIND + radius * SQUASH), radius, height) for x, z, radius, height, colour, kind in CRAGS if kind is butte], (0, BEHIND + 15 * 0.85, 15, 45, 0.85))
 for x, z, size in ((-15.5, 153.8, 1.5), (14.6, 153.8, 1.1)):  # a boulder at its foot on each side of the portal
     place(rocks, (x, z), face=rng.uniform(0, 360), scale=size, colour=ROCK_LIGHT)
 for x, z, radius, length, lean, colour in ((-13.0, 151.6, 0.9, 4.6, -0.3, HOT), (-14.6, 151.2, 0.6, 2.8, -0.6, EMBER), (13.4, 151.5, 0.95, 5.0, 0.3, HOT), (15.0, 151.1, 0.6, 3.0, 0.6, EMBER),
