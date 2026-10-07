@@ -2499,6 +2499,12 @@ local function enableDebug()
 			Passes.setForTesting(player, string.sub(field, 6), value ~= 0)
 			return
 		end
+		if field == "policy" then
+			-- Debug:FireServer("policy", 1): this play test follows Roblox's real answer about paid random items
+			-- (a restricted account is refused, as in the live game); 0 goes back to selling to everybody.
+			Policy.follow(value ~= 0)
+			return
+		end
 		if field == "reset" then
 			-- Debug:FireServer("reset", 1) wipes the save back to a new player's and makes them rejoin.
 			Data.reset(player)

@@ -120,6 +120,21 @@ local before = prompts()
 act("buyPass", "tripleLuck")
 eq(prompts(), before + 1, "x3 Luck is offered")
 
+T.section("a Studio play test sells to everybody")
+harness.setPolicy(true)
+local tester = harness.addPlayer("Tester", 5)
+harness.flush()
+eq(Policy.restricted(tester), false, "a restricted account may test in Studio")
+harness.removePlayer(tester)
+Policy.follow(true) -- from here on the play test follows Roblox's answer, as the live game does
+harness.flush()
+eq(Policy.restricted(player), true, "Policy.follow asks everybody again")
+harness.setPolicy(false)
+Policy.follow(false)
+Policy.follow(true)
+harness.flush()
+eq(Policy.restricted(player), false, "and back")
+
 T.section("a player who may not")
 harness.setPolicy(true)
 local barred = harness.addPlayer("Barred", 2) -- the remotes speak for the newest player from here on

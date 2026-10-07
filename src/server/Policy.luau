@@ -12,6 +12,10 @@ local Policy = {}
 local restricted = {} -- [player] = whether they may not buy paid random items; nil until Roblox has answered
 local asking = {} -- [player] = true while the question is on its way
 local changed = Instance.new("BindableEvent")
+-- A Studio play test sells nothing for money, so there a "may not" from Roblox is not followed: a developer
+-- whose own account is in a restricted region could otherwise test no egg, crate or enchantment. Policy.follow
+-- (Debug:FireServer("policy", 1) in a play test) turns Roblox's real answer back on, to see what such a player sees.
+local followInStudio = false
 
 -- Fires with the player when Roblox has answered for them.
 Policy.changed = changed.Event
@@ -36,7 +40,7 @@ function Policy.ask(player: Player)
 			return
 		end
 		if ok and typeof(info) == "table" then
-			restricted[player] = info.ArePaidRandomItemsRestricted == true
+			restricted[player] = info.ArePaidRandomItemsRestricted == true and (followInStudio or not RunService:IsStudio())
 		elseif RunService:IsStudio() then
 			-- Only a play test may go on without an answer.
 			restricted[player] = false
@@ -63,6 +67,20 @@ function Policy.maySell(player: Player, what: string, verb: string?): (boolean, 
 	Policy.ask(player)
 	local lower = string.lower(string.sub(what, 1, 1)) .. string.sub(what, 2)
 	return false, `Still checking whether {lower} can be {offered} in your region. Try again in a moment`, "info"
+end
+
+-- Studio only: whether a play test follows Roblox's real answer (see followInStudio). Everybody is asked again.
+function Policy.follow(value: boolean)
+	if not RunService:IsStudio() or followInStudio == value then
+		return
+	end
+	followInStudio = value
+	for _, player in Players:GetPlayers() do
+		if not asking[player] then
+			restricted[player] = nil
+			Policy.ask(player)
+		end
+	end
 end
 
 Players.PlayerRemoving:Connect(function(player: Player)
