@@ -166,10 +166,16 @@ needs a second pass doubles its job.
 ## I. Launch
 
 - [x] I1. Game icon (512 px) from `docs/ui-vision/game-icon.png` · **20 min** Done 6 Oct (d1v): `assets/page/game-icon-512.png`, the concept art scaled down. **Not uploaded yet** (it goes through moderation: by Friday morning).
-- [ ] I2. **[d1v]** (taken: d1v, 7 Oct 10:30) Three thumbnails · **30 min**
+- [x] I2. **[d1v]** Three thumbnails · **30 min** · d1v, 7 Oct 10:05: `assets/page/thumbnail-1-marketplace.png`, `thumbnail-2-island.png`, `thumbnail-3-base.png`, each 1920 x 1080, taken in a Studio play test of the group's place with the HUD off (View, Screenshot; cropped to 16:9). No words or logo added. To know: the base one shows the name `D1v991's Base` over the gate and FOR SALE signs on empty pads, and no monsters are on the path (the test save's towers clear a level at once). **Not uploaded** (moderated: by Friday morning)
 - [x] I3. Game passes recreated in the group's experience; ids into `Config.luau` **[S]** · **30 min** Done 6 Oct (d1v): six passes on sale in the group's experience at the prices in `Config.Passes`, ids in the config. No icons yet; the six Robux products (Shiny key, Robux crate, four packs) still have id 0.
 - [x] I4. **[Yaani]** Refresh `place/ProjectEgg.rbxl` after the last import **[S]** · **5 min** · d1v, 6 Oct 22:31: File, Download a Copy of the group's place, taken right after the import of the 102 mini cannons and 15 eggs (2.8 MB). Refreshed again 6 Oct 22:46, after the marketplace import: it holds every model folder and the code of `main` at bbba446 for the marketplace
-- [ ] I5. **[d1v]** (taken: d1v, 7 Oct 10:30) Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00**
+- [ ] I5. **[d1v]** Full play-through of worlds 1 to 5 on a phone-sized screen **[S]** · **1 h 00** · **Part done, still d1v's** (7 Oct 10:05). Done on Studio's iPhone XR (896 x 414), with the place's scripts checked equal to `main`: the welcome-back card and CLAIM; the base of each of worlds 1 to 5 (jumped with the debug remote, level 5 of each); the HUD; STORE; the MORE drawer (15 buttons); MINI CANNONS; SETTINGS (the Music switch turned off and on, and the save said so); WORLDS; the Mars island; the marketplace in its Blender town. Nothing was cut off and every button was inside the screen; no error in the output. Found:
+  - A Huge mini cannon follows the player and stands between the camera and everything else on a phone: on the base, an island and the marketplace it fills the middle of the screen.
+  - Small print too small to read on a phone: the paragraph at the top of MINI CANNONS, a world's rule line in WORLDS (orange on purple), the second line of a STORE row.
+  - STORE's gem packs and the rows of MINI CANNONS show a plain coloured disc, not a picture.
+  - STATS, VISIT and CODES in the drawer show a letter, not an icon.
+  - A tap on a HUD button while a window is open only closes the window; the button needs a second tap.
+  - **Not done:** a new save from level 1 (the tutorial and welcome cards; it needs the test save wiped, which is Victor's to say), hatching and the egg prompts by touch, buying anything, trading, the frame rate, portrait, a real phone
 - [ ] I6. **[Yaani]** Publish **[S]** · **5 min**
 
 ## J. Asked for on 7 Oct (Yaani)
