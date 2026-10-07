@@ -256,7 +256,7 @@ local function start(ctx)
 			shownCounts = counts
 			-- Strongest first; a kind's enchanted ones next to its plain ones.
 			table.sort(ids, function(a, b)
-				local bonusA, bonusB = Config.Pets[a].bonus, Config.Pets[b].bonus
+				local bonusA, bonusB = Config.Pets[a].strength, Config.Pets[b].strength
 				return if bonusA == bonusB then a < b else bonusA > bonusB
 			end)
 			local listed = {}

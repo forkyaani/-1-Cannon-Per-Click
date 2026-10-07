@@ -236,7 +236,7 @@ a level 30).
 | Mini cannon | Slots | +1 equip slot at levels 3, 6, 9, 14, 20 | 20 | +5 slots | +3 (9) | 150 / 2,960 | 19,495 |
 | Economy | Coins | +10% | 30 | x4 | x1.5 (10) | 60 / 2,075 | 17,590 |
 | Economy | Luck | +5% | 30 | x2.5 | x1.5 (10) | 50 / 1,730 | 14,650 |
-| Economy | Discount | upgrades 1.5% cheaper | 30 | 45% cheaper | 20% (10) | 40 / 1,385 | 11,735 |
+| Economy | Discount | upgrades 2% cheaper (as before) | 30 | 60% cheaper | 20% (10) | 40 / 1,385 | 11,735 |
 | Economy | Crate Finder (new) | +4% crate drops from bosses | 25 | x2 | - | 50 / 1,430 | 10,640 |
 | Economy | Gem Hunter (new) | bosses drop +0.1 gem, at most 3 a day | 20 | +2 a boss, 60 a day | - | 80 / 1,140 | 8,190 |
 | Survival | Lives | +1 life | 5 | +5 | the same | 150 / 985 | 2,375 |
@@ -244,7 +244,7 @@ a level 30).
 | Survival | Offline | +1 hour of offline earnings | 16 | 8 hours to 24 | to 12 (4) | 150 / 2,310 | 13,115 |
 | Survival | Night Shift (new) | +1% of offline earnings paid | 25 | 75% paid, not 50% | - | 60 / 1,720 | 12,780 |
 
-All 18 maxed: 256,030 gems (about 49,000 before), against roughly 100 a day for a free player. First levels
+All 18 maxed: 256,030 gems (about 50,000 before), against roughly 100 a day for a free player. First levels
 cost a day of play, last levels two to four weeks: there is always a next level to buy.
 
 - **Everything maxed** is about x18 tower DPS (x7 x x2 x x1.3), x4 more on bosses, and x12.5 mini cannon DPS

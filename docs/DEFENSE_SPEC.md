@@ -402,7 +402,8 @@ Instances, so the client can find things (all under `workspace.Plots`):
   Long Shot is +3 / 6 / 10% mini cannon DPS; Quick Draw is removed (nineteen enchantments; a saved id that
   carries it resolves without it). Offline earnings count the mini cannons' DPS. STATS lists every mini
   cannon as a line of its own under the towers' chain. `Format.petPower` writes "+129 DPS" everywhere.
-  Mastery Rapid (+mini cannon shots) is still sold and is now cosmetic: a decision for the owner.
+  Mastery Rapid (+mini cannon shots) was cosmetic after that; since 7 Oct it is Mini Crit, a crit chance for
+  mini cannon shots (`docs/BALANCE.md`, 5c).
 - **Health in numbers.** Monster bars carry their health as text (`Field.luau`), the level panel's boss line
   too (`Field.boss`). Nothing new is sent.
 - **Balance.** Not retuned: `docs/BALANCE.md`, section 3b.

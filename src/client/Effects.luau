@@ -322,7 +322,8 @@ local function firePets()
 	for order, mini in minis do
 		local barrel = mini:IsA("Model") and mini.PrimaryPart
 		if barrel then
-			-- Fused mini cannons with Rapid Fire shoot more than once per volley, spread evenly across it.
+			-- A mini cannon with a fire rate above 1 shoots more than once per volley, spread evenly across it
+			-- (no fused tier has one since Silver's Rapid Fire became Overcharge, +25% DPS).
 			local pet = Config.Pets[mini:GetAttribute("PetId")]
 			local shots = if pet then pet.fireRate else 1
 			-- A Huge's ordinary shots are twice the size, in its accent colour.

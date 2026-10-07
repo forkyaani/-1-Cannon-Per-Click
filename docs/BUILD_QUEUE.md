@@ -74,7 +74,7 @@ with each level. Saved under `Game.feature(data, "mastery")`.
 | Tower | Range | +range |
 | Tower | Boss damage | +damage to bosses |
 | Mini cannon | Bond | +mini cannon bonus |
-| Mini cannon | Rapid | faster mini cannon shots |
+| Mini cannon | Mini Crit (was Rapid) | chance that a mini cannon shot crits |
 | Mini cannon | Slots | +1 equip slot at set levels |
 | Economy | Coins | +coins per kill |
 | Economy | Luck | +egg luck |

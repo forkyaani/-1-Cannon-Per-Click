@@ -230,7 +230,9 @@ as they scaled the bonus.
   (`petCrit`, worth `petCritDamage`: Mastery Mini Crit and Crit Power), then goes through
   `bossDamage`, the `damage` modifiers and the `shot` hook (`source = "pet"`) like a tower's.
   A fused mini cannon's Silver perk, Overcharge, is +25% of its own DPS (`Config.FuseTiers`, `dpsBonus`;
-  Gold and Diamond keep it). It was Rapid Fire until 7 Oct: twice the shots of half the size. What features
+  Gold and Diamond keep it). It was Rapid Fire until 7 Oct: twice the shots of half the size. The perk is in
+  `dps` and in `strength` (what auto-equip, a full storage and the inventory lists rank by), not in `bonus`.
+  What features
   did to `petDps` is shared out evenly over the mini cannons' shots. One mini cannon's damage comes in at most
   10 shots a second.
 - **A Huge** still multiplies all tower damage by `Config.HugePower` (x3; `Config.hugeMult`), keeps its

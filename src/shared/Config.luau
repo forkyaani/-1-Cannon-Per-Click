@@ -1073,6 +1073,10 @@ for id, pet in Config.Pets do
 	pet.fireRate, pet.dpsBonus, pet.coinBonus, pet.healCut = 1, 1, 0, 0
 	-- Its own damage per second. A Huge's depends on what is equipped beside it (Config.petDpsList): nil here.
 	pet.dps = if pet.huge then nil else pet.bonus * Config.PetDps
+	-- What "the strongest" goes by wherever mini cannons are ranked (Config.equippedPets, a full storage, the
+	-- inventory lists): `bonus` with the fuse perk's own DPS in it, so the order is the order of `dps`.
+	-- Infinite for a Huge, like its bonus.
+	pet.strength = pet.bonus
 	if not pet.huge then
 		table.insert(baseIds, id)
 	end
@@ -1090,7 +1094,8 @@ for _, baseId in baseIds do
 			name = `{tier.name} {base.name}`,
 			rarity = base.rarity,
 			bonus = base.bonus * tier.bonus,
-			dps = base.bonus * tier.bonus * Config.PetDps * dpsBonus, -- `bonus` stays the tier's own: the perk is in `dps` only
+			dps = base.bonus * tier.bonus * Config.PetDps * dpsBonus, -- `bonus` stays the tier's own: the perk is in `dps` and `strength`
+			strength = base.bonus * tier.bonus * dpsBonus,
 			color = base.color,
 			tier = index,
 			base = baseId,
@@ -1525,7 +1530,7 @@ function Config.equippedPets(petIds: { string }, slots: number): { string }
 		return better(a, b, "power")
 	end)
 	table.sort(others, function(a, b)
-		return better(a, b, "bonus")
+		return better(a, b, "strength") -- not `bonus`: Overcharge's +25% is not in it
 	end)
 	-- One of each Huge, whatever its enchantments: the rest are spares.
 	local firsts, spares, seen = {}, {}, {}

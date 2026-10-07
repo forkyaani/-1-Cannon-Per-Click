@@ -53,6 +53,8 @@ Mastery.Groups = {
 --   Lives is still +5. A whole ordinary level leaking costs 20 lives, so past 20 lives no ordinary level can
 --   be lost: this is the one track that must not grow.
 --   Fire Rate stops at x2: the core stops `towerRate` at x10 for every source together.
+--   Discount is still 2% a level (a saved Discount X is still 20% cheaper); 30 levels are 60%, well above the
+--   core's floor (upgrades never cost less than a tenth).
 --   Slots keeps its first slots at levels 3, 6 and 9, so a saved level still gives what it gave.
 --
 -- "rapid" was Rapid: +5% mini cannon shots a level, which did nothing once mini cannon damage became flat
@@ -71,7 +73,7 @@ Mastery.Tracks = {
 
 	{ id = "coins", group = "economy", name = "Coins", kind = "coins", how = "more", per = 0.1, cap = 30, base = 60, growth = 1.13, text = "+%s%% coins per kill" },
 	{ id = "luck", group = "economy", name = "Luck", kind = "luck", how = "more", per = 0.05, cap = 30, base = 50, growth = 1.13, text = "+%s%% egg luck" },
-	{ id = "discount", group = "economy", name = "Discount", kind = "upgradeCost", how = "less", per = 0.015, cap = 30, base = 40, growth = 1.13, text = "tower upgrades %s%% cheaper" },
+	{ id = "discount", group = "economy", name = "Discount", kind = "upgradeCost", how = "less", per = 0.02, cap = 30, base = 40, growth = 1.13, text = "tower upgrades %s%% cheaper" },
 	{ id = "crates", group = "economy", name = "Crate Finder", kind = "crateDrops", how = "more", per = 0.04, cap = 25, base = 50, growth = 1.15, text = "+%s%% crate drops from bosses" },
 	{ id = "gems", group = "economy", name = "Gem Hunter", kind = "gems", how = "add", per = 0.1, perDay = 3, cap = 20, base = 80, growth = 1.15, text = "bosses drop +%s gems" },
 

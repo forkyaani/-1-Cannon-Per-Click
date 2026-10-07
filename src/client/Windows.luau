@@ -231,10 +231,10 @@ local function refreshPets()
 			table.insert(ids, id)
 		end
 	end
-	-- Strongest first. A Huge's bonus is infinite, which pins every Huge to the top; equal ones go by id, so
+	-- Strongest first (by `strength`, as they are equipped). A Huge's is infinite, which pins every Huge to the top; equal ones go by id, so
 	-- the list keeps its order from one rebuild to the next.
 	table.sort(ids, function(a, b)
-		local bonusA, bonusB = Config.Pets[a].bonus, Config.Pets[b].bonus
+		local bonusA, bonusB = Config.Pets[a].strength, Config.Pets[b].strength
 		return if bonusA == bonusB then a < b else bonusA > bonusB
 	end)
 	-- A row: icon, name and count over rarity and perks (and its enchantments, when it has any), then power

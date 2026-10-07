@@ -93,7 +93,7 @@ near(Mastery.apply("rapid", 10, 0, fake), 0.2, "a Rapid X of an older save is a 
 near(Mastery.apply("critpower", 20, 2, fake), 4, "Crit Power maxed: crits hit x4, not x2")
 near(Mastery.apply("coins", 30, 1, fake), 4, "Coins maxed: x4 (x1.5 before)")
 near(Mastery.apply("luck", 30, 1, fake), 2.5, "Luck maxed: x2.5 (x1.5 before)")
-near(Mastery.apply("discount", 30, 1, fake), 0.55, "Discount maxed: 45% cheaper (20% before)")
+near(Mastery.apply("discount", 30, 1, fake), 0.4, "Discount maxed: 60% cheaper (20% before)")
 near(Mastery.apply("crates", 25, 1, fake), 2, "Crate Finder maxed: x2")
 near(Mastery.apply("gems", 20, 0, fake), 2, "Gem Hunter maxed: +2 gems a boss")
 eq(Mastery.perDay("gems", 20), 60, "and at most 60 gems a day")
@@ -476,7 +476,7 @@ local PROBES = {
 }
 -- What one level makes of the probe's number (nil: checked by hand below).
 local AFTER_ONE = {
-	attack = 1.12, range = 1.02, boss = 1.1, crit = 1.01, bond = 1.1, luck = 1.05, discount = 0.985,
+	attack = 1.12, range = 1.02, boss = 1.1, crit = 1.01, bond = 1.1, luck = 1.05, discount = 0.98,
 	crates = 1.04, slow = 0.99,
 }
 
@@ -659,6 +659,55 @@ do
 	near(seen.petDamage / seen.pet, (one + one * silver.bonus * 1.25) / 2, "and in the damage their shots deal")
 	Game.pets.remove(player, "wooden_silver", 1)
 	T.debug("pet:wooden", 1)
+	-- Which ones are equipped: the strongest by what they deal, and the perk's 25% is part of that. (They
+	-- were ranked by `bonus`, which leaves the perk out: a Silver was passed over for a weaker plain one.)
+	local function dpsOf(id: string): number
+		return Config.Pets[id].dps
+	end
+	check(dpsOf("wooden_silver") > dpsOf("vine") and Config.Pets.wooden_silver.bonus < Config.Pets.vine.bonus, "a Silver Wooden deals more than a Vine, with the smaller bonus number")
+	eq(Config.equippedPets({ "wooden_silver", "vine" }, 1)[1], "wooden_silver", "of the two, the Silver is equipped")
+	eq(table.concat(Config.equippedPets({ "iron_gold", "ghost", "leaf_gold", "skeleton" }, 2), " "), "leaf_gold skeleton", "the two strongest of four are equipped")
+	eq(table.concat(Config.equippedPets({ "ghost", "iron_gold" }, 1), " "), "iron_gold", "a Gold Iron goes before a Ghost")
+	local ordinary = {}
+	for id, pet in Config.Pets do
+		if not pet.huge then
+			table.insert(ordinary, id)
+		end
+	end
+	local ranked = Config.equippedPets(ordinary, #ordinary)
+	eq(#ranked, #ordinary, "every ordinary mini cannon is ranked")
+	local inverted = 0
+	for index = 2, #ranked do
+		if dpsOf(ranked[index]) > dpsOf(ranked[index - 1]) + 1e-9 then
+			inverted += 1
+		end
+	end
+	eq(inverted, 0, "over the whole catalogue, none is equipped before one that deals more")
+	eq(Config.Pets["wooden_silver~sharp1"].strength, Config.Pets.wooden_silver.strength, "an enchanted one ranks as its plain twin")
+	eq(Config.Pets.hugestorm.strength, math.huge, "and a Huge above them all")
+	-- A full storage throws away the one that deals least, and refuses a new one that deals less than that.
+	do
+		local before = table.clone(data.pets)
+		local room = HttpService:JSONDecode(player:GetAttribute("Meta")).storage -- with the passes this player owns
+		local function fill(last: string)
+			table.clear(data.pets)
+			for _ = 1, room - 1 do
+				table.insert(data.pets, "skeleton")
+			end
+			table.insert(data.pets, last)
+		end
+		fill("wooden_silver")
+		check(not Game.pets.add(player, "vine"), "a full storage refuses a Vine: the Silver Wooden in it deals more")
+		check(table.find(data.pets, "wooden_silver") ~= nil, "the Silver Wooden stays")
+		fill("vine")
+		check(Game.pets.add(player, "wooden_silver"), "and it takes a Silver Wooden in place of a Vine")
+		check(table.find(data.pets, "wooden_silver") ~= nil and not table.find(data.pets, "vine"), "the Vine is the one that went")
+		table.clear(data.pets)
+		table.move(before, 1, #before, 1, data.pets)
+		Game.pets.add(player, "wooden")
+		Game.pets.remove(player, "wooden", 1) -- equips what was there before again
+		eq(#state.equipped, 2, "the two Mini Wooden Cannons are equipped again")
+	end
 	check(harness.errors() == 0, "no errors")
 end
 
@@ -715,7 +764,7 @@ near(Game.value(player, "petCritDamage"), 4, "mini cannon crits x4")
 near(Game.value(player, "petShots"), 1, "mini cannon shots: no track touches the dead number")
 near(Game.value(player, "coins"), base.coins * 4, "coins x4")
 near(Game.value(player, "luck"), base.luck * 2.5, "luck x2.5")
-near(Game.value(player, "upgradeCost"), base.upgradeCost * 0.55, "upgrades 45% cheaper")
+near(Game.value(player, "upgradeCost"), base.upgradeCost * 0.4, "upgrades 60% cheaper")
 near(Game.value(player, "crateDrops"), base.crateDrops * 2, "crate drops x2")
 near(Game.value(player, "gems"), base.gems + 2, "2 more gems a boss")
 near(Game.value(player, "monsterSpeed"), base.monsterSpeed * 0.7, "monsters 30% slower")
@@ -801,7 +850,7 @@ do
 	-- What a player of the build before the rework could have, a level above a cap, a level of a track this
 	-- build does not know, and junk: all of it must load, and nothing bought may be thrown away.
 	data.features.mastery = {
-		levels = { attack = 20, rate = 10, rapid = 10, slots = 9, offline = 4, lives = 99, range = 3.9, removed = 7, coins = "many", luck = -3 },
+		levels = { attack = 20, rate = 10, rapid = 10, slots = 9, offline = 4, discount = 10, lives = 99, range = 3.9, removed = 7, coins = "many", luck = -3 },
 		spent = 12345,
 	}
 	data.diamonds = 500
@@ -842,6 +891,23 @@ do
 	near(Game.value(again, "petCrit"), 0.2, "the saved Rapid X is a 20% mini cannon crit chance")
 	near(Game.value(again, "towerRate"), 1.4, "Fire Rate X is +40% (it was +30%)")
 	near(Game.value(again, "offlineCap"), Config.Offline.capHours + 4, "Offline IV is still 4 hours")
+	eq(owned("discount"), 10, "Discount X is kept")
+	kept.levels.discount = nil
+	local costBare = Game.value(again, "upgradeCost")
+	kept.levels.discount = 10
+	near(Game.value(again, "upgradeCost"), costBare * 0.8, "Discount X is still 20% cheaper")
+	-- No level of a track that was on sale before the rework gives less than it gave. `was` is the old table:
+	-- what one level gave and the old cap (Rapid gave nothing; Slots is checked below).
+	local was = {
+		attack = { 0.05, 20 }, rate = { 0.03, 10 }, range = { 0.02, 10 }, boss = { 0.05, 10 }, bond = { 0.03, 10 },
+		coins = { 0.05, 10 }, luck = { 0.05, 10 }, discount = { 0.02, 10 }, lives = { 1, 5 }, slow = { 0.01, 10 },
+		offline = { 1, 4 },
+	}
+	for id, old in was do
+		local track = Mastery.byId[id]
+		check(track.per >= old[1] - 1e-9, `{track.name}: a level gives at least what it gave ({track.per} against {old[1]})`)
+		check(track.cap >= old[2], `{track.name}: the cap did not come down`)
+	end
 	local slotsNow, slotsBare = Game.value(again, "equipSlots"), nil
 	kept.levels.slots = nil
 	slotsBare = Game.value(again, "equipSlots")

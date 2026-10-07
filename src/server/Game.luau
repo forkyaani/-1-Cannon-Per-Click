@@ -760,11 +760,11 @@ local function addPet(player: Player, data, id: string, force: boolean?): boolea
 	end
 	local weakest = 1
 	for index, other in data.pets do
-		if Config.Pets[other].bonus < Config.Pets[data.pets[weakest]].bonus then
+		if Config.Pets[other].strength < Config.Pets[data.pets[weakest]].strength then
 			weakest = index
 		end
 	end
-	if force or Config.Pets[id].bonus > Config.Pets[data.pets[weakest]].bonus then
+	if force or Config.Pets[id].strength > Config.Pets[data.pets[weakest]].strength then
 		data.pets[weakest] = id
 		return true
 	end
