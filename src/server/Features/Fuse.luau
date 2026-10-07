@@ -14,6 +14,7 @@ local DARK = rgb(44, 46, 54)
 local STONE = rgb(206, 200, 190)
 local CORE = rgb(190, 120, 255)
 local GOLD = rgb(255, 200, 40)
+local FUSE_ALL_LIMIT = 400 -- fusions in one FUSE ALL: far more than a full storage holds
 local SPOT_SIDE = 5 -- the machine stands on the right half of the island's `enchant` spot (the enchanting table on the left)
 
 local Feature = {}
@@ -140,6 +141,43 @@ function Feature.start(Game)
 		local kept = if made.enchanted then ". It kept its enchantments" else ""
 		Game.send(player, "fuse", { pet = result })
 		Game.notify(player, `Fused a {made.name}! {Format.petPower(made)}, new perk: {tier.perk}{kept}`, "good")
+	end
+
+	-- FUSE ALL: every set of Fuse.COUNT of the same mini cannon and tier is fused, and the results with them,
+	-- until no set is left. Only mini cannons without enchantments are used, as FILL does, so one press can
+	-- never lose an enchantment. Same rules of place as `fuse`.
+	Game.actions.fuseAll = function(player: Player, data, state)
+		if not Fuse.unlocked(data.bestCleared) then
+			Game.notify(player, `Reach {world.name} to unlock fusing`, "bad")
+			return
+		end
+		if state.place ~= "island" or state.island ~= Fuse.ISLAND then
+			Game.notify(player, `Visit the Fusion Machine on the {world.name} island`, "bad")
+			return
+		end
+		local fusions, best = 0, nil
+		for _ = 1, FUSE_ALL_LIMIT do
+			local counts = {}
+			for _, id in data.pets do
+				counts[id] = (counts[id] or 0) + 1
+			end
+			local picks = Fuse.fill(counts, {})
+			local result = picks and Fuse.result(picks)
+			if not picks or not result or not Game.pets.swap(player, picks, result) then
+				break
+			end
+			fusions += 1
+			local made = Config.Pets[result]
+			if not best or made.bonus > Config.Pets[best].bonus then
+				best = result
+			end
+		end
+		if not best then
+			Game.notify(player, `Nothing to fuse: it takes {Fuse.COUNT} of the same mini cannon without enchantments`, "info")
+			return
+		end
+		Game.send(player, "fuse", { pet = best })
+		Game.notify(player, `Fused {fusions} time{if fusions == 1 then "" else "s"}! Best: {Config.Pets[best].name}, {Format.petPower(Config.Pets[best])}`, "good")
 	end
 end
 

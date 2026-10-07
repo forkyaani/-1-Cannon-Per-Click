@@ -863,8 +863,9 @@ noErrors("hatching every egg")
 
 T.section("mini cannons: fusing, a Secret, a Huge")
 debug("pet:wooden", 27)
--- Fusing left the MINI CANNONS window: its two actions are gone (the Fusion Machine has its own, below).
-check(Game.actions.fuseAll == nil and Game.actions.fusePet == nil, "fuseAll and fusePet are gone")
+-- Fusing left the MINI CANNONS window: fusePet is gone, and fuseAll is the Fusion Machine's FUSE ALL button
+-- (below), which does nothing away from the machine.
+check(Game.actions.fusePet == nil, "fusePet is gone")
 act("fuseAll")
 act("fusePet", "wooden")
 eq(Game.pets.count(data, "wooden_silver"), 0, "and asking for them fuses nothing")
@@ -1495,6 +1496,31 @@ do
 			end
 		end
 		window.close()
+	end
+	-- FUSE ALL (the button's action): every plain set, and the results with them; enchanted ones are never used.
+	do
+		act("goIsland", Fuse.ISLAND)
+		local enchanted = 0
+		for _, id in data.pets do
+			if Config.Pets[id].enchanted then
+				enchanted += 1
+			end
+		end
+		for _ = 1, 9 do
+			Game.pets.add(player, "leaf", true)
+		end
+		act("fuseAll")
+		local counts, left = {}, 0
+		for _, id in data.pets do
+			counts[id] = (counts[id] or 0) + 1
+			if Config.Pets[id].enchanted then
+				left += 1
+			end
+		end
+		check(Fuse.fill(counts, {}) == nil, "FUSE ALL leaves no plain set of three, at any tier")
+		eq(left, enchanted, "and never uses an enchanted mini cannon")
+		check((counts.leaf or 0) < 3, "the nine added ones were fused")
+		act("goHome")
 	end
 	noErrors("the Fusion Machine")
 	act("goMarket")

@@ -110,6 +110,14 @@ local function start(ctx)
 		BackgroundColor3 = Colors.grey,
 		Parent = machine,
 	})
+	-- Fuses every set of three there is, in one press (the server's `fuseAll`).
+	local allButton = UI.button({
+		Position = UDim2.fromOffset(292, 150),
+		Size = UDim2.fromOffset(140, 40),
+		Text = "FUSE ALL",
+		BackgroundColor3 = Colors.grey,
+		Parent = machine,
+	})
 	local fuseButton = UI.button({
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 150),
@@ -178,6 +186,10 @@ local function start(ctx)
 		end
 		armed = -math.huge
 		refresh()
+	end)
+	allButton.Activated:Connect(function()
+		table.clear(picks)
+		ctx.act("fuseAll")
 	end)
 	clearButton.Activated:Connect(function()
 		table.clear(picks)
@@ -355,6 +367,8 @@ local function start(ctx)
 			setButton(fuseButton, "FUSE", if ready then Colors.green else Colors.grey)
 		end
 		clearButton.BackgroundColor3 = if #picks > 0 then Colors.orange else Colors.grey
+		-- Lit while there is at least one set of three without enchantments.
+		allButton.BackgroundColor3 = if unlocked and here and Fuse.fill(counts, {}) ~= nil then Colors.premium else Colors.grey
 		refreshList(counts)
 	end
 
