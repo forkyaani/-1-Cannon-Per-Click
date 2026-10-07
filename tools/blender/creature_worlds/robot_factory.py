@@ -49,7 +49,7 @@ def scrap_bot(c, a):
     box((0.75, 1.0, 0.6), (-0.55, -0.15, 0.3), a, bevel=0.2, segments=2)  # the boot
     tube(0.45, 0.42, (0.36, -0.1, 0.45), (1, 0, 0), a, vertices=10)  # the wheel
     tube(0.18, 0.5, (0.32, -0.1, 0.45), (1, 0, 0), hazard, vertices=6)
-    box((2.15, 1.85, 0.28), (0.08, 0.05, 2.42), a, bevel=0.1, segments=1, rotation=(0, math.radians(-9), 0))  # the lid, ajar
+    box((2.15, 1.85, 0.28), (0.08, 0.05, 2.42), shade(c, 0.35), bevel=0.1, segments=1, rotation=(0, math.radians(-9), 0))  # the lid, ajar
     box((0.85, 0.12, 0.62), (0.5, front - 0.02, 0.88), teal, bevel=0.05, segments=1, rotation=(0, math.radians(8), 0))  # a patch
     for dx, dz in ((-0.3, -0.2), (0.3, -0.2), (-0.3, 0.2), (0.3, 0.2)):
         ball(0.07, (0.5 + dx, front - 0.09, 0.88 + dz), steel, segments=6)
@@ -69,10 +69,10 @@ def scrap_bot(c, a):
         cone(0.12, 0.4, (1.52, -0.26, 0.9 + dz), (0.6, -0.4, dz * 4 - 0.5), steel, sides=5)
     tube(0.16, 0.8, (-0.95, -0.25, 1.3), (-1, -0.2, 0.25), a, vertices=6)
     ball(0.26, (-1.75, -0.42, 1.5), c, segments=8)
-    tube(0.1, 1.35, (-1.78, -0.45, 1.05), (-0.08, 0, 1), steel, vertices=6)
-    for dx in (-0.2, 0.2):
-        box((0.17, 0.2, 0.46), (-1.89 + dx, -0.45, 2.6), steel, bevel=0.05, segments=1)
-    box((0.57, 0.2, 0.2), (-1.87, -0.45, 2.38), steel, bevel=0.05, segments=1)
+    tube(0.13, 1.3, (-1.78, -0.45, 1.05), (-0.08, 0, 1), steel, vertices=6)
+    for dx in (-0.27, 0.27):
+        box((0.24, 0.26, 0.5), (-1.88 + dx, -0.45, 2.72), steel, bevel=0.07, segments=1, rotation=(0, dx * 0.9, 0))
+    box((0.78, 0.26, 0.34), (-1.88, -0.45, 2.42), steel, bevel=0.1, segments=1)
     eyes(front, 1.62, 0.48, hazard, size=0.9)
     hoop(0.56, 0.08, (0.48, front - 0.04, 1.62), steel, rotation=(math.pi / 2, 0, 0), segments=10)  # a lens screwed over one eye
     slab((0.62, 0.1, 0.12), (-0.25, front - 0.04, 0.88), INK)  # a mouth that was welded shut
@@ -99,9 +99,9 @@ def welder_drone(c, a):
     hand = Vector((-0.8, -0.3, 0.5))
     tube(0.15, 0.75, hand, way, dark, vertices=6)
     tube(0.09, 0.25, hand + way * 0.75, way, ROBOT_FACTORY_STEEL, vertices=6)
-    cone(0.2, 0.6, hand + way * 0.98, way, "8FE6FF", sides=6, emission=2.5)
-    tip = hand + way * 1.6
-    star(0.2, tip, "FFE45A", depth=0.1, emission=2)
+    cone(0.27, 0.8, hand + way * 0.98, way, "8FE6FF", sides=6, emission=2.5)
+    tip = hand + way * 1.85
+    star(0.28, tip, "FFE45A", depth=0.1, emission=2)
     for dx, dz, size in ((-0.3, 0.25, 0.09), (0.25, 0.3, 0.07), (-0.1, -0.3, 0.08), (0.3, -0.15, 0.06)):
         ball(size, tip + Vector((dx, 0, dz)), a, segments=5, emission=2)
     # A gas bottle on its back, a little jet under it.
@@ -122,8 +122,8 @@ def saw_crawler(c, a):
     box((0.62, 1.7, 0.36), (0, 0.3, 1.5), a, bevel=0.12, segments=1)  # the slot the blade runs in
     box((2.76, 2.16, 0.2), (0, 0, 0.52), a, bevel=0.06, segments=1)  # a red stripe
     for side in (-1, 1):
-        box((0.3, 0.85, 0.26), (side * 1.12, -1.3, 0.78), legs, bevel=0.1, segments=1, rotation=(0, 0, side * math.radians(-12)))
-        robot_factory_saw((side * 1.25, -1.9, 0.8), 0.52, ROBOT_FACTORY_BLADE, a, axis=UP, teeth=8, thick=0.1)
+        box((0.3, 0.95, 0.26), (side * 1.3, -1.3, 0.42), legs, bevel=0.1, segments=1, rotation=(0, 0, side * math.radians(-24)))
+        robot_factory_saw((side * 1.55, -1.85, 0.44), 0.5, ROBOT_FACTORY_BLADE, a, axis=UP, teeth=8, thick=0.1)
     eyes(front, 1.02, 0.52, a, size=0.82, brow=a, tilt=-16)
     mouth(front, 0.5, 0.42, "grin")
 
@@ -154,17 +154,18 @@ def guard_mech(c, a):
     dark = shade(c, -0.4)
     for side in (-1, 1):
         box((0.62, 0.72, 0.9), (side * 0.52, 0, 0.62), a, bevel=0.16, segments=1)
-    feet(dark, 0.55, size=(0.85, 1.05, 0.45))
-    cube(2.2, 1.8, 2.0, 0.9, c, bevel=0.4, seg=3)
+    for side in (-1, 1):
+        box((0.85, 1.05, 0.45), (side * 0.55, -0.2, 0.225), dark, bevel=0.2, segments=1)
+    cube(2.2, 1.8, 2.0, 0.9, c, bevel=0.4, seg=2)
     front = -0.9
     box((1.25, 0.16, 0.5), (0, front - 0.02, 1.32), a, bevel=0.07, segments=1)  # a panel of lamps
     for index, colour in enumerate(("FF5A5A", ROBOT_FACTORY_HAZARD, "5AF08A")):
-        ball(0.12, ((index - 1) * 0.36, front - 0.12, 1.32), colour, segments=6, emission=1.5)
+        slab((0.2, 0.1, 0.2), ((index - 1) * 0.36, front - 0.1, 1.32), colour, emission=1.5)
     for side in (-1, 1):
         ball(0.56, (side * 1.3, 0, 2.4), a, scale=(1, 1, 0.8), segments=8)
         box((0.45, 0.55, 0.95), (side * 1.45, -0.1, 1.7), dark, bevel=0.18, segments=1)
     # The shield.
-    box((1.35, 0.22, 1.8), (-1.75, -0.78, 1.4), a, bevel=0.3, segments=2)
+    box((1.35, 0.22, 1.8), (-1.75, -0.78, 1.4), a, bevel=0.3, segments=1)
     box((1.0, 0.1, 1.45), (-1.75, -0.9, 1.4), c, bevel=0.2, segments=1)
     star(0.34, (-1.75, -0.98, 1.45), GOLD, depth=0.1)
     # The baton.
@@ -220,7 +221,7 @@ def factory_overlord(c, a):
     dark, light = shade(c, -0.3), shade(c, 0.3)
     front = biped(c, dark, w=3.0, d=2.5, h=2.8, legs=0.5, arm=False, bevel=0.45, foot=(1.1, 1.3, 0.6), roughness=0.4)
     for side in (-1, 1):
-        robot_factory_stack((side * 0.85, 0.85, 3.2), 0.4, 1.9, a, bands=5, smoke=True)
+        robot_factory_stack((side * 0.85, 0.85, 3.2), 0.42, 1.45, a, bands=4, smoke=side > 0)
         robot_factory_cog((side * 1.75, -0.3, 2.75), 0.62, GOLD, teeth=8, thick=0.5, tooth=0.3, roughness=0.3)
         tube(0.26, 0.56, (side * 1.75, -0.6, 2.75), (0, 1, 0), a, vertices=8, emission=1.5)
         box((0.7, 0.85, 1.25), (side * 1.85, -0.1, 1.75), light, bevel=0.25, segments=2)
@@ -229,22 +230,21 @@ def factory_overlord(c, a):
             cone(0.2, 0.55, (side * 1.9 + dx, -0.3, 0.7), (dx * 0.6, -0.35, -1), GOLD, sides=5)
         cone(0.42, 1.0, (side * 1.2, 0, 3.15), (side * 1, 0, 0.55), "FFF3D6")  # horns
         cone(0.28, 0.85, (side * 1.98, 0, 3.55), (-side * 0.15, 0, 1), "FFF3D6", sides=6)
-        tube(0.11, 1.0, (side * 0.95, front - 0.05, 1.1), (side * 0.25, 0, 1), a, vertices=6, emission=1.5)  # glowing pipes
     # The furnace door: a gold ring, the glow, two bars.
-    tube(0.68, 0.16, (0, front + 0.02, 1.1), (0, -1, 0), GOLD, vertices=12, roughness=0.3)
-    tube(0.5, 0.1, (0, front - 0.14, 1.1), (0, -1, 0), a, vertices=10, emission=2.5)
+    tube(0.62, 0.16, (0, front + 0.02, 1.08), (0, -1, 0), GOLD, vertices=12, roughness=0.3)
+    tube(0.46, 0.1, (0, front - 0.14, 1.08), (0, -1, 0), a, vertices=10, emission=2.5)
     for dx in (-0.18, 0.18):
-        slab((0.1, 0.12, 0.9), (dx, front - 0.26, 1.1), dark)
+        slab((0.1, 0.12, 0.84), (dx, front - 0.26, 1.08), dark)
     box((3.1, 2.6, 0.3), (0, 0, 0.72), light, bevel=0.1, segments=1)
     crown(3.3, radius=0.8, colour=GOLD, gems=a, points=5, size=1.2)
     eyes(front, 2.4, 0.68, a, size=1.1, brow=light, tilt=-26, blush=False)
-    mouth(front, 1.82, 0.85, "grin", teeth=a)
+    mouth(front, 1.9, 0.8, "grin", teeth=a)
 
 
 WORLDS["Robot Factory"] = [
     ("Scrap Bot", scrap_bot, "E08A4E", "8E4A34", "walker"),
     ("Welder Drone", welder_drone, "4C96F0", "FF7A28", "floater"),
-    ("Saw Crawler", saw_crawler, "CBD6FA", "E8463A", "walker"),
+    ("Saw Crawler", saw_crawler, "A9B8F4", "E8463A", "walker"),
     ("Spike Mine", spike_mine, "464EA8", "FF4632", "walker"),
     ("Guard Mech", guard_mech, "3F74DC", "F0F5FF", "walker"),
     ("Crusher Tank", crusher_tank, "E4502A", "3A3F7C", "boss"),
