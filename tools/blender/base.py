@@ -3,7 +3,12 @@ islands: the plot the game builds from parts (src/server/Plots.luau), made to be
 any of it. Every world has the same layout; the look comes from the world's theme.
 
 Run: blender --background --python tools/blender/base.py -- <World> <output folder> [draft] [photos=a,b] [nofiles]
-     <World> is "Earth", "Moon", "Mars", "Neptune" or "The Sun" (the_sun works too).
+     <World> is one of the twelve of themes.py: "Earth", "Moon", "Mars", "Neptune", "The Sun", "The Void",
+     "Nebula", "Crystal Belt", "Robot Factory", "Alien Jungle", "Black Hole", "The Big Bang". Capitals,
+     spaces and underscores do not matter: the_sun, crystal_belt and TheBigBang work too.
+     Worlds 6 to 12 wear their island's own things (island.py): its tall prop on the hills, its fence, its
+     liquid down the butte, one of its set pieces as the landmark. Everything made for them is in a branch
+     of its own (NEW): the first five worlds come out exactly as they did before there were twelve.
 
 THE MAPPING. Plot space is the game's (Layout.luau): the origin is the middle of the base's edge of the
 ground, x runs across the plot, +z up the plot to the portal, y is up, the ground's top is y = 0 and the yard
@@ -56,7 +61,7 @@ from kit import *
 from themes import THEMES
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-WORLD = next((name for name in THEMES if ARGS and name.lower() == ARGS[0].lower().replace("_", " ")), None)
+WORLD = next((name for name in THEMES if ARGS and name.lower().replace(" ", "") == ARGS[0].lower().replace(" ", "").replace("_", "")), None)
 if WORLD is None:
     sys.exit(f"base.py: the first argument has to be a world ({', '.join(THEMES)}), then the output folder")
 OUT = ARGS[1] if len(ARGS) > 1 else "."
@@ -65,6 +70,7 @@ NOFILES = "nofiles" in ARGS
 ONLY = [name for arg in ARGS if arg.startswith("photos=") for name in arg[7:].split(",")]
 SLUG = WORLD.lower().replace(" ", "_")
 T = THEMES[WORLD]
+NEW = WORLD not in ("Earth", "Moon", "Mars", "Neptune", "The Sun")  # worlds 6 to 12: every branch made for them asks this, or their theme's kind
 
 SCENERY = ("Ground", "Cliff", "Road", "Backdrop", "Trees", "Dressing", "Water", "Glow", "Origin", "North")
 TRIMS = ("PadTrim", "GateTrim", "TeleporterTrim")  # exported white, for the game to tint
@@ -113,16 +119,50 @@ LOOKS = {
     "The Sun": dict(road="rock", road_edge="rock_dark", kerb="water_light", kerb_glow=1.0, band="rock", hot="3DB4FF", ember="B06BFF", lair="3F2632",
                     roof="flame", knob="ember", window="accent", iron="wood_dark", board="26141E", landmark="volcano", cloud="FFF3C4", ambient=0.8, sun=2.5,
                     monsters=("FF4D4D", "FFE56A", "FFFFFF", "FF8A1F")),
+    # Worlds 6 to 12. More keys, all optional: stone (stone, dark, pale: what is BUILT here, when the theme's
+    # own stone would vanish against this world's ground), hills (four tones, when the ground's rim is another
+    # colour than the ground), stars (the photos' night sky), lamp_glow (the lamp's bands glow).
+    "The Void": dict(road="2A1266", road_edge="1E0A50", kerb="water", kerb_glow=1.0, band="sand_dark", hot="FF7A28", ember="FFD23C", lair="30289E",
+                     roof="shard", knob="gem", window="accent", iron="wood_dark", board="200C54", landmark="rift", cloud="5A34B8", ambient=1.0, fill=4.5, sun=2.9,
+                     stone=("8A6CF0", "6A48D0", "B49CFF"), stars=("F6C2FF", "FF7AD0", "78DCFF"), lamp_glow=True,
+                     sky=((0.0, "2A1270"), (0.36, "160A3C"), (0.47, "30167A"), (0.5, "3A1A7A"), (0.62, "2A1270"), (0.8, "160A3C"), (1.0, "0C0618")),
+                     monsters=("FF3C8C", "78DCFF", "FFE27A", "F6C2FF")),
+    "Nebula": dict(road="wood", road_edge="wood_dark", kerb="cobble", kerb_glow=0.0, band="wood", hot="FFD23C", ember="FF8A3D", lair="under_dark",
+                   roof="onion", knob="nova", window="accent", iron="wood_dark", board="4A389A", landmark="telescope", cloud="FFC2EE", ambient=0.85, sun=2.6,
+                   stars=("FFFFFF", "FFE27A", "C8FFF8"), lamp_glow=True, monsters=("6CE0E8", "FFE27A", "B49CFF", "FFFFFF")),
+    "Crystal Belt": dict(road="under", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="under", hot="FF4D8F", ember="FFB03D", lair="wood_dark",
+                         roof="prism", knob="prism", window="accent", iron="wood_dark", board="1A3480", landmark="geode", cloud="3C78B8", ambient=1.0, fill=3.4, sun=2.9,
+                         stars=("FFFFFF", "ECD8FF", "8CF0E6"), lamp_glow=True,
+                         sky=((0.0, "1E4A8C"), (0.36, "101E4A"), (0.47, "24589A"), (0.5, "2E6C9C"), (0.62, "1E4A8C"), (0.8, "101E4A"), (1.0, "101E4A")),
+                         monsters=("FF7AD0", "FFD24A", "B46CFF", "FFFFFF")),
+    "Robot Factory": dict(road="sand", road_edge="sand_dark", kerb="2C3870", kerb_glow=0.0, band="sand_dark", hot="FF3C3C", ember="FFC21A", lair="under_dark",
+                          roof="tank", knob="bolt", window="accent", iron="2C3870", board="242E8C", landmark="robot_arm", cloud="FFF6D0", ambient=0.85, sun=2.6,
+                          hills=("2E64DA", "3458C8", "2A52C0", "2840A0"), lamp_glow=True, monsters=("FF6A2A", "50FFAA", "FFC21A", "FF7AD0")),
+    "Alien Jungle": dict(road="sand", road_edge="sand_dark", kerb="rock", kerb_glow=0.0, band="sand_dark", hot="3CD8FF", ember="B4FF2A", lair="under",
+                         roof="cap", knob="pod", window="accent", iron="wood_dark", board="2C1858", landmark="snap_pod", cloud="E8FFB0", ambient=0.85, sun=2.6,
+                         lamp_glow=True, monsters=("FF5AB4", "FFB03C", "A85CFF", "FFFFFF")),
+    "Black Hole": dict(road="sand", road_edge="sand_dark", kerb="water_light", kerb_glow=1.0, band="sand_dark", hot="5ADCE6", ember="B06BFF", lair="under_dark",
+                       roof="claw", knob="orbit", window="accent", iron="wood_dark", board="360A3A", landmark="black_hole", cloud="A02848", ambient=1.0, fill=4.0, sun=2.9,
+                       stone=("B84A8A", "8A3070", "E070A8"), hills=("641A64", "58165C", "4A1248", "5A1E4C"), stars=("FFD8A0", "FF8A28", "FF7AA8"), lamp_glow=True,
+                       sky=((0.0, "6A1434"), (0.36, "2A0A20"), (0.47, "861A3C"), (0.5, "A01C40"), (0.62, "6A1434"), (0.8, "2A0A20"), (1.0, "1A0616")),
+                       monsters=("FF3C8C", "5ADCE6", "B45CFF", "FFFFFF")),
+    "The Big Bang": dict(road="sand_dark", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="FF3C6E", ember="3C9CFF", lair="under_dark",
+                         roof="burst", knob="spark", window="accent", iron="wood_dark", board="8A3CC0", landmark="bang", cloud="FFFFFF", ambient=0.85, sun=2.5,
+                         stone=("E4CCFF", "BE96F0", "F8ECFF"), lamp_glow=True, monsters=("FF4A5A", "3C9CFF", "FFD83A", "FFFFFF")),
 }
 LOOK = {key: T.get(value, value) if isinstance(value, str) else value for key, value in LOOKS[WORLD].items()}
 ROAD, ROAD_EDGE, KERB_COLOUR = LOOK["road"], LOOK["road_edge"], LOOK["kerb"]
 IRON, BOARD = LOOK["iron"], LOOK["board"]  # metal, and what the game writes on in white
+if "stone" in LOOK:
+    STONE, STONE_DARK, STONE_PALE = LOOK["stone"]
+NAVY, HOLE, NEBULA_GOLD = "2C3870", "160A24", "FFC42E"  # island.py's: the Factory's dark paint, a black hole's heart, Nebula's stars
 # The hills round the plot: darker than the ground, four tones from its deep patch to its rim.
-HILLS = ("55BE48", "4AB246", "3FA548", "369A4A") if WORLD == "Earth" else tuple(mix(GRASS_DEEP, GRASS_RIM, share) for share in (0.1, 0.4, 0.7, 1.0))
+HILLS = LOOK.get("hills") or (("55BE48", "4AB246", "3FA548", "369A4A") if WORLD == "Earth" else tuple(mix(GRASS_DEEP, GRASS_RIM, share) for share in (0.1, 0.4, 0.7, 1.0)))
 # The monsters' portal: dark stone and a hot glow, nothing like the island's friendly one.
 LAIR, LAIR_DARK, LAIR_DEEP = LOOK["lair"], shade(LOOK["lair"], -0.22), shade(LOOK["lair"], -0.4)
 HOT, HOT_DARK, HOT_DEEP, HOT_CORE, EMBER = LOOK["hot"], shade(LOOK["hot"], -0.25), shade(LOOK["hot"], -0.55), shade(LOOK["hot"], -0.82), LOOK["ember"]
-GLOWS = T["liquid"] in ("stardust", "lava")  # the world's liquid glows
+LIQUID_GLOW = {"rift": 1.4, "gas": 0.8, "coolant": 1.2, "acid": 1.2, "singularity": 1.5, "energy": 1.0}  # island.py's, for the new worlds' liquids
+GLOWS = T["liquid"] in ("stardust", "lava") or T["liquid"] in LIQUID_GLOW  # the world's liquid glows
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -356,7 +396,258 @@ def tree_lava_spire(tone=0, variant=0):
         slab((0.42, 0.42, length), (x, y, z), LEAVES[(tone + 2) % 3], rotation=(rng.uniform(-0.2, 0.2), rng.uniform(-0.2, 0.2), -math.radians(degrees)), emission=1.0)
 
 
-TREE = {"round_tall": tree_round_tall, "crater_rock": tree_crater_rock, "mesa_spire": tree_mesa_spire, "ice_spike": tree_ice_spike, "lava_spire": tree_lava_spire}[T["tree"]]
+# ---- Worlds 6 to 12: island.py's tall props and the few pieces they are made of, copied (island.py is a
+# script, not a module). None of this runs for worlds 1 to 5. ----
+def gem(radius, height, spot, colour, lean=UP, sides=4, **look):
+    """A shard with two points, base to base: its waist is at `spot`, its long point along `lean`."""
+    lean = Vector(lean).normalized()
+    tube(radius, height * 0.62, spot, lean, colour, tip=0.0, vertices=sides, **look)
+    tube(radius, height * 0.38, spot, -lean, colour, tip=0.0, vertices=sides, **look)
+
+
+def prism(radius, length, start, lean, colour, point=0.3, sides=6, **look):
+    """A cut crystal: a six-sided column from `start` along `lean`, a little wider towards its pointed end."""
+    lean = Vector(lean).normalized()
+    body = length * (1 - point)
+    tube(radius * 0.82, body, start, lean, colour, tip=radius, vertices=sides, **look)
+    tube(radius, length - body, Vector(start) + lean * body, lean, colour, tip=0.0, vertices=sides, **look)
+
+
+def upright(outline, depth, colour, location=(0, 0, 0), rotation=(0, 0, 0), **look):
+    """A flat shape standing upright, its face to the front (-Y): `outline` is its (x, z) corners in order.
+    Every corner must be in sight of the middle of them. (island.py's `plate`.)"""
+    count = len(outline)
+    middle = (sum(x for x, z in outline) / count, sum(z for x, z in outline) / count)
+    vertices = [(x, -depth / 2, z) for x, z in outline] + [(x, depth / 2, z) for x, z in outline] + [(middle[0], -depth / 2, middle[1]), (middle[0], depth / 2, middle[1])]
+    faces = [(2 * count, index, (index + 1) % count) for index in range(count)] + [(2 * count + 1, count + (index + 1) % count, count + index) for index in range(count)]
+    faces += [(index, count + index, count + (index + 1) % count, (index + 1) % count) for index in range(count)]
+    return mesh(vertices, faces, colour, location, rotation, smooth=False, tidy=True, **look)
+
+
+def bent(start, leans, radius, length, colours, taper=0.12, vertices=8, glow=None, **look):
+    """A trunk that bends: one piece per lean, each `length` long and thinner than the one before. `glow`
+    puts a glowing band on every joint. Returns where it ends."""
+    spot = Vector(start)
+    for index, lean in enumerate(leans):
+        lean = Vector(lean).normalized()
+        thick = radius * (1 - taper * index)
+        tube(thick, length * 1.08, spot, lean, colours[index % len(colours)], tip=radius * (1 - taper * (index + 1)), vertices=vertices, **look)
+        if glow and index:
+            tube(thick * 1.06, 0.3, spot - lean * 0.15, lean, glow, vertices=vertices, emission=1.3)
+        spot = spot + lean * length
+    return spot
+
+
+def void_gem(radius, height, spot, lean, glow):
+    """The Void's hanging shard: rock above, and the point it was torn off at still glowing below."""
+    lean = Vector(lean).normalized()
+    tube(radius, height * 0.62, spot, lean, ROCK_LIGHT, tip=0.0, vertices=5, roughness=0.3)
+    tube(radius, height * 0.38, spot, -lean, glow, tip=0.0, vertices=5, emission=1.2)
+
+
+def nova(size, spot, colour=NEBULA_GOLD):
+    """Nebula: a star that reads from every side: two crossed."""
+    for turn in (0, math.pi / 2):
+        star(size, spot, colour, depth=size * 0.4, rotation=(0, 0, turn), emission=0.8)
+
+
+def sag(a, b, height, drop, radius, colour, **look):
+    """A rope or a chain hanging between two posts' feet (Blender points), `height` up at its ends and `drop` lower in the middle."""
+    start, end = a + Vector((0, 0, height)), b + Vector((0, 0, height))
+    middle = (start + end) / 2 - Vector((0, 0, drop))
+    for p, q in ((start, middle), (middle, end)):
+        tube(radius, (q - p).length, p, q - p, colour, vertices=4, **look)
+
+
+def tree_void_shard(tone=0, variant=0):
+    """The Void: shards of rock torn loose, hanging over the stump they came from round a glowing core; or a
+    broken obelisk whose pieces float apart, light in the gaps."""
+    leaf = LEAVES[tone]
+    pale = shade(leaf, 0.4)
+    if not variant:
+        chunk((3.3, 3.1, 1.5), (0, 0, 0.6), ROCK_DARK, detail=1)
+        tube(1.9, 0.5, (0, 0, 1.6), UP, leaf, tip=1.2, vertices=6, emission=1.3)  # the wound it left, still glowing
+        ball(1.7, (0, 0, 5.6), leaf, segments=8, emission=1.5)
+        hoop(3.0, 0.26, (0, 0, 5.6), pale, rotation=(0.45, 0.25, 0), segments=10, emission=1.2)
+        for x, y, z, radius, height, lean in ((2.9, 1.6, 6.4, 1.5, 6.0, (0.25, 0.1, 1)), (-3.1, 0.9, 5.0, 1.3, 4.6, (-0.3, 0.05, 1)), (0.4, -3.0, 7.6, 1.25, 4.8, (0.05, -0.3, 1)), (-0.5, 0.8, 11.2, 1.35, 5.2, (-0.08, 0.05, 1))):
+            void_gem(radius, height, (x, y, z), lean, leaf)
+    else:
+        tube(2.3, 3.2, (0, 0, -0.4), UP, ROCK_DARK, tip=1.85, vertices=5)
+        tube(2.12, 0.3, (0, 0, 1.3), UP, leaf, vertices=5, emission=1.3)  # a band of runes
+        ball(1.15, (0, 0, 3.6), leaf, segments=6, emission=1.5)
+        tube(1.85, 4.6, (0.15, 0, 4.5), (0.03, 0, 1), ROCK, tip=1.45, vertices=5, roughness=0.3)
+        for z, radius in ((5.5, 1.84), (7.0, 1.72), (8.4, 1.6)):
+            tube(radius, 0.28, (0.15 + (z - 4.5) * 0.03, 0, z), (0.03, 0, 1), pale if z == 7.0 else leaf, vertices=5, emission=1.3)
+        ball(0.95, (0.3, 0, 9.9), leaf, segments=6, emission=1.5)
+        hoop(2.6, 0.24, (0.3, 0, 9.9), pale, rotation=(0.3, 0.15, 0), segments=10, emission=1.2)
+        void_gem(1.45, 6.4, (0.4, 0, 12.9), (0.04, 0, 1), leaf)
+
+
+def tree_gas_cloud(tone=0, variant=0):
+    """Nebula: a heap of gas puffs with newborn stars in it (the pink ones with a ring of teal light round
+    them), or a plume of puffs twisting up to a star."""
+    leaf = LEAVES[tone]
+    deep, light = shade(leaf, -0.14), shade(leaf, 0.35)
+    if not variant:
+        for x, y, z, radius, colour, segments in ((0, 0, 3.1, 3.9, leaf, 10), (-3.0, -0.5, 2.1, 2.6, deep, 8), (2.9, 0.7, 2.3, 2.7, deep, 8), (0.6, -0.9, 6.7, 2.9, light, 8), (-1.3, 0.9, 9.3, 1.9, light, 8)):
+            ball(radius, (x, y, z), colour, scale=(1, 1, 0.88), segments=segments, roughness=1.0)
+        if tone == 0:
+            hoop(5.6, 0.42, (0, 0, 4.4), ACCENT, rotation=(0.3, 0.16, 0), segments=16, emission=0.7)
+        for x, y, z, size in ((-1.0, -0.5, 12.6, 1.7), (-4.3, -1.6, 6.2, 1.0), (4.2, -1.2, 6.8, 1.15)):
+            nova(size, (x, y, z))
+    else:
+        for index in range(5):
+            turn, radius = index * 1.25, 3.0 - index * 0.38
+            ball(radius, (math.cos(turn) * 1.1, math.sin(turn) * 1.1, 1.9 + index * 2.55), (deep, leaf, light)[index % 3], scale=(1, 1, 0.92), segments=8, roughness=1.0)
+        nova(1.9, (0.3, -0.3, 15.6))
+        nova(0.9, (-2.9, -1.4, 9.4))
+
+
+def tree_crystal_cluster(tone=0, variant=0):
+    """The Crystal Belt: cut crystals out of a chunk of asteroid, a spread of five or one tall one with a
+    belt of small rocks round it."""
+    leaf = LEAVES[tone]
+    others, light = [colour for colour in LEAVES if colour != leaf], shade(leaf, 0.3)
+    if not variant:
+        chunk((3.6, 3.4, 2.0), (0, 0, 1.0), ROCK, detail=1)
+        chunk((1.6, 1.5, 1.1), (2.6, -1.4, 0.6), ROCK_DARK, detail=1)
+        crystals = ((0.2, 0.2, 2.0, 12.5, (0.08, 0.05, 1), leaf), (-1.7, 0.8, 1.5, 9.0, (-0.5, 0.2, 1), others[0]), (1.9, -0.3, 1.4, 8.0, (0.55, -0.12, 1), light),
+                    (0.2, -1.9, 1.1, 6.0, (0.08, -0.6, 1), others[1]), (0.3, 2.0, 1.2, 6.5, (0.0, 0.55, 1), light))
+    else:
+        chunk((2.6, 2.4, 1.5), (0, 0, 0.7), ROCK, detail=1)
+        crystals = ((0, 0, 1.8, 16.5, (0.03, 0.02, 1), leaf), (-1.5, 0.3, 1.1, 7.5, (-0.4, 0.05, 1), others[0]), (1.4, -0.5, 1.0, 6.0, (0.45, -0.15, 1), light))
+        for index in range(8):  # its belt: rocks and small gems on a tilted ring
+            x, y = ring(index * 45 + 10, 3.3)
+            z = 10.2 + 1.2 * math.sin(math.radians(index * 45 + 10))
+            if index % 2:
+                gem(0.5, 1.5, (x, y, z), others[index // 2 % 2], roughness=0.12)
+            else:
+                chunk((0.95, 0.9, 0.75), (x, y, z), ROCK_LIGHT, detail=1)
+    for x, y, radius, length, lean, colour in crystals:
+        prism(radius, length, (x, y, 0.4), lean, colour, roughness=0.12)
+
+
+def tree_factory_stack(tone=0, variant=0):
+    """The Robot Factory: a bolted tank with a gauge and a pipe, or a striped chimney with a puff of steam."""
+    leaf = LEAVES[tone]
+    if not variant:
+        tube(3.5, 0.7, (0, 0, -0.3), UP, NAVY, vertices=10)
+        tube(3.0, 5.4, (0, 0, 0.4), UP, leaf, vertices=10, roughness=0.35)
+        lathe([(0, 1.5), (1.7, 1.2), (3.0, 0)], leaf, segments=10, location=(0, 0, 5.8), roughness=0.35)
+        for z in (1.5, 4.6):
+            tube(3.14, 0.5, (0, 0, z - 0.25), UP, NAVY, vertices=10)
+            for index in range(3):  # (island.py has six bolts a band and twelve sides: thirty of these share one mesh of 10,000 triangles)
+                x, y = ring(index * 120 + 180, 3.2)
+                slab((0.5, 0.5, 0.34), (x, y, z), GOLD, rotation=(0, 0, -math.radians(index * 120 + 180)), roughness=0.3)
+        tube(1.0, 0.35, (0, -2.95, 3.1), (0, -1, 0), WHITE, vertices=8)  # the gauge
+        tube(1.15, 0.2, (0, -2.95, 3.1), (0, -1, 0), NAVY, vertices=8)
+        slab((0.16, 0.12, 0.85), (0.2, -3.36, 3.3), RED, rotation=(0, 0.6, 0))
+        tube(0.6, 2.4, (0, 0, 7.0), UP, T["stone"], vertices=6)  # the pipe out of its top, with an elbow
+        ball(0.78, (0, 0, 9.4), T["stone_dark"], segments=6)
+        tube(0.6, 2.7, (0, 0, 9.4), (1, 0.2, 0), T["stone"], vertices=6)
+        tube(0.8, 0.4, (2.5, 0.5, 9.4), (1, 0.2, 0), NAVY, vertices=6)
+        ball(0.55, (-1.6, 0.6, 7.4), ACCENT, segments=6, emission=1.3)
+    else:
+        z = -0.4
+        for index, height in enumerate((3.2, 2.4, 2.4, 2.4, 2.4)):
+            radius = 2.3 - index * 0.2
+            tube(radius, height, (0, 0, z), UP, leaf if index % 2 == 0 else WHITE, tip=radius - 0.2, vertices=8, roughness=0.4)
+            z += height
+        tube(1.6, 0.6, (0, 0, z - 0.4), UP, NAVY, vertices=8)
+        tube(1.1, 0.3, (0, 0, z), UP, ACCENT, vertices=8, emission=1.3)
+        for x, y, rise, radius in ((0.2, 0, 1.6, 1.3), (1.5, 0.4, 3.0, 1.05), (3.0, 0.2, 3.9, 0.75)):  # drifting off, not a stack
+            ball(radius, (x, y, z + rise), "F4F8FF", segments=6, roughness=1.0)
+
+
+def tree_glow_shroom(tone=0, variant=0):
+    """The Alien Jungle: a giant mushroom with glowing spots, wide and squat with a young one beside it, or
+    tall on a bending stalk with a bell cap and lights hanging from its rim."""
+    leaf = LEAVES[tone]
+    stalk, glow, spots = "D2A2FF", WATER_LIGHT, "5CF0E0"  # a lilac stalk, lime gills and lights, cyan spots: no toadstool has those
+
+    def cap(radius, height, spot, tilt, colour, drops=False):
+        first = len(made)
+        lathe([(0, height), (radius * 0.5, height * 0.86), (radius * 0.88, height * 0.42), (radius, 0), (radius * 0.86, -0.35), (0, -0.2)], colour, segments=12, roughness=0.4)
+        tube(radius * 0.8, 0.3, (0, 0, -0.5), UP, glow, vertices=8, emission=1.2)  # the gills
+        for degrees, share in ((10, 0.3), (130, 0.42), (250, 0.36), (70, 0.72), (190, 0.76), (310, 0.7))[:5 if radius > 3 else 3]:
+            x, y = ring(degrees, radius * share)
+            out = Vector((x / radius, y / radius, 0.9 * height / radius * (1.1 - share))).normalized()  # roughly the cap's own slope there
+            wide = radius * (0.2 if share < 0.5 else 0.14)
+            tube(wide, 0.34, Vector((x, y, height * (1 - 0.72 * share * share) - 0.16)), out, spots, tip=wide * 0.6, vertices=5, emission=1.4)
+        for index in range(4 if drops else 0):
+            x, y = ring(index * 90 + 20, radius * 0.82)
+            tube(0.08, 1.7, (x, y, -0.3), (0, 0, -1), glow, vertices=3, emission=1.0)
+            gem(0.4, 1.0, (x, y, -2.3), glow, emission=1.3)
+        moved(first, Matrix.Translation(spot) @ Matrix.Rotation(tilt, 4, "Y"))
+
+    if not variant:
+        stalk = "DDF7A0"  # pale lime under the wide cap: lilac goes grey in the gills' lime light
+        tube(1.9, 6.6, (0, 0, -0.4), (0.06, 0, 1), stalk, tip=1.2, vertices=8)
+        tube(1.35, 0.5, (0.27, 0, 4.1), (0.06, 0, 1), glow, vertices=8, emission=1.2)  # a glowing band under the cap
+        cap(5.6, 3.4, (0.4, 0, 5.9), 0.1, leaf)
+        tube(0.7, 2.6, (3.9, -2.2, -0.3), (0.1, -0.05, 1), stalk, tip=0.5, vertices=6)
+        cap(2.1, 1.4, (4.1, -2.3, 2.1), 0.2, shade(leaf, 0.2))
+    else:
+        end = bent((0, 0, -0.4), [(0.05, 0, 1), (0.15, 0, 1), (0.3, 0, 1), (0.42, 0, 1)], 1.2, 3.1, (stalk, shade(stalk, -0.12)), taper=0.1, glow=glow)
+        cap(3.3, 4.2, end - Vector((0.1, 0, 0.5)), 0.36, leaf, drops=True)
+
+
+def tree_bent_rock(tone=0, variant=0):
+    """The Black Hole: rock pulled out of shape. Two claws closing over a small black hole, or a spire that
+    breaks up at the top, its pieces falling in an arc into one."""
+    leaf = LEAVES[tone]
+
+    def hole(spot, radius):  # a dark ball in a thin ring of fire, well clear of it and nearly level (close to it or tilted at you, it is an eye)
+        ball(radius, spot, HOLE, segments=10, roughness=0.3)
+        first = len(made)
+        lathe([(radius * 1.42, -radius * 0.08), (radius * 1.42, radius * 0.08), (radius * 1.85, radius * 0.05), (radius * 1.85, -radius * 0.05), (radius * 1.42, -radius * 0.08)], leaf, segments=10, emission=1.5)
+        moved(first, Matrix.Translation(spot) @ Matrix.Rotation(0.16, 4, "X") @ Matrix.Rotation(0.08, 4, "Y"))
+
+    if not variant:
+        chunk((3.8, 3.1, 1.5), (0, 0, 0.5), ROCK_DARK, detail=1)
+        for side in (-1, 1):
+            bent((side * 2.9, 0, 0.2), [(side * 0.5, 0, 1), (side * 0.1, 0, 1), (-side * 0.5, 0, 1), (-side * 1.3, 0, 1)], 1.8, 2.9, (ROCK, ROCK_LIGHT), taper=0.2, vertices=5, glow=leaf)
+        hole(Vector((0, 0, 6.0)), 1.8)
+    else:
+        leans = [(0.03, 0, 1), (0.12, 0, 1), (0.26, 0, 1)]
+        end = bent((0, 0, -0.4), leans, 2.5, 3.1, (ROCK, ROCK_LIGHT, ROCK), taper=0.17, vertices=5)
+        tube(1.3, 0.3, end - Vector(leans[-1]).normalized() * 0.1, leans[-1], leaf, vertices=5, emission=1.4)  # where it broke
+        for x, z, size in ((1.7, 10.3, 1.0), (2.1, 11.9, 0.75), (2.3, 13.2, 0.5)):  # the pieces, on their way in
+            chunk((size, size * 0.9, size * 1.1), (x, 0, z), ROCK_LIGHT if size > 0.6 else ROCK, detail=1)
+        hole(Vector((2.4, 0, 15.3)), 1.4)
+
+
+def tree_spark_burst(tone=0, variant=0):
+    """The Big Bang: a spark with shards flying out of it, stopped mid-burst; or a beam of light with rings
+    of shards round it."""
+    leaf = LEAVES[tone]
+    deep = shade(leaf, -0.18)
+
+    def shards(middle, count, reach, size, rise=0.0, turn=0.0):
+        for index in range(count):
+            x, y = ring(index * 360 / count + turn, 1.0)
+            out = Vector((x, y, rise)).normalized()
+            gem(0.62 * size, 2.7 * size, Vector(middle) + out * reach, leaf if index % 2 == 0 else deep, out, roughness=0.25)
+
+    tube(2.2, 0.6, (0, 0, -0.2), UP, WOOD, vertices=8, roughness=0.3)
+    if not variant:
+        tube(0.9, 5.0, (0, 0, 0.4), UP, WOOD_LIGHT, tip=0.6, vertices=6, roughness=0.3)
+        ball(2.3, (0, 0, 7.2), ACCENT, segments=10, emission=0.9)
+        shards((0, 0, 7.2), 6, 3.9, 1.35)
+        shards((0, 0, 7.2), 4, 3.7, 1.15, rise=0.9, turn=45)
+        shards((0, 0, 7.2), 4, 3.5, 1.0, rise=-0.6, turn=20)
+        gem(0.8, 4.0, (0, 0, 11.6), leaf, roughness=0.25)
+    else:
+        tube(1.3, 14.2, (0, 0, 0.2), UP, ACCENT, tip=0.25, vertices=6, emission=0.9)  # a ray of light, standing
+        shards((0, 0, 4.4), 5, 3.0, 1.2, rise=0.35)
+        shards((0, 0, 8.6), 4, 2.6, 1.0, rise=0.45, turn=36)
+        shards((0, 0, 12.2), 3, 2.1, 0.85, rise=0.55, turn=10)
+        gem(1.3, 4.4, (0, 0, 15.6), leaf, roughness=0.25)
+
+
+TREE = {"round_tall": tree_round_tall, "crater_rock": tree_crater_rock, "mesa_spire": tree_mesa_spire, "ice_spike": tree_ice_spike, "lava_spire": tree_lava_spire,
+        "void_shard": tree_void_shard, "gas_cloud": tree_gas_cloud, "crystal_cluster": tree_crystal_cluster, "factory_stack": tree_factory_stack,
+        "glow_shroom": tree_glow_shroom, "bent_rock": tree_bent_rock, "spark_burst": tree_spark_burst}[T["tree"]]
 
 
 def rocks(colour=ROCK):
@@ -368,6 +659,66 @@ def rocks(colour=ROCK):
 # ---------------------------------------------------------------------------------------------------
 # The fence: the theme's kind, where the game's solid rails are
 # ---------------------------------------------------------------------------------------------------
+def fence_new(kind, points, turn, first, last):
+    """Worlds 6 to 12: island.py's fences (themed_fence), a size up, on a run's posts. What runs from post to
+    post is where the game's two solid rails are (FENCE_RAILS), or sags between them."""
+    low, high = FENCE_RAILS
+    spin = (0, 0, turn)
+    for index, point in enumerate(points):
+        if (index == 0 and not first) or (index == len(points) - 1 and not last):
+            continue
+        foot = at(point.x, point.y)
+        if kind == "rift_post":  # The Void: a small obelisk, a gem of light floating over it
+            tube(0.95, 3.4, foot + Vector((0, 0, -0.3)), UP, ROCK_LIGHT, tip=0.55, vertices=4)
+            gem(0.62, 1.8, foot + Vector((0, 0, 4.4)), LEAVES[index % 3], emission=1.4)
+        elif kind == "star_rope":  # Nebula: a post with a star on it
+            tube(0.55, 3.7, foot + Vector((0, 0, -0.3)), UP, WOOD_LIGHT, vertices=6)
+            ball(0.62, foot + Vector((0, 0, 3.45)), PETALS[0], segments=6)
+            star(1.25, foot + Vector((0, 0, 4.6)), NEBULA_GOLD, depth=0.45, rotation=(0, 0, turn + math.pi / 2), emission=0.8)
+        elif kind == "crystal_post":  # Crystal Belt: a stone post with a gem on it
+            box((1.5, 1.5, 3.0), foot + Vector((0, 0, 1.2)), STONE, bevel=0.3, rotation=spin, segments=1)
+            gem(1.0, 2.8, foot + Vector((0, 0, 3.8)), LEAVES[index % 3], roughness=0.12)
+        elif kind == "pipe_rail":  # Robot Factory: a bollard in hazard stripes
+            tube(0.9, 4.0, foot + Vector((0, 0, -0.3)), UP, "FFC21A", vertices=6, roughness=0.4)
+            tube(0.96, 1.1, foot + Vector((0, 0, 1.45)), UP, NAVY, vertices=6)
+            tube(1.12, 0.4, foot + Vector((0, 0, 3.7)), UP, WOOD, vertices=6)
+        elif kind == "vine_post":  # Alien Jungle: a thorn with a glowing pod
+            tube(0.85, 4.0, foot + Vector((0, 0, -0.3)), (rng.uniform(-0.12, 0.12), rng.uniform(-0.12, 0.12), 1), WOOD, tip=0.4, vertices=6)
+            gem(0.85, 2.0, foot + Vector((0, 0, 4.0)), LEAVES[index % 3], sides=5, emission=1.2)
+        elif kind == "orbit_post":  # Black Hole: a post with a ringed ball on it
+            box((1.4, 1.4, 3.7), foot + Vector((0, 0, 1.55)), ROCK_LIGHT, bevel=0.3, rotation=spin, segments=1)
+            ball(0.68, foot + Vector((0, 0, 4.3)), HOLE, segments=6)
+            tube(1.35, 0.14, foot + Vector((0, 0, 4.23)), (0.55 * math.sin(turn + 0.9), 0.55 * math.cos(turn + 0.9), 1), LEAVES[0], vertices=8, emission=1.4)
+        else:  # spark_post, The Big Bang: a gold post with a spark on it
+            tube(0.62, 3.6, foot + Vector((0, 0, -0.3)), UP, WOOD_LIGHT, vertices=6, roughness=0.3)
+            gem(0.8, 2.0, foot + Vector((0, 0, 4.2)), ACCENT_PALE, emission=1.4)
+    for a, b in zip(points, points[1:]):
+        a, b = at(a.x, a.y), at(b.x, b.y)
+        if kind == "rift_post":  # beams of light
+            tube(0.28, (b - a).length, a + Vector((0, 0, high)), b - a, ACCENT, vertices=4, emission=1.0)
+            tube(0.2, (b - a).length, a + Vector((0, 0, low)), b - a, LEAVES[1], vertices=4, emission=1.0)
+        elif kind == "star_rope":
+            sag(a, b, 3.1, 0.75, 0.28, PETALS[0])
+            sag(a, b, 1.75, 0.5, 0.24, LEAVES[2])
+        elif kind == "crystal_post":
+            for height in (low, high):
+                tube(0.32, (b - a).length, a + Vector((0, 0, height)), b - a, WOOD_LIGHT, vertices=4, roughness=0.15)
+        elif kind == "pipe_rail":  # two pipes
+            for height in (low, high):
+                tube(0.36, (b - a).length, a + Vector((0, 0, height)), b - a, T["stone"], vertices=4, roughness=0.3)
+        elif kind == "vine_post":
+            sag(a, b, 3.1, 0.9, 0.3, GRASS_LIGHT)
+            sag(a, b, 1.75, 0.5, 0.24, WOOD_LIGHT)
+        elif kind == "orbit_post":  # chains that glow
+            sag(a, b, 3.1, 0.75, 0.24, LEAVES[1], emission=1.0)
+            sag(a, b, 1.75, 0.5, 0.2, LEAVES[0], emission=1.0)
+        else:  # a bolt of lightning over a rail of gold
+            corners = [a + Vector((0, 0, high))] + [a + (b - a) * share + Vector((0, 0, height)) for share, height in ((0.3, high + 0.8), (0.62, high - 0.9))] + [b + Vector((0, 0, high))]
+            for p, q in zip(corners, corners[1:]):
+                tube(0.26, (q - p).length, p, q - p, ACCENT, vertices=4, emission=1.2)
+            tube(0.26, (b - a).length, a + Vector((0, 0, low)), b - a, WOOD, vertices=4, roughness=0.3)
+
+
 def fence_run(start, end, count, first=True, last=True):
     """A fence from one point of the plot to another, `count` posts on it."""
     kind = T["fence"]
@@ -375,6 +726,8 @@ def fence_run(start, end, count, first=True, last=True):
     way = end - start
     turn = math.atan2(way.x, way.y)
     points = [start + way * index / (count - 1) for index in range(count)]
+    if NEW:
+        return fence_new(kind, points, turn, first, last)
     for index, point in enumerate(points):
         if (index == 0 and not first) or (index == count - 1 and not last):
             continue
@@ -415,8 +768,12 @@ def lamp():
     tube(1.15, 0.9, (0, 0, 0), UP, STONE, vertices=10)
     tube(0.85, 0.4, (0, 0, 0.9), UP, STONE_DARK, vertices=10)
     tube(0.42, 9.0, (0, 0, 1.3), UP, IRON, tip=0.32, vertices=8)
-    hoop(0.5, 0.17, (0, 0, 2.4), GOLD, segments=10, roughness=0.3)
-    hoop(0.42, 0.15, (0, 0, 9.5), GOLD, segments=10, roughness=0.3)
+    if LOOK.get("lamp_glow"):  # worlds 6 to 12: the two bands on the post glow in the world's accent
+        hoop(0.52, 0.2, (0, 0, 2.4), ACCENT, segments=10, emission=1.0)
+        hoop(0.44, 0.18, (0, 0, 9.5), ACCENT, segments=10, emission=1.0)
+    else:
+        hoop(0.5, 0.17, (0, 0, 2.4), GOLD, segments=10, roughness=0.3)
+        hoop(0.42, 0.15, (0, 0, 9.5), GOLD, segments=10, roughness=0.3)
     tube(0.45, 0.6, (0, 0, 10.3), UP, IRON, tip=1.3, vertices=10)
     for index in range(4):
         x, y = ring(index * 90 + 45, 1.24)
@@ -499,7 +856,185 @@ def volcano():
         tube(1.0, length, (x, y, 13.0), way, WATER, tip=0.35, vertices=5, emission=1.0)
 
 
-LANDMARK = {"windmill": windmill, "rocket": rocket, "arch": arch, "igloo": igloo, "volcano": volcano}[LOOK["landmark"]]
+# ---- Worlds 6 to 12: one of the island's two set pieces (island.py), grown to a landmark's size ----
+def rift():
+    """The Void: a tear in space standing open between two claws of rock, shards hanging round it."""
+    glow, pale = "FF3CC8", "FFC2F4"
+    jags = (1.0, 0.55, 0.8, 0.5, 0.95, 0.6, 0.75, 0.5, 1.0, 0.55, 0.85, 0.5, 0.9, 0.6)
+
+    def tear(wide, high, depth, colour, turn=0.0, **look):
+        upright([(math.sin(index * math.tau / len(jags)) * reach * wide, 6.8 + math.cos(index * math.tau / len(jags)) * reach * high) for index, reach in enumerate(jags)], depth, colour, rotation=(0, 0, turn), **look)
+
+    chunk((4.8, 2.6, 1.2), (0, 0, 0.4), ROCK_DARK)
+    tear(3.1, 6.0, 0.5, glow, emission=1.5)
+    tear(2.1, 4.7, 0.8, pale, emission=1.8)
+    tear(1.05, 3.3, 1.0, "1A0A4A")  # the dark you see through it
+    tear(3.0, 5.6, 0.5, glow, math.pi / 2, emission=1.5)  # the tear runs both ways, so that it is a tear from the side too
+    tear(2.0, 4.4, 0.8, pale, math.pi / 2, emission=1.8)
+    tear(1.0, 3.1, 1.0, "1A0A4A", math.pi / 2)
+    for side in (-1, 1):
+        bent((side * 3.5, 0.2, 0.2), [(side * 0.35, 0, 1), (-side * 0.05, 0, 1), (-side * 0.5, 0, 1)], 1.5, 3.9, (ROCK, ROCK_LIGHT), taper=0.28, vertices=5)
+    for x, y, z, radius, height, lean in ((-4.9, 0.5, 10.4, 0.9, 2.8, (-0.2, 0, 1)), (4.7, -0.4, 11.6, 0.75, 2.2, (0.25, 0, 1)), (0.3, 0.3, 14.4, 0.8, 2.4, (0.05, 0, 1))):
+        void_gem(radius, height, (x, y, z), lean, glow)
+    for x, y, z in ((-2.7, -0.6, 12.4), (2.6, 0.4, 12.9), (-4.6, -0.5, 6.4), (4.9, 0.3, 7.4)):
+        gem(0.35, 1.1, (x, y, z), pale, emission=1.5)
+
+
+def telescope():
+    """Nebula: a fat telescope on a stone pier, aimed at the sky."""
+    body, band, aim_at, pivot = "6A4CF0", NEBULA_GOLD, Vector((0, -0.74, 0.67)).normalized(), Vector((0, 0.6, 5.6))
+    tube(3.6, 0.7, (0, 0, 0), UP, STONE_DARK, vertices=12)
+    tube(1.7, 4.0, (0, 0, 0.7), UP, STONE, tip=1.2, vertices=10)
+    for side in (-1, 1):  # the fork it swings in
+        box((0.8, 1.7, 3.2), (side * 2.35, 0.6, 5.1), "38B4B8", bevel=0.25, segments=1)
+        tube(0.7, 0.5, (side * 2.5, 0.6, 5.6), (side, 0, 0), band, vertices=8, roughness=0.3)
+    box((5.4, 1.9, 0.8), (0, 0.6, 3.9), "38B4B8", bevel=0.3, segments=1)
+    tube(1.7, 9.2, pivot - aim_at * 3.6, aim_at, body, tip=2.25, vertices=12, roughness=0.3)
+    for along, radius in ((-3.5, 1.85), (0.5, 2.12), (5.1, 2.42)):
+        tube(radius, 0.6, pivot + aim_at * along, aim_at, band, vertices=12, roughness=0.3)
+    tube(2.0, 0.2, pivot + aim_at * 5.65, aim_at, ACCENT, vertices=12, roughness=0.1, emission=1.0)  # the lens
+    tube(0.65, 1.5, pivot - aim_at * 5.0, aim_at, "FF7AD0", vertices=8)  # the eyepiece
+    tube(0.5, 4.0, pivot + Vector((1.75, 0, 1.3)) - aim_at * 1.5, aim_at, "FF7AD0", vertices=8, roughness=0.3)  # the finder
+    nova(1.5, (0.4, -7.6, 13.6))  # the star it is looking at
+    nova(0.8, (-3.2, -6.0, 11.4), WHITE)
+
+
+def geode():
+    """The Crystal Belt: a giant geode split open, its hollow full of glowing crystals, loose ones beside it."""
+    chunk((3.6, 2.8, 1.7), (0, 2.2, 0.8), ROCK_DARK)
+    first = len(made)
+    lathe([(0, -3.2), (2.8, -1.9), (3.8, 0.6), (4.3, 0.9), (4.7, 0.2), (4.0, -2.9), (0, -4.6)], ROCK, segments=10, rough=0.2, smooth=False)
+    lathe([(0, -3.0), (2.7, -1.75), (3.9, 0.75)], "ECD8FF", segments=10, roughness=0.3)  # its pale lining
+    hoop(4.45, 0.42, (0, 0, 0.72), "FFFFFF", segments=10)  # the cut edge: a white crust all round the hollow
+    prism(1.5, 7.8, (0, 0, -3.0), UP, LEAVES[0], roughness=0.12, emission=0.7)
+    for index in range(6):
+        x, y = ring(index * 60 + 15, 2.2)
+        prism(1.0, 4.6 + (index % 2) * 1.1, (x, y, -2.2), (x * 0.2, y * 0.2, 1), LEAVES[(index + 1) % 3], roughness=0.12, emission=0.7)
+    for degrees, colour in ((95, LEAVES[1]), (180, LEAVES[2]), (265, LEAVES[0])):  # and three that broke through its back
+        x, y = ring(degrees, 4.2)
+        prism(0.6, 2.4, (x, y, -1.6), (x, y, -0.6), colour, roughness=0.12)
+    moved(first, Matrix.Translation((0, 0.6, 4.25)) @ Matrix.Rotation(math.radians(32), 4, "X"))
+    for x, y, radius, length, lean, colour in ((4.5, -2.8, 0.9, 3.6, (0.3, -0.2, 1), LEAVES[1]), (5.2, -1.5, 0.6, 2.3, (-0.2, 0.3, 1), LEAVES[2]), (-4.7, -2.4, 0.75, 2.9, (-0.35, -0.1, 1), LEAVES[0])):
+        prism(radius, length, (x, y, -0.2), lean, colour, roughness=0.12)
+
+
+def robot_arm():
+    """The Robot Factory: a robot arm on a base in hazard stripes, a glowing power cell in its claw."""
+    yellow, orange, steel = "FFC21A", "FF6A2A", T["stone"]
+    tube(3.7, 0.8, (0, 0, 0), UP, NAVY, vertices=12)
+    for index in range(0, 12, 2):
+        x, y = ring(index * 30, 3.6)
+        box((1.7, 0.3, 0.62), (x, y, 0.42), yellow, bevel=0.06, rotation=(0, 0, -math.radians(index * 30)), segments=1)
+    tube(2.5, 1.6, (0, 0, 0.8), UP, yellow, tip=2.0, vertices=10, roughness=0.35)
+    shoulder, elbow, wrist = Vector((0, 0.8, 3.4)), Vector((0, 0.2, 10.2)), Vector((0, -4.3, 8.4))
+    ball(1.7, shoulder, NAVY, segments=10)
+    tube(1.25, (elbow - shoulder).length, shoulder, elbow - shoulder, orange, vertices=8, roughness=0.35)
+    ball(1.5, elbow, NAVY, segments=10)
+    tube(1.0, (wrist - elbow).length, elbow, wrist - elbow, yellow, vertices=8, roughness=0.35)
+    ball(1.2, wrist, NAVY, segments=8)
+    for joint, reach in ((shoulder, 1.65), (elbow, 1.45)):
+        for side in (-1, 1):
+            tube(0.6, 0.35, joint + Vector((side * reach, 0, 0)), (side, 0, 0), GOLD, vertices=8, roughness=0.3)
+    piston = shoulder + Vector((0, -1.3, 0.2))
+    tube(0.3, (elbow - piston).length * 0.6, piston, shoulder + (elbow - shoulder) * 0.62 - piston, steel, vertices=6, roughness=0.3)
+    tube(0.6, 1.3, wrist, (0, 0, -1), steel, vertices=8)
+    box((3.7, 1.1, 0.7), wrist + Vector((0, 0, -1.5)), orange, bevel=0.2, segments=1)
+    for side in (-1, 1):
+        box((0.65, 1.1, 2.3), wrist + Vector((side * 1.6, 0, -2.7)), orange, bevel=0.2, rotation=(0, side * 0.12, 0), segments=1)
+    cell = wrist + Vector((0, 0, -3.3))
+    box((2.5, 2.5, 2.5), cell, ACCENT, bevel=0.4, emission=0.9)
+    for z in (-0.8, 0.8):
+        box((2.68, 2.68, 0.36), cell + Vector((0, 0, z)), NAVY, bevel=0.08, segments=1)
+    tube(0.16, 1.5, (1.5, 1.3, 2.3), UP, steel, vertices=5)  # a warning light
+    ball(0.5, (1.5, 1.3, 4.0), RED, segments=6, emission=1.3)
+
+
+def snap_pod():
+    """The Alien Jungle: a giant snapping plant on a thick stalk in a rosette of leaves, its jaws open."""
+    green, red, tooth, hinge = "5CE07A", "E13C5A", "FFF3C8", Vector((0, 3.0, 0))
+    for index in range(6):
+        turn = math.radians(index * 60 + 15)
+        ball(3.3, (math.cos(turn) * 2.8, math.sin(turn) * 2.8, 0.55), WOOD_LIGHT if index % 2 else "8A5CD8", scale=(1, 0.42, 0.16), rotation=(0, -0.22, turn), segments=8)
+    bent((0, 1.6, -0.3), [(0, 0.1, 1), (0, -0.1, 1), (0, -0.1, 1), (0, -0.3, 1)], 1.5, 2.3, (green, shade(green, -0.15)), taper=0.08, glow=WATER)
+    middle = Vector((0, -0.7, 10.0))
+
+    def jaw(frame, upper):
+        first = len(made)
+        lathe([(0, 1.6), (1.9, 1.3), (2.9, 0.4), (3.05, 0), (0, 0)], red, segments=12, stretch=1.2, roughness=0.4)
+        tube(2.6, 0.14, (0, 0, -0.12), UP, "FF8AC0", vertices=12)
+        for index in range(-4, 5):
+            turn = math.radians(index * 22)
+            tube(0.34, 1.0, (math.sin(turn) * 2.7, -math.cos(turn) * 2.7 * 1.2, 0.05), (0, 0, -1), tooth, tip=0.0, vertices=5)
+        for degrees, share in ((0, 0.25), (140, 0.5), (220, 0.5), (60, 0.6), (300, 0.6)) if upper else ():
+            x, y = ring(degrees, 3.0 * share)
+            ball(0.5, (x, y * 1.2, 1.6 * (1 - 0.7 * share * share) + 0.02), "FFE23A", scale=(1, 1, 0.4), segments=6)
+        moved(first, frame)
+
+    swing = Matrix.Translation(middle + hinge) @ Matrix.Scale(1.2, 4)
+    jaw(swing @ Matrix.Rotation(-0.5, 4, "X") @ Matrix.Translation(-hinge), True)
+    jaw(swing @ Matrix.Rotation(0.28, 4, "X") @ Matrix.Translation(-hinge) @ Matrix.Rotation(math.pi, 4, "Y"), False)
+    ball(1.0, middle + Vector((0, 0.8, 0.5)), WATER, segments=8, emission=1.3)  # its throat glows
+    ball(1.0, middle + Vector((0, -1.9, 0.1)), "FF8AC0", scale=(0.8, 1.9, 0.3), segments=8)  # its tongue
+    for side in (-1, 1):  # two feelers with a light on each
+        end = bent((side * 2.2, 1.2, 0), [(side * 0.5, 0, 1), (side * 0.9, -0.1, 1), (side * 0.4, -0.3, 1)], 0.6, 2.2, (WOOD_LIGHT,), taper=0.2, vertices=6)
+        ball(0.8, end, LEAVES[2], segments=6, emission=1.3)
+
+
+def black_hole():
+    """The Black Hole: one in miniature. A dark ball in a tilted ring of fire, the light behind it bent into
+    a halo, held in three claws of rock."""
+    orange, hot, pink = "FF7A1E", "FFE08A", "FF3C8C"
+    middle = Vector((0, 0, 8.2))
+    tube(3.8, 0.7, (0, 0, 0), UP, T["stone_dark"], vertices=9)
+    for index in range(3):
+        x, y = ring(index * 120 + 60, 2.6)
+        out = Vector((x, y, 0)).normalized()
+        bent((x, y, 0.4), [out * 0.55 + Vector(UP), out * 0.1 + Vector(UP), -out * 0.5 + Vector(UP)], 1.2, 2.0, (ROCK, ROCK_LIGHT), taper=0.25, vertices=6, glow=orange)
+    ball(2.5, middle, HOLE, segments=14, roughness=0.25)
+    hoop(2.75, 0.24, middle, pink, rotation=(math.pi / 2, 0, 0), segments=18, emission=1.6)
+    first = len(made)
+    lathe([(3.0, -0.14), (3.0, 0.14), (5.1, 0.08), (5.1, -0.08), (3.0, -0.14)], orange, segments=24, emission=1.5)
+    lathe([(2.72, -0.2), (2.72, 0.2), (3.5, 0.17), (3.5, -0.17), (2.72, -0.2)], hot, segments=24, emission=1.8)
+    for degrees, distance in ((30, 4.3), (150, 4.6), (265, 4.1)):  # rock on its way in
+        x, y = ring(degrees, distance)
+        chunk((0.55, 0.5, 0.45), (x, y, 0.35), ROCK_LIGHT, detail=1)
+    moved(first, Matrix.Translation(middle) @ Matrix.Rotation(0.38, 4, "X") @ Matrix.Rotation(0.15, 4, "Y"))
+
+
+def bang():
+    """The Big Bang: the bang itself, stopped an instant after. A white-hot spark on a gold stand, fat rays
+    of light bursting out of it in every direction, pieces of what it was flying off between them, and two
+    shock rings running out."""
+    middle = Vector((0, 0, 8.0))
+    tube(3.4, 0.7, (0, 0, 0), UP, T["stone_dark"], vertices=12)
+    tube(2.4, 0.6, (0, 0, 0.7), UP, WOOD_LIGHT, vertices=12, roughness=0.3)
+    tube(1.0, 4.6, (0, 0, 1.3), UP, WOOD, tip=0.55, vertices=8, roughness=0.3)
+    ball(2.5, middle, "FFE680", segments=12, emission=1.0)
+    rays = ((0, 0.1), (60, 0.7), (120, 0.0), (180, 0.75), (240, 0.1), (300, 0.7), (30, -0.55), (150, -0.5), (270, -0.55), (90, 3.0))
+    for index, (degrees, rise) in enumerate(rays):  # the rays: fat at the spark, a point far out
+        x, y = ring(degrees, 1.0)
+        out = Vector((x, y, rise)).normalized()
+        tube(1.15, 5.4 if rise >= 0 else 3.6, middle + out * 1.6, out, "FFC61A" if index % 2 == 0 else "FF7A1E", tip=0.0, vertices=5, emission=0.35)
+    for index, (degrees, rise, far, size) in enumerate(((30, 0.5, 6.4, 1.0), (92, -0.1, 6.9, 0.8), (150, 0.45, 6.6, 1.05), (212, -0.15, 6.8, 0.85), (268, 0.5, 6.4, 1.0), (332, -0.1, 7.0, 0.8), (200, 1.9, 6.2, 0.9), (20, 1.7, 6.4, 0.8))):
+        x, y = ring(degrees, 1.0)
+        out = Vector((x, y, rise)).normalized()
+        gem(0.95 * size, 3.4 * size, middle + out * far, LEAVES[index % 3], out, roughness=0.25)  # what it threw out
+    hoop(4.6, 0.36, middle, WHITE, rotation=(0.3, 0.12, 0), segments=24, emission=1.4)
+    hoop(6.6, 0.24, middle, "FF7AD0", rotation=(0.3, 0.12, 0), segments=28, emission=1.2)
+
+
+def grown(build, size):
+    """A set piece of the island's, `size` times as big: a landmark has to show from across the plot."""
+    def bigger():
+        first = len(made)
+        build()
+        moved(first, Matrix.Scale(size, 4))
+    return bigger
+
+
+LANDMARK = {"windmill": windmill, "rocket": rocket, "arch": arch, "igloo": igloo, "volcano": volcano,
+            "rift": grown(rift, 1.35), "telescope": grown(telescope, 1.45), "geode": grown(geode, 1.8), "robot_arm": grown(robot_arm, 1.55),
+            "snap_pod": grown(snap_pod, 1.45), "black_hole": grown(black_hole, 1.6), "bang": grown(bang, 1.3)}[LOOK["landmark"]]
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -553,13 +1088,59 @@ def waterfall(fall, pool, reach):
     if T["liquid"] in ("water", "oasis"):
         for x, z, radius in ((-0.9, 0.5, 0.8), (0.3, 0.7, 0.95), (1.1, 0.4, 0.7)):  # foam where it lands
             ball(radius, (x, -fall[-1][0] - 0.3, z), WHITE, segments=8)
-    wet = dict(roughness=0.15, emission=0.9) if GLOWS else dict(roughness=0.15)
+    wet = dict(roughness=0.15, emission=LIQUID_GLOW.get(T["liquid"], 0.9)) if GLOWS else dict(roughness=0.15)
     with into("Water"):
         ribbon(fall, 3.6, WATER, lift=0.7, **wet)
         for shift, width, skip in ((-0.9, 0.7, 1), (0.8, 0.5, 2)):  # lighter streaks down the fall
             ribbon(fall[skip:], width, WATER_LIGHT, thickness=0.3, shift=shift, lift=0.9, **wet)
         tube(pool, 0.4, (0, -reach, -0.1), UP, WATER, vertices=16, **wet)
         tube(pool * 0.58, 0.4, (0.25, -reach + 0.2, -0.06), UP, shade(WATER, 0.25), vertices=12, **wet)
+        if T["liquid"] == "prism":  # cut like a gem: the fall splits into colours
+            for shift, colour, skip in ((-1.45, PETALS[0], 2), (1.4, PETALS[2], 1), (-0.2, PETALS[3], 3)):
+                ribbon(fall[skip:], 0.4, colour, thickness=0.3, shift=shift, lift=0.9, roughness=0.15)
+    if NEW:
+        liquid_dressing(fall, pool, reach)
+
+
+def liquid_dressing(fall, pool, reach):
+    """Worlds 6 to 12: what island.py's pond has on it, at the waterfall: at its top (where it comes out from
+    under the butte's cap), down its sides and round its pool. In the waterfall's own space, front -Y."""
+    liquid = T["liquid"]
+    out, top = fall[0]
+    foot = Vector((0, -reach, 0))
+    if liquid == "rift":  # shards of rock hanging over the tear, and the dark in the middle of it
+        for x, y, z, radius, height, lean in ((-2.9, 0.6, 3.4, 0.9, 3.2, (0.2, 0, 1)), (2.8, 0.2, 4.4, 0.75, 2.6, (-0.15, 0.1, 1)), (0.3, -2.6, 2.6, 0.6, 2.0, (0, -0.1, 1))):
+            void_gem(radius, height, foot + Vector((x, y, z)), lean, WATER_LIGHT)
+        for x, z in ((-2.9, top - 6.5), (2.8, top - 11.0), (-2.6, top - 16.0)):  # and beside the fall
+            void_gem(0.8, 2.8, (x, -fall[3][0] - 1.4, z), UP, WATER_LIGHT)
+        tube(pool * 0.5, 0.1, foot + Vector((0.25, 0.2, 0.3)), UP, "1A0A4A", vertices=7)
+    elif liquid == "gas":  # puffs where it lands and drifting off the fall
+        for x, y, z, size, colour in ((-1.6, -0.4, 0.9, 1.5, "C8FFF8"), (1.5, -0.6, 0.8, 1.3, WHITE), (0.1, -1.6, 0.6, 1.1, LEAVES[0]), (-2.6, 2.0, top - 8.0, 1.2, LEAVES[2]), (2.7, 2.4, top - 14.0, 1.0, "C8FFF8")):
+            ball(size, foot + Vector((x, y, z)), colour, scale=(1, 1, 0.8), segments=10, roughness=1.0)
+        nova(1.1, foot + Vector((0.2, 0.6, 3.6)))
+    elif liquid == "prism":  # crystals growing out of it
+        for x, y, radius, length, lean, colour in ((-2.4, 0.9, 1.0, 6.0, (-0.15, 0.05, 1), LEAVES[0]), (-3.2, -0.3, 0.7, 3.6, (-0.5, -0.1, 1), LEAVES[1]), (2.5, 0.8, 0.9, 5.0, (0.2, 0.1, 1), LEAVES[2]), (3.2, -0.5, 0.6, 3.0, (0.5, -0.15, 1), LEAVES[1])):
+            prism(radius, length, foot + Vector((x, y, 0)), lean, colour, roughness=0.12)
+        for x, radius, length in ((-1.4, 0.5, 3.0), (0.1, 0.4, 2.2), (1.3, 0.55, 3.4)):  # frozen: icicles where it tips over
+            tube(radius, length, (x, -out - 2.1, top - 1.0), (0, 0, -1), WATER_LIGHT, tip=0.0, vertices=5, roughness=0.15)
+    elif liquid == "coolant":  # the pipe it runs out of, and bubbles in the pool
+        tube(2.3, 4.6, (0, -out + 2.6, top + 0.6), (0, -1, -0.1), WOOD, vertices=10, roughness=0.35)
+        hoop(2.4, 0.4, (0, -out - 1.7, top + 0.15), "FFC21A", rotation=(math.pi / 2 - 0.1, 0, 0), segments=10)
+        hoop(2.4, 0.4, (0, -out + 1.2, top + 0.45), NAVY, rotation=(math.pi / 2 - 0.1, 0, 0), segments=10)
+        for x, y, size in ((-0.8, 0.3, 0.5), (0.7, -0.5, 0.4), (0.2, 0.8, 0.3)):
+            ball(size, foot + Vector((x, y, 0.4)), WATER_LIGHT, segments=6, emission=1.4)
+    elif liquid == "acid":  # bubbles, in the pool and up the fall
+        for x, y, z, size in ((-0.9, 0.2, 0.5, 0.7), (0.8, -0.5, 0.45, 0.5), (0.1, 0.9, 0.4, 0.4), (-2.3, 1.2, 3.0, 0.6), (2.2, 1.4, 5.5, 0.5), (-2.0, 1.8, 8.5, 0.4)):
+            ball(size, foot + Vector((x, y, z)), "5CF0E0" if size < 0.5 else WATER_LIGHT, segments=6, emission=1.4)
+    elif liquid == "singularity":  # the dark it all falls into, and the last light round it
+        tube(pool * 0.62, 0.1, foot + Vector((0, 0, 0.3)), UP, HOLE, vertices=16, roughness=0.3)
+        hoop(pool * 0.7, 0.16, foot + Vector((0, 0, 0.42)), WATER_LIGHT, segments=16, emission=1.7)
+        hoop(pool * 1.9, 0.14, foot + Vector((0, 0, 2.2)), LEAVES[1], rotation=(0.3, 0.15, 0), segments=18, emission=1.4)
+    else:  # energy: rings running out over it, sparks standing over it
+        for radius, z in ((pool * 0.5, 0.36), (pool * 1.5, 1.6), (pool * 2.0, 3.0)):
+            hoop(radius, 0.14, foot + Vector((0, 0, z)), WHITE, segments=18, emission=1.6)
+        for x, y, z, size in ((-2.6, 0.6, 3.0, 0.8), (2.5, 0.3, 4.2, 0.7), (0.2, -2.4, 2.2, 0.6)):
+            gem(size, size * 3.2, foot + Vector((x, y, z)), LEAVES[int(z * 10) % 3], roughness=0.25)
 
 
 def monolith(radius, height, colour, stretch=1.0, segments=11):
@@ -663,6 +1244,14 @@ ROOFS = {
     "pagoda": ([(0, 26.0), (0.9, 24.2), (2.0, 22.6), (3.3, 21.7), (2.4, 21.3), (2.9, 19.8), (4.6, 18.2), (3.7, 17.7), (0, 17.7)], 12, True),
     "spire": ([(0, 29.0), (1.5, 24.0), (3.0, 20.4), (4.1, 18.2), (3.7, 17.7), (0, 17.7)], 6, False),
     "flame": ([(0, 28.0), (0.6, 26.4), (1.7, 24.6), (3.2, 22.4), (4.2, 20.2), (4.1, 18.7), (3.6, 17.7), (0, 17.7)], 12, True),
+    # worlds 6 to 12
+    "shard": ([(0, 30.0), (1.3, 25.4), (3.3, 20.6), (4.3, 18.6), (3.7, 17.7), (0, 17.7)], 5, False),  # The Void: a five-sided splinter
+    "onion": ([(0, 26.6), (0.5, 25.4), (1.3, 24.2), (3.0, 23.0), (4.3, 21.4), (4.6, 19.8), (4.1, 18.4), (3.7, 17.7), (0, 17.7)], 16, True),  # Nebula: a puff drawn to a point
+    "prism": ([(0, 29.4), (3.3, 24.6), (4.3, 19.2), (3.7, 17.7), (0, 17.7)], 6, False),  # Crystal Belt: a cut crystal
+    "tank": ([(0, 24.4), (1.7, 24.4), (1.7, 22.6), (2.3, 22.6), (2.5, 22.0), (4.1, 20.2), (4.3, 18.4), (3.7, 17.7), (0, 17.7)], 12, False),  # Robot Factory: a boiler's lid and its chimney
+    "cap": ([(0, 25.2), (2.3, 24.6), (4.3, 22.9), (5.4, 20.6), (5.1, 19.7), (3.5, 19.2), (3.5, 17.7), (0, 17.7)], 14, True),  # Alien Jungle: a mushroom's cap over the parapet
+    "claw": ([(0, 29.0), (0.9, 26.2), (1.5, 23.6), (2.9, 21.2), (4.3, 19.4), (4.2, 18.4), (3.7, 17.7), (0, 17.7)], 5, False),  # Black Hole: rock pulled to a point
+    "burst": ([(0, 28.4), (1.0, 24.6), (2.3, 22.2), (4.7, 20.2), (3.1, 18.9), (3.7, 17.7), (0, 17.7)], 8, False),  # The Big Bang: a spark's point over a ring of them
 }
 
 
@@ -678,6 +1267,24 @@ def knob(x, y, z):
         tube(1.2, 1.5, (x, y, z - 0.3), UP, GOLD, tip=0.0, vertices=4, roughness=0.3)
     elif kind == "crystal":
         tube(0.75, 2.2, (x, y, z - 0.3), UP, LEAVES[2], tip=0.0, vertices=5, smooth=False, roughness=0.2)
+    # worlds 6 to 12: what tops their fence's posts
+    elif kind == "gem":  # The Void: a gem of light floating over the post
+        gem(0.7, 2.0, (x, y, z + 1.2), ACCENT, emission=1.4)
+    elif kind == "nova":  # Nebula: a star
+        tube(0.3, 0.7, (x, y, z - 0.2), UP, IRON, vertices=5)
+        nova(1.0, (x, y, z + 1.2))
+    elif kind == "prism":  # Crystal Belt: a cut crystal
+        prism(0.8, 2.6, (x, y, z - 0.3), UP, LEAVES[round(abs(x)) % 3], roughness=0.12)
+    elif kind == "bolt":  # Robot Factory: a cap in hazard yellow with a green light
+        tube(1.0, 0.5, (x, y, z - 0.25), UP, "FFC21A", vertices=6, roughness=0.4)
+        ball(0.62, (x, y, z + 0.55), ACCENT, segments=8, emission=1.3)
+    elif kind == "pod":  # Alien Jungle: a glowing pod
+        gem(0.85, 2.0, (x, y, z + 0.5), ACCENT, sides=5, emission=1.2)
+    elif kind == "orbit":  # Black Hole: a dark ball in a ring of fire
+        ball(0.75, (x, y, z + 0.6), HOLE, segments=8, roughness=0.3)
+        tube(1.4, 0.14, (x, y, z + 0.53), (0.35, 0.3, 1), ACCENT, vertices=10, emission=1.4)
+    elif kind == "spark":  # The Big Bang: a spark
+        gem(0.8, 2.2, (x, y, z + 0.6), T["accent"], emission=1.2)
     else:  # ember
         ball(0.8, (x, y, z + 0.45), ACCENT, scale=(1, 1, 1.2), segments=8, emission=1.0)
 
@@ -1094,7 +1701,7 @@ for far, tone, size in ((9, 0, 1.5), (34, 1, 1.5), (47, 2, 1.5), (70, 0, 1.5), (
         far -= length
 words("YAANI'S BASE", (0, GATE_Z - NAME_SIGN[2] / 2 - 0.02, NAME_SIGN_Y), 1.5, face=180)
 words("YAANI'S BASE", (0, GATE_Z + NAME_SIGN[2] / 2 + 0.02, NAME_SIGN_Y), 1.5, face=0)
-words(WORLD.upper(), (sign_x, DEPTH - 0.02, sign_y), 5.4 if len(WORLD) < 6 else 4.4, face=180)
+words(WORLD.upper(), (sign_x, DEPTH - 0.02, sign_y), 5.4 if len(WORLD) < 6 else 4.4 if len(WORLD) < 9 else 35 / len(WORLD), face=180)
 
 use("Sky")
 for x, z, y, size in ((-150, 60, -40, 11), (160, 90, -34, 10), (-140, 200, -55, 8), (150, 220, -60, 9), (-60, -80, -70, 10), (70, -90, -75, 9),  # around and under the island
@@ -1107,6 +1714,18 @@ if WORLD == "Moon":  # stars, all round and above
         ball(rng.uniform(2.2, 5.5), (math.cos(turn) * math.cos(lift) * far, 73 + math.sin(turn) * math.cos(lift) * far, math.sin(lift) * far), rng.choice(("FFFFFF", "FFE9A8", "BFD8FF")), segments=6, emission=3.0)
     ball(46, at(-330, 760, 300), "7FB8FF", segments=24, roughness=0.9)  # the Earth, far off
     ball(46.3, at(-330, 760, 300), "6FD046", scale=(0.62, 1, 0.5), rotation=(0.3, 0.2, 0.5), segments=16, roughness=0.9)
+# Worlds 6 to 12: the stars of the ones with a night (or a dawn) sky, in that world's colours, as on its island
+for index in range(110 if LOOK.get("stars") else 0):
+    turn, lift = rng.uniform(0, 2 * math.pi), rng.uniform(-0.5, 1.1)
+    far = 1300
+    ball(rng.uniform(2.2, 5.5), (math.cos(turn) * math.cos(lift) * far, 73 + math.sin(turn) * math.cos(lift) * far, math.sin(lift) * far), LOOK["stars"][index % 3], segments=6, emission=3.0)
+if WORLD == "Nebula":  # teal gas between the pink
+    for x, z, y, size in ((-170, 130, -30, 10), (175, 20, -48, 9), (20, -100, -60, 9), (60, 340, 110, 14), (-230, 330, 70, 12)):
+        place(cloud, (x, z, y), face=180 + rng.uniform(-25, 25), scale=size, colour="9AF0E4")
+if WORLD == "The Big Bang":  # what the bang threw out, still on its way: shards all round the island
+    for index in range(40):
+        x, y = ring(rng.uniform(0, 360), rng.uniform(150, 260))
+        gem(rng.uniform(1.8, 3.4), rng.uniform(8, 15), (x, 73 + y, rng.uniform(-80, 70)), (LEAVES + (GOLD, WHITE))[index % 5], (rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1) or 1), roughness=0.25)
 
 triangles = kit.count()
 
