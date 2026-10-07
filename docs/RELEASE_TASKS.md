@@ -240,6 +240,25 @@ shows instead: that is what Yaani saw.
 - [x] O1. **[Yaani]** (done 7 Oct: pass 2013380339 created, on sale at 1,499 Robux, Managed Pricing off; a real purchase has not been tried) HUGE Tycoon Cannon game pass, 1,499 Robux: create it in the group's experience and paste its id into `Huge.Pass` (`src/shared/Features/Huge.luau`, `id = 0`). The STORE says "not on sale yet" until then · **15 min**
 - [ ] O2. **[open]** Decide and then create or remove the other things still at `product = 0`: the Royal Crate (99 Robux, `Features/Crates`), the three powerup packs (49 / 129 / 399 Robux, `Features/Powerups`) and the old Robux Shiny key (`Enchant.ShinyProduct`, dropped in favour of gems). Not started: needs Yaani's call
 
+## P. MINI CANNONS window, rebuilt from scratch (asked for by Yaani on 7 Oct; PLAN only, not started, nobody has it yet)
+
+Today's window (`petsWindow` in `src/client/Windows.luau`) is a plain list. Yaani wants a full inventory:
+equip and unequip, delete, search, "and other features". The mockup is `docs/ui-vision/mini-cannons-window.png`
+(a grid of picture cards with a detail pane). Jobs in order; P1 is the only one that needs Yaani.
+
+- [ ] P1. **[open]** Read today's window and server actions (equip, best, release, storage, slots), then write the design into `docs/MINI_CANNON_REVAMP.md`: layout, every button, what each does, and the open questions for Yaani (below). Yaani says yes before P2 · **30 min**
+- [ ] P2. **[open]** `UI.card`: a picture card with a 3D preview (`UI.preview` + `Models.mini`), rarity frame, count badge, equipped tick, fuse-tier and enchantment marks; reused by this window and later by INDEX and LOOT · **1 h 00**
+- [ ] P3. **[open]** The grid: one card per kind of mini cannon the player owns (same kind, tier and enchantments stack with a count), scrolling, built once and reused so 500 stored ones stay smooth · **1 h 30**
+- [ ] P4. **[open]** Equip and unequip: tap a card, then EQUIP / UNEQUIP in the detail pane; equipped ones first in the grid with a tick; the slots line "5 / 8 equipped"; EQUIP BEST and UNEQUIP ALL buttons. Server actions checked for each (some exist) · **1 h 00**
+- [ ] P5. **[open]** Delete: DELETE on one, and a delete mode to tick several cards and remove them in one go, with a confirm that names what goes; never an equipped, a Huge, a Secret or an enchanted one without a second confirm; a lock toggle per mini cannon that delete skips · **1 h 15**
+- [ ] P6. **[open]** Search and sort: a search box (by name), filter chips (rarity, world or egg, enchanted, fused tier), and sort by damage, rarity, newest or name; the choice is remembered · **1 h 00**
+- [ ] P7. **[open]** The detail pane: big 3D preview, name, rarity, damage, enchantments, fuse tier and what the next tier needs, where it hatches, how many owned, and the buttons (equip, delete, lock; FUSE and ENCHANT jump to those machines' islands) · **1 h 00**
+- [ ] P8. **[open]** Other features, each a yes or no from Yaani in P1: auto-delete by rarity while hatching; a storage bar with the +500 pass offer when nearly full; "new" dots on ones not yet looked at; loadouts (saved sets of equipped mini cannons) · sized after P1
+- [ ] P9. **[open]** Tests in the emulator for every new action (equip, unequip, delete one and many, lock, search does not change what is owned), then seen in Studio on a desktop and a phone-sized screen **[S]** · **1 h 00**
+
+Open questions for P1: delete gives nothing back, or a few coins or gems? May an equipped one be deleted in one
+step? Is there a limit on locks? Which of P8's four extras are wanted for launch?
+
 ## After launch
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
