@@ -84,18 +84,33 @@ function Feature.start(Game)
 	end
 
 	-- Tracks the core cannot apply in this build: [track id] = true. They are shown, and not sold. None today:
-	-- every track, Slots included, has its modifier in the core (tests/mastery.luau checks it).
+	-- every track has its modifier in the core (tests/mastery.luau buys each one and measures what it did).
 	local off = {}
+
+	-- Whether a track with a daily limit (Gem Hunter) still gives today. It reads the save without touching
+	-- it: a modifier runs often. A count from another UTC day is yesterday's, so nothing was found today.
+	local function underLimit(saved, id: string, level: number): boolean
+		if typeof(saved) ~= "table" or saved.gemDay ~= Config.dayNumber(os.time()) then
+			return true
+		end
+		return typeof(saved.gems) ~= "number" or saved.gems ~= saved.gems or saved.gems < Mastery.perDay(id, level)
+	end
 
 	-- One modifier per track. It reads the saved level directly: a modifier runs for every shot.
 	for _, track in Mastery.Tracks do
 		local id = track.id
+		local limited = track.perDay ~= nil
 		local ok = pcall(Game.modify, track.kind, function(_player: Player, data, state, value: number): number
-			local level = Mastery.level(data.features.mastery, id)
-			return if level > 0 then Mastery.apply(id, level, value, state) else value
+			local saved = data.features.mastery
+			local level = Mastery.level(saved, id)
+			if level <= 0 or (limited and not underLimit(saved, id, level)) then
+				return value
+			end
+			return Mastery.apply(id, level, value, state)
 		end, function(_player: Player, data): string?
-			local level = Mastery.level(data.features.mastery, id)
-			return if level > 0 then Mastery.label(id, level) else nil
+			local saved = data.features.mastery
+			local level = Mastery.level(saved, id)
+			return if level > 0 and (not limited or underLimit(saved, id, level)) then Mastery.label(id, level) else nil
 		end)
 		if not ok then
 			off[id] = true -- a core without a modifier of that kind (an older one had no `equipSlots`)
@@ -136,6 +151,11 @@ function Feature.start(Game)
 			Game.notify(player, `{track.name} mastery is maxed`, "info")
 			return
 		end
+		local missing = Mastery.missing(saved, track.id)
+		if missing then
+			Game.notify(player, `{track.name} does nothing without {missing.name}: buy a level of {missing.name} first`, "bad")
+			return
+		end
 		local cost = Mastery.cost(track.id, level + 1)
 		if typeof(cost) ~= "number" or cost ~= cost or cost < 1 then
 			return
@@ -154,27 +174,59 @@ function Feature.start(Game)
 		Game.sync(player)
 		local note = if track.kind == "lives"
 			then " (from the next level you start)"
-			elseif track.kind == "offlineCap" then " (from the next time you are away)"
+			elseif track.kind == "offlineCap" or track.kind == "offlineShare" then " (from the next time you are away)"
 			else ""
 		Game.notify(player, `{track.name} {Mastery.roman(level + 1)}: {Mastery.describe(track.id, level + 1)}{note}`, "good")
 	end
 
-	Game.on("ready", function(player: Player, data)
-		-- A save from another build: keep only whole levels of tracks that exist, inside their caps.
-		local saved = Game.feature(data, "mastery", Mastery.SAVED)
-		if typeof(saved.levels) ~= "table" then
-			saved.levels = {}
+	-- Gem Hunter: the `gems` modifier above made this boss drop more; count it against today's limit.
+	for _, track in Mastery.Tracks do
+		if track.perDay and track.kind == "gems" then
+			local id = track.id
+			Game.on("kill", function(player: Player, data, _state, info)
+				if info.kind == "normal" or off[id] then
+					return
+				end
+				local saved = Game.feature(data, "mastery", Mastery.SAVED)
+				local level = Mastery.level(saved, id)
+				if level <= 0 then
+					return
+				end
+				local day = Config.dayNumber(os.time())
+				if saved.gemDay ~= day or typeof(saved.gems) ~= "number" or saved.gems ~= saved.gems then
+					saved.gemDay, saved.gems = day, 0
+				end
+				local limit = Mastery.perDay(id, level)
+				if saved.gems < limit then
+					saved.gems += track.per * level
+					if saved.gems >= limit then
+						Game.notify(player, `{track.name}: all {limit} gems found today. More tomorrow!`, "info")
+					end
+				end
+			end)
 		end
+	end
+
+	Game.on("ready", function(player: Player, data)
+		-- A save from another build. Nothing a player bought is thrown away here: a level of a track this build
+		-- does not have, or above this build's cap, stays in the save as it is (Mastery.level reads every level
+		-- as a whole number from 0 to the cap, so it is harmless, and it is still there for the build that
+		-- knows it). Only what is not a level at all goes.
+		local saved = Game.feature(data, "mastery", Mastery.SAVED)
 		local levels = {}
-		for _, track in Mastery.Tracks do
-			local level = Mastery.level(saved, track.id)
-			if level > 0 then
-				levels[track.id] = level
+		if typeof(saved.levels) == "table" then
+			for id, level in saved.levels do
+				if typeof(id) == "string" and typeof(level) == "number" and level == level and level >= 1 and level < math.huge then
+					levels[id] = math.floor(level)
+				end
 			end
 		end
 		saved.levels = levels
 		if typeof(saved.spent) ~= "number" or saved.spent ~= saved.spent then
 			saved.spent = 0
+		end
+		if typeof(saved.gemDay) ~= "number" or typeof(saved.gems) ~= "number" or saved.gems ~= saved.gems then
+			saved.gemDay, saved.gems = 0, 0
 		end
 		publish(player, data)
 	end)

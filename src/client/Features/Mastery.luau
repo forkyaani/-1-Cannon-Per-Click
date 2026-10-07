@@ -1,6 +1,6 @@
 -- Mastery, client side: the MASTERY window, opened by the shrine on the Mars island (its prompt carries
--- Window = "MASTERY"). A tab per group; each track is a card with its level pips, what it gives now and at
--- the next level, the price in gems and BUY. Tracks, prices and effects come from the shared module, which
+-- Window = "MASTERY"). A tab per group, its cards in a list that scrolls; each track is a card with its level
+-- ("Lv 12/40") over a progress bar, what it gives now and at the next level, the price in gems and BUY. Tracks, prices and effects come from the shared module, which
 -- is what the server sells from; the server checks everything again.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -10,7 +10,8 @@ local CARD_HEIGHT = 84
 local TAB_TOP = 28
 local TAB_HEIGHT = 38
 local LIST_TOP = TAB_TOP + TAB_HEIGHT + 8
-local PIP_WIDTH, PIP_HEIGHT, PIP_GAP = 16, 9, 3
+local BAR_HEIGHT = 9 -- the level bar: one bar whatever the cap, so 50 levels fit as well as 5
+local MARK_WIDTH = 3 -- a tick on the bar where the Slots track gives a slot
 local TEXT_LEFT = 58 -- where a row's text starts (UI.row's own layout)
 
 local function start(ctx)
@@ -64,32 +65,39 @@ local function start(ctx)
 		row.title.Size = UDim2.new(1, -212, 0, 24)
 		row.sub.Position = UDim2.fromOffset(TEXT_LEFT, 44)
 		row.sub.Size = UDim2.new(1, -212, 0, CARD_HEIGHT - 50)
-		-- One pip per level, lit up to the level owned. The Slots track's slot levels are marked.
-		local pips = {}
-		local strip = UI.make("Frame", {
-			Name = "Pips",
+		-- The level bar: filled up to the level owned. The Slots track's slot levels are ticks on it.
+		local bar = UI.make("Frame", {
+			Name = "Levels",
 			Position = UDim2.fromOffset(TEXT_LEFT, 31),
-			Size = UDim2.fromOffset(track.cap * (PIP_WIDTH + PIP_GAP), PIP_HEIGHT),
-			BackgroundTransparency = 1,
+			Size = UDim2.new(1, -212, 0, BAR_HEIGHT),
+			BackgroundColor3 = Colors.dark,
+			BorderSizePixel = 0,
 			Parent = row.frame,
-		})
-		for level = 1, track.cap do
-			local pip = UI.make("Frame", {
-				Position = UDim2.fromOffset((level - 1) * (PIP_WIDTH + PIP_GAP), 0),
-				Size = UDim2.fromOffset(PIP_WIDTH, PIP_HEIGHT),
-				BackgroundColor3 = Colors.dark,
+		}, { UI.corner(4) })
+		local fill = UI.make("Frame", {
+			Name = "Fill",
+			Size = UDim2.fromScale(0, 1),
+			BackgroundColor3 = Colors.gold,
+			BorderSizePixel = 0,
+			Visible = false,
+			Parent = bar,
+		}, { UI.corner(4) })
+		for _, at in track.at or {} do
+			UI.make("Frame", {
+				Name = "SlotMark",
+				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.fromScale(at / track.cap, 0),
+				Size = UDim2.new(0, MARK_WIDTH, 1, 0),
+				BackgroundColor3 = Colors.white,
 				BorderSizePixel = 0,
-				Parent = strip,
-			}, { UI.corner(4) })
-			if track.at and table.find(track.at, level) then
-				UI.stroke(1.5, Colors.white).Parent = pip
-			end
-			pips[level] = pip
+				ZIndex = 2,
+				Parent = bar,
+			})
 		end
 		row.button.Activated:Connect(function()
 			ctx.act("masteryBuy", track.id)
 		end)
-		cards[track.id] = { row = row, pips = pips }
+		cards[track.id] = { row = row, fill = fill }
 	end
 
 	local function atShrine(): boolean
@@ -101,7 +109,12 @@ local function start(ctx)
 		button.BackgroundColor3 = color
 	end
 
+	local shownTab: string? = nil
 	function refresh()
+		if shownTab ~= selected then
+			shownTab = selected
+			list.CanvasPosition = Vector2.zero -- a new tab starts at its first card
+		end
 		local saved = State.feature("mastery")
 		local gems = State.get("Diamonds", 0)
 		local unlocked = Mastery.unlocked(State.get("BestCleared", 0))
@@ -126,9 +139,8 @@ local function start(ctx)
 			end
 			local level = Mastery.level(saved, track.id)
 			row.title.Text = `{string.upper(track.name)}   Lv {level}/{track.cap}`
-			for index, pip in card.pips do
-				pip.BackgroundColor3 = if index <= level then Colors.gold else Colors.dark
-			end
+			card.fill.Size = UDim2.fromScale(level / track.cap, 1)
+			card.fill.Visible = level > 0
 			local now = `Now: {Mastery.describe(track.id, level)}`
 			if level >= track.cap then
 				row.sub.Text = now .. "\nFully mastered"
@@ -148,6 +160,9 @@ local function start(ctx)
 				setButton(row.button, "COMING\nSOON", Colors.grey)
 			elseif not unlocked then
 				setButton(row.button, "LOCKED", Colors.grey)
+			elseif Mastery.missing(saved, track.id) then
+				-- Crit Power before Mini Crit: the server would refuse it, so the card says what to buy first.
+				setButton(row.button, `NEEDS\n{string.upper(Mastery.missing(saved, track.id).name)}`, Colors.grey)
 			else
 				setButton(row.button, `BUY\n{Format.abbreviate(cost)} 💎`, if here and gems >= cost then Colors.green else Colors.grey)
 			end

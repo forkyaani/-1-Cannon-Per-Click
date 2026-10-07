@@ -13,7 +13,9 @@ local Mastery = {}
 
 Mastery.WINDOW = "MASTERY"
 Mastery.ISLAND = 3 -- the world whose island has the shrine; mastery opens when that world is reached
-Mastery.SAVED = { levels = {}, spent = 0 } -- data.features.mastery: [track id] = level, and the gems spent
+-- data.features.mastery: [track id] = level, the gems spent, and what Gem Hunter has dropped today
+-- (gemDay is the UTC day number that `gems` counts for).
+Mastery.SAVED = { levels = {}, spent = 0, gemDay = 0, gems = 0 }
 
 -- The window's tabs, in order.
 Mastery.Groups = {
@@ -24,38 +26,61 @@ Mastery.Groups = {
 }
 
 -- The tracks, in the window's order.
+--   id       the key of the saved level. NEVER change or reuse one players own, and only ever raise a cap:
+--            that is all it takes for old saves to keep every level they bought
 --   kind     the modifier it changes (Game.modify), so the STATS window lists it as a source
 --   how      what a level does to that number:
---              "more"  x (1 + per x level)             "less"  x (1 - per x level)
---              "add"   + per x level
---              "slots" + 1 equip slot at each level of `at`
+--              "more"    x (1 + per x level)             "less"  x (1 - per x level): per x cap stays under 1
+--              "add"     + per x level, read as a count (lives, hours, gems)
+--              "points"  + per x level, read as a percentage (a chance or a share that starts near 0:
+--                        0.02 a level is +2% crit chance)
+--              "slots"   + 1 equip slot at each level of `at`
 --   cap      the last level
 --   base, growth   the gem price of level n is base x growth ^ (n - 1), rounded to 5
 --   text     how the effect reads; %s is the amount
--- Everything maxed: x2 tower damage from Attack, x1.3 mini cannon damage from Bond, x1.3 fire rate, +20% range, x1.5 coins,
--- upgrades 20% cheaper. A track costs 2,400 to 7,500 gems; a free player earns about 100 a day and has
--- about a third of one group by the last world (docs/BALANCE.md): the sizes are half the first draft's,
--- so that a player who skips the shrine is not left several times behind one who does not.
--- Offline raises the hours of offline earnings (Features/Offline.luau; the `offlineCap` modifier, in hours):
--- 8 hours becomes 12 with the track maxed. The share that is paid stays what it is.
+--   perDay   (Gem Hunter) the gems a level may drop per UTC day: a faucet must cap itself (docs/GEMS.md)
+--   needs    the id of a track that must have a level first: without it this one would do nothing (Crit Power
+--            multiplies crits, and there are none before Mini Crit). Only the first purchase asks; a level
+--            already in a save keeps counting
+--
+-- The rework of 7 Oct (docs/BALANCE.md 5c has the table): a maxed track is worth several times what it was
+-- (Attack x7, not x2), caps are 16 to 50 levels instead of 4 to 20, and the price curve is much flatter
+-- (growth 1.08 to 1.2, not 1.4) so the last level of a track costs 1,000 to 3,000 gems instead of the
+-- hundreds of thousands the old curve would ask at level 30. A free player earns about 100 gems a day: the
+-- first levels (40 to 150 gems) are a day's play each, the last ones weeks.
+--
+-- What stayed, and why:
+--   Lives is still +5. A whole ordinary level leaking costs 20 lives, so past 20 lives no ordinary level can
+--   be lost: this is the one track that must not grow.
+--   Fire Rate stops at x2: the core stops `towerRate` at x10 for every source together.
+--   Discount is still 2% a level (a saved Discount X is still 20% cheaper); 30 levels are 60%, well above the
+--   core's floor (upgrades never cost less than a tenth).
+--   Slots keeps its first slots at levels 3, 6 and 9, so a saved level still gives what it gave.
+--
+-- "rapid" was Rapid: +5% mini cannon shots a level, which did nothing once mini cannon damage became flat
+-- (more shots of less damage). It is Mini Crit now, under the same id, so every level a player bought counts.
 Mastery.Tracks = {
-	{ id = "attack", group = "tower", name = "Attack", kind = "power", how = "more", per = 0.05, cap = 20, base = 40, growth = 1.2, text = "+%s%% tower damage" },
-	{ id = "rate", group = "tower", name = "Fire Rate", kind = "towerRate", how = "more", per = 0.03, cap = 10, base = 60, growth = 1.4, text = "+%s%% tower fire rate" },
-	{ id = "range", group = "tower", name = "Range", kind = "towerRange", how = "more", per = 0.02, cap = 10, base = 40, growth = 1.4, text = "+%s%% tower range" },
-	{ id = "boss", group = "tower", name = "Boss Damage", kind = "bossDamage", how = "more", per = 0.05, cap = 10, base = 50, growth = 1.4, text = "+%s%% damage to bosses" },
+	{ id = "attack", group = "tower", name = "Attack", kind = "power", how = "more", per = 0.12, cap = 50, base = 60, growth = 1.08, text = "+%s%% tower damage" },
+	{ id = "rate", group = "tower", name = "Fire Rate", kind = "towerRate", how = "more", per = 0.04, cap = 25, base = 60, growth = 1.15, text = "+%s%% tower fire rate" },
+	{ id = "range", group = "tower", name = "Range", kind = "towerRange", how = "more", per = 0.02, cap = 25, base = 40, growth = 1.15, text = "+%s%% tower range" },
+	{ id = "boss", group = "tower", name = "Boss Damage", kind = "bossDamage", how = "more", per = 0.1, cap = 30, base = 50, growth = 1.13, text = "+%s%% damage to bosses" },
+	{ id = "crit", group = "tower", name = "Tower Crit", kind = "towerCrit", how = "points", per = 0.01, cap = 30, base = 60, growth = 1.13, text = "%s%% of tower shots crit (x2 damage)" },
 
-	-- Bond grew the mini cannons' bonus while that multiplied tower damage; it grows their damage per second now.
-	{ id = "bond", group = "mini", name = "Bond", kind = "petDps", how = "more", per = 0.03, cap = 10, base = 60, growth = 1.4, text = "+%s%% mini cannon DPS" },
-	{ id = "rapid", group = "mini", name = "Rapid", kind = "petShots", how = "more", per = 0.05, cap = 10, base = 40, growth = 1.4, text = "+%s%% mini cannon shots" },
-	{ id = "slots", group = "mini", name = "Slots", kind = "equipSlots", how = "slots", at = { 3, 6, 9 }, cap = 9, base = 150, growth = 1.35, text = "+%s equip slots" },
+	{ id = "bond", group = "mini", name = "Bond", kind = "petDps", how = "more", per = 0.1, cap = 40, base = 60, growth = 1.1, text = "+%s%% mini cannon DPS" },
+	{ id = "rapid", group = "mini", name = "Mini Crit", kind = "petCrit", how = "points", per = 0.02, cap = 25, base = 40, growth = 1.15, text = "%s%% of mini cannon shots crit" },
+	{ id = "critpower", group = "mini", name = "Crit Power", kind = "petCritDamage", how = "more", needs = "rapid", per = 0.05, cap = 20, base = 60, growth = 1.17, text = "+%s%% mini cannon crit damage" },
+	{ id = "slots", group = "mini", name = "Slots", kind = "equipSlots", how = "slots", at = { 3, 6, 9, 14, 20 }, cap = 20, base = 150, growth = 1.17, text = "+%s equip slots" },
 
-	{ id = "coins", group = "economy", name = "Coins", kind = "coins", how = "more", per = 0.05, cap = 10, base = 60, growth = 1.4, text = "+%s%% coins per kill" },
-	{ id = "luck", group = "economy", name = "Luck", kind = "luck", how = "more", per = 0.05, cap = 10, base = 50, growth = 1.4, text = "+%s%% egg luck" },
-	{ id = "discount", group = "economy", name = "Discount", kind = "upgradeCost", how = "less", per = 0.02, cap = 10, base = 40, growth = 1.4, text = "tower upgrades %s%% cheaper" },
+	{ id = "coins", group = "economy", name = "Coins", kind = "coins", how = "more", per = 0.1, cap = 30, base = 60, growth = 1.13, text = "+%s%% coins per kill" },
+	{ id = "luck", group = "economy", name = "Luck", kind = "luck", how = "more", per = 0.05, cap = 30, base = 50, growth = 1.13, text = "+%s%% egg luck" },
+	{ id = "discount", group = "economy", name = "Discount", kind = "upgradeCost", how = "less", per = 0.02, cap = 30, base = 40, growth = 1.13, text = "tower upgrades %s%% cheaper" },
+	{ id = "crates", group = "economy", name = "Crate Finder", kind = "crateDrops", how = "more", per = 0.04, cap = 25, base = 50, growth = 1.15, text = "+%s%% crate drops from bosses" },
+	{ id = "gems", group = "economy", name = "Gem Hunter", kind = "gems", how = "add", per = 0.1, perDay = 3, cap = 20, base = 80, growth = 1.15, text = "bosses drop +%s gems" },
 
 	{ id = "lives", group = "survival", name = "Lives", kind = "lives", how = "add", per = 1, cap = 5, base = 150, growth = 1.6, text = "+%s lives per level" },
-	{ id = "slow", group = "survival", name = "Slow", kind = "monsterSpeed", how = "less", per = 0.01, cap = 10, base = 50, growth = 1.4, text = "monsters walk %s%% slower" },
-	{ id = "offline", group = "survival", name = "Offline", kind = "offlineCap", how = "add", per = 1, cap = 4, base = 300, growth = 1.6, text = "+%s hours of offline earnings" },
+	{ id = "slow", group = "survival", name = "Slow", kind = "monsterSpeed", how = "less", per = 0.01, cap = 30, base = 50, growth = 1.13, text = "monsters walk %s%% slower" },
+	{ id = "offline", group = "survival", name = "Offline", kind = "offlineCap", how = "add", per = 1, cap = 16, base = 150, growth = 1.2, text = "+%s hours of offline earnings" },
+	{ id = "nightshift", group = "survival", name = "Night Shift", kind = "offlineShare", how = "points", per = 0.01, cap = 25, base = 60, growth = 1.15, text = "offline pays +%s%% of your earnings" },
 }
 
 Mastery.byId = {}
@@ -67,8 +92,12 @@ local ROMAN = {
 	{ 10, "X" }, { 9, "IX" }, { 5, "V" }, { 4, "IV" }, { 1, "I" },
 }
 
--- 4 -> "IV". Levels stay under 40.
+-- 4 -> "IV". There is no roman numeral here past XXXIX: from 40 on the level is written as a plain number.
 function Mastery.roman(n: number): string
+	if typeof(n) ~= "number" or n ~= n or n < 1 or n >= 40 then
+		return tostring(n)
+	end
+	n = math.floor(n)
 	local text = ""
 	for _, pair in ROMAN do
 		while n >= pair[1] do
@@ -95,6 +124,14 @@ function Mastery.level(saved, id: string): number
 		return 0
 	end
 	return math.clamp(math.floor(level), 0, track.cap)
+end
+
+-- The track that must be bought first, when this one would do nothing without it and it has no level yet.
+-- Nil when the track can be bought as far as that goes.
+function Mastery.missing(saved, id: string)
+	local track = Mastery.byId[id]
+	local needs = track and track.needs and Mastery.byId[track.needs]
+	return if needs and Mastery.level(saved, needs.id) <= 0 then needs else nil
 end
 
 -- The gem price of buying level `level` of a track (1 = the first). Nil past the cap or for an unknown track.
@@ -137,7 +174,8 @@ function Mastery.nextSlot(level: number): number?
 	return nil
 end
 
--- The amount a level is worth, as the window writes it: a percentage, or a count for lives and slots.
+-- The amount a level is worth, as the window writes it: a percentage, or a count for lives, hours, gems and
+-- slots.
 function Mastery.amount(id: string, level: number): number
 	local track = Mastery.byId[id]
 	if not track then
@@ -145,9 +183,15 @@ function Mastery.amount(id: string, level: number): number
 	elseif track.how == "slots" then
 		return Mastery.slots(level)
 	elseif track.how == "add" then
-		return track.per * level
+		return math.floor(track.per * level * 100 + 0.5) / 100
 	end
 	return math.floor(track.per * level * 1000 + 0.5) / 10 -- a percentage with one decimal
+end
+
+-- The gems Gem Hunter may drop in one UTC day at that level. 0 for a track without a daily limit.
+function Mastery.perDay(id: string, level: number): number
+	local track = Mastery.byId[id]
+	return if track and track.perDay then track.perDay * math.max(0, level) else 0
 end
 
 -- "+30% tower damage". Level 0 reads "No bonus yet".
@@ -166,6 +210,10 @@ function Mastery.describe(id: string, level: number): string
 		text = string.gsub(text, "slots", "slot") -- "+1 equip slot"
 		text = string.gsub(text, "lives", "life")
 		text = string.gsub(text, "hours", "hour")
+		text = string.gsub(text, "gems", "gem")
+	end
+	if track.perDay then
+		text ..= ` (up to {Mastery.perDay(id, level)} a day)`
 	end
 	return text
 end
@@ -187,8 +235,8 @@ function Mastery.apply(id: string, level: number, value: number, state): number
 	if how == "more" then
 		return value * (1 + track.per * level)
 	elseif how == "less" then
-		return value * (1 - track.per * level)
-	elseif how == "add" then
+		return value * math.max(0, 1 - track.per * level) -- never below nothing, whatever a table says
+	elseif how == "add" or how == "points" then
 		return value + track.per * level
 	elseif how == "slots" then
 		return value + Mastery.slots(level)

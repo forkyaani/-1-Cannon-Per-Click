@@ -74,7 +74,7 @@ Each tier keeps the perks below it. Numbers live in `Config.FuseTiers`; the perk
 
 | Tier | Power | Perk |
 |---|---|---|
-| Silver | x3.5 | Rapid Fire: fires twice as fast |
+| Silver | x3.5 | Overcharge: +25% of its own DPS |
 | Gold | x12 | Coin Magnet: +25% coins per equipped Gold or better |
 | Diamond | x40 | Heal Block: monsters heal 20% slower per equipped Diamond (never below 20% of normal) |
 

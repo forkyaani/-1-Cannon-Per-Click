@@ -74,7 +74,7 @@ with each level. Saved under `Game.feature(data, "mastery")`.
 | Tower | Range | +range |
 | Tower | Boss damage | +damage to bosses |
 | Mini cannon | Bond | +mini cannon bonus |
-| Mini cannon | Rapid | faster mini cannon shots |
+| Mini cannon | Mini Crit (was Rapid) | chance that a mini cannon shot crits |
 | Mini cannon | Slots | +1 equip slot at set levels |
 | Economy | Coins | +coins per kill |
 | Economy | Luck | +egg luck |
@@ -253,9 +253,9 @@ market", then: remove Quick Draw.
 - Bond (mastery and enchantment) grows mini cannon DPS. Long Shot is +3 / 6 / 10% mini cannon DPS. Quick Draw
   is removed: 19 enchantments, and old ids that carry it still load and ignore it.
 - Every monster's HP bar shows its health in numbers; so does the level panel's boss line.
-- **Open, for Yaani:** Mastery Rapid (+5% mini cannon shots a level, bought with gems) is cosmetic now, like
-  Quick Draw was: remove and refund, or give it a new meaning. The fused Silver tier's Rapid Fire perk is
-  cosmetic too. The balance was not retuned and the pacing has to be measured again (`docs/BALANCE.md`, 3b).
+- **Decided on 7 Oct:** Mastery Rapid, cosmetic like Quick Draw was, is Mini Crit now (a crit chance for mini
+  cannon shots; the levels bought count) and the fused Silver tier's Rapid Fire perk is Overcharge (+25% of
+  that mini cannon's DPS). `docs/BALANCE.md`, 5c. The balance was not retuned and the pacing has to be measured again (`docs/BALANCE.md`, 3b).
   `src/client/Market.luau` (another session's file) was not touched and needed nothing: the egg stands only
   write hatch odds, never a mini cannon's strength.
 - Files: `Config.luau`, `Format.luau`, `Game.luau`, `Field.luau`, the Enchant, Mastery, Stats, Offline, Huge,

@@ -139,9 +139,11 @@ fifth world after 600 hours: the eggs' share of the growth was gone from the sec
 (the paragraph at the top of this file) is the answer to that, and sections 1, 3 and 4 are measured with it.
 
 What still stands from that change: the Bond track and enchantment, Long Shot, the set bonus and Secrets all
-scale flat DPS, so they are worth far less than their prices assumed, and nobody has repriced them. Mastery
-Rapid and the Silver tier's Rapid Fire are cosmetic. A mini cannon's fused perks (Coin Magnet, Heal Block) and
-enchantments are unchanged.
+scale flat DPS, so they are worth far less than their prices assumed, and nobody has repriced them. Since 7 Oct
+neither is dead any more: Mastery Rapid is Mini Crit (a crit chance for mini cannon shots, section 5c) and the
+Silver tier's Rapid Fire is Overcharge, +25% of that mini cannon's own DPS, kept by Gold and Diamond. That
+raises every fused mini cannon's DPS by a quarter, so the pace of section 1 has to be fitted again. A mini
+cannon's other fused perks (Coin Magnet, Heal Block) and enchantments are unchanged.
 
 ## 4. The knife's edge
 
@@ -217,28 +219,53 @@ script of that session that is not in the repository. Until `model.py` is brough
 ## 5c. Mastery (queue 3) and the game speed
 
 Bought with gems at the Mars island's shrine; every number is in `src/shared/Features/Mastery.luau`. The gem
-price of level n is `base x growth ^ (n - 1)`, rounded to 5.
+price of level n is `base x growth ^ (n - 1)`, rounded to 5. Reworked on 7 Oct: stronger tracks, more levels,
+five new tracks, a much flatter price curve (growth 1.08 to 1.2; it was 1.4, which would ask 691,000 gems for
+a level 30).
 
-| Group | Track | Per level | Levels | Gems in all |
-|---|---|---|---|---|
-| Tower | Attack | +10% damage (`power`) | 20 | 7,475 |
-| Tower | Fire Rate | +5% | 10 | 4,190 |
-| Tower | Range | +2.5% | 10 | 2,790 |
-| Tower | Boss Damage | +5% | 10 | 3,490 |
-| Mini cannon | Bond | +3% mini cannon DPS (since 5 Oct; it was their bonus as a tower multiplier) | 10 | 4,190 |
-| Mini cannon | Rapid | +5% mini cannon shots | 10 | 2,790 |
-| Mini cannon | Slots | +1 equip slot at levels 3, 6, 9 | 9 | 5,965 |
-| Economy | Coins | +10% | 10 | 4,190 |
-| Economy | Luck | +5% | 10 | 3,490 |
-| Economy | Discount | upgrades 3% cheaper | 10 | 2,790 |
-| Survival | Lives | +1 life | 5 | 2,375 |
-| Survival | Slow | monsters 1.5% slower | 10 | 3,490 |
-| Survival | Offline | +1 hour of offline earnings (8 hours to 12) | 4 | 2,780 |
+| Group | Track | Per level | Levels | Maxed | Before 7 Oct | First / last level | Gems in all |
+|---|---|---|---|---|---|---|---|
+| Tower | Attack | +12% tower damage (`power`) | 50 | x7 | x2 (20 levels) | 60 / 2,605 | 34,430 |
+| Tower | Fire Rate | +4% | 25 | x2 | x1.3 (10) | 60 / 1,720 | 12,780 |
+| Tower | Range | +2% | 25 | +50% | +20% (10) | 40 / 1,145 | 8,510 |
+| Tower | Boss Damage | +10%, towers and mini cannons | 30 | x4 | x1.5 (10) | 50 / 1,730 | 14,650 |
+| Tower | Tower Crit (new) | +1% chance of a double shot | 30 | 30%: +30% on average | - | 60 / 2,075 | 17,590 |
+| Mini cannon | Bond | +10% mini cannon DPS | 40 | x5 | x1.3 (10) | 60 / 2,470 | 26,550 |
+| Mini cannon | Mini Crit (was Rapid, same id) | +2% chance of a crit | 25 | 50%: +50% on average | did nothing (10) | 40 / 1,145 | 8,510 |
+| Mini cannon | Crit Power (new; needs Mini Crit) | +5% crit damage | 20 | crits x4, not x2 | - | 60 / 1,185 | 7,790 |
+| Mini cannon | Slots | +1 equip slot at levels 3, 6, 9, 14, 20 | 20 | +5 slots | +3 (9) | 150 / 2,960 | 19,495 |
+| Economy | Coins | +10% | 30 | x4 | x1.5 (10) | 60 / 2,075 | 17,590 |
+| Economy | Luck | +5% | 30 | x2.5 | x1.5 (10) | 50 / 1,730 | 14,650 |
+| Economy | Discount | upgrades 2% cheaper (as before) | 30 | 60% cheaper | 20% (10) | 40 / 1,385 | 11,735 |
+| Economy | Crate Finder (new) | +4% crate drops from bosses | 25 | x2 | - | 50 / 1,430 | 10,640 |
+| Economy | Gem Hunter (new) | bosses drop +0.1 gem, at most 3 a day | 20 | +2 a boss, 60 a day | - | 80 / 1,140 | 8,190 |
+| Survival | Lives | +1 life | 5 | +5 | the same | 150 / 985 | 2,375 |
+| Survival | Slow | monsters 1% slower | 30 | 30% slower | 10% (10) | 50 / 1,730 | 14,650 |
+| Survival | Offline | +1 hour of offline earnings | 16 | 8 hours to 24 | to 12 (4) | 150 / 2,310 | 13,115 |
+| Survival | Night Shift (new) | +1% of offline earnings paid | 25 | 75% paid, not 50% | - | 60 / 1,720 | 12,780 |
 
-Everything maxed is x3 damage from Attack and up to x1.3 from Bond, x1.5 fire rate, +25% range, x2 coins, three
-more mini cannons: 47,225 gems, against roughly 100 a day for a free player. The simulated player buys mastery
-with the gems they earn (in the 6 Oct runs about 1,500 gems in a whole game: Attack 6, and one to three levels
-of seven other tracks), so section 1 includes it. Nobody has run a player with more gems than that.
+All 18 maxed: 256,030 gems (about 50,000 before), against roughly 100 a day for a free player. First levels
+cost a day of play, last levels two to four weeks: there is always a next level to buy.
+
+- **Everything maxed** is about x18 tower DPS (x7 x x2 x x1.3), x4 more on bosses, and x12.5 mini cannon DPS
+  (x5 x x2.5) before the two extra slots. A maxed player is far ahead of one who skips the shrine: the next
+  fit of the pace should assume a player in the middle of the tracks, not one at either end.
+- **Lives did not grow, on purpose.** A whole ordinary level leaking costs 20 lives, so past 20 lives no
+  ordinary level can be lost. (10 + Lives 5 + Guardian III on three mini cannons is already 24: that needs a
+  fix of its own.)
+- **Fire Rate stops at x2**: the core stops `towerRate` at x10 for every source together.
+- **Gem Hunter is a faucet**, which `docs/GEMS.md` says never to raise. It caps itself at 3 gems a level per
+  day, so 60 a day maxed against the free 100, and level 1 pays for itself in about 27 days. Lower `perDay` or
+  remove the track if that is too much.
+- **Luck** maxed is x2.5, x7.5 with the x3 Luck pass. A Huge's odds do not follow luck.
+- **Old levels cost less now.** The first 10 levels of an old track cost 740 to 1,220 gems instead of 2,790
+  to 4,190. Levels bought keep counting, and are stronger than they were; nobody was refunded the difference.
+- **Not built:** hatch speed (the game has no hatch timer), boss rewards (no such modifier), and a
+  slower-healing track (only 4 of the 12 worlds heal, so it would look dead in the other 8).
+- **Checked** by `tools/emu/tests/mastery.luau`: every track is bought and what it did measured in the game.
+
+The simulator of section 1 bought mastery with the old table (in the 6 Oct runs about 1,500 gems in a whole
+game), so its times are from before this rework, and before Overcharge.
 
 **Game speed** (1x, 2x, 3x; `setSpeed`) runs the whole fight of a plot that many times as fast, in real time:
 the times in section 1 are real time at 3x (1x for the first ten levels). Since 6 Oct 2x is free and 3x is the

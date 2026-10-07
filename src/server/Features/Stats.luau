@@ -22,7 +22,7 @@ local BIG = 1e300 -- numbers past this are sent as this: JSON has no infinity
 --   kinds     the derived numbers it lists (Game.breakdown), in the order they multiply. Two kinds make one
 --             section when the game multiplies them together: the total is their product
 --   unit      how the total reads: "x" a multiplier, "count" a whole number, "rate" per second,
---             "share" a percentage per second
+--             "share" a percentage per second, "chance" a percentage (its sources add points: "+12%")
 --   add       [kind] = true for a kind whose sources add (lives, slots): the line says "+2", not "x1.2"
 --   lowGood   a lower number is the better one (monster speed, prices)
 --   extra     listed only while something changes it
@@ -31,12 +31,16 @@ local SECTIONS = {
 	{ id = "rate", name = "FIRE RATE", unit = "x", kinds = { "towerRate" } },
 	{ id = "range", name = "RANGE", unit = "x", kinds = { "towerRange" } },
 	{ id = "boss", name = "BOSS DAMAGE", unit = "x", kinds = { "bossDamage" } },
+	-- Crits (the core rolls them): a tower's is double damage; a mini cannon's is worth its crit damage.
+	{ id = "towerCrit", name = "TOWER CRIT CHANCE", unit = "chance", kinds = { "towerCrit" }, add = { towerCrit = true }, extra = true },
 	{ id = "coins", name = "COINS", unit = "x", kinds = { "coins" } },
 	{ id = "luck", name = "LUCK", unit = "x", kinds = { "luck" } },
 	{ id = "lives", name = "LIVES", unit = "count", kinds = { "lives" }, add = { lives = true } },
 	{ id = "speed", name = "MONSTER SPEED", unit = "x", kinds = { "monsterSpeed" }, lowGood = true },
 	-- The mini cannons' own damage per second: a line per mini cannon, then what features add to it.
 	{ id = "petDps", name = "MINI CANNON DPS", unit = "rate", kinds = { "petDps" }, add = { petDps = true } },
+	{ id = "petCrit", name = "MINI CANNON CRIT CHANCE", unit = "chance", kinds = { "petCrit" }, add = { petCrit = true }, extra = true },
+	{ id = "petCritDamage", name = "MINI CANNON CRIT DAMAGE", unit = "x", kinds = { "petCritDamage" }, extra = true },
 	{ id = "shots", name = "MINI CANNON SHOTS", unit = "rate", kinds = { "autoShots", "petShots" }, add = { autoShots = true } },
 	{ id = "petRange", name = "MINI CANNON RANGE", unit = "x", kinds = { "petRange" }, extra = true },
 	{ id = "slots", name = "EQUIP SLOTS", unit = "count", kinds = { "equipSlots" }, add = { equipSlots = true } },
@@ -133,7 +137,8 @@ local function snapshot(Game, player: Player, data, state)
 	end
 
 	-- Cannon Power, as the core counts it: every tower's damage x rate, x the power multiplier x the fire rate,
-	-- plus the mini cannons' own damage per second, which no multiplier of the towers touches.
+	-- plus the mini cannons' own damage per second, which no multiplier of the towers touches. Crits are in
+	-- both halves as what they add on average (Game.critMean).
 	-- (The per-shot `damage` modifiers are not in it: the game does not count them in either.)
 	local power = Game.value(player, "power")
 	local rate = Game.value(player, "towerRate")
@@ -142,8 +147,10 @@ local function snapshot(Game, player: Player, data, state)
 	for _, tower in state.towerList do
 		baseDps += tower.base * tower.def.rate
 	end
-	local towerPower = baseDps * power * rate
-	local petPower = Game.value(player, "petDps")
+	local towerCrit, petCrit = Game.critMean(player)
+	local towerPower = baseDps * power * rate * towerCrit
+	local petOwn = Game.value(player, "petDps") -- before crits
+	local petPower = petOwn * petCrit
 	local cannonPower = towerPower + petPower
 	-- The chain, written out: the towers' own damage per second, then every source of the power multiplier,
 	-- then every source of the fire rate. `value` is the towers' damage per second after that source; the last
@@ -155,12 +162,19 @@ local function snapshot(Game, player: Player, data, state)
 	for _, source in byKind.towerRate do
 		table.insert(chain, { label = source.label, left = source.left, mult = source.mult, value = finite(baseDps * power * (source.value or 0)) })
 	end
+	-- Tower crits, one line per source of the chance: what it makes of the damage on average.
+	local critBefore = 1
+	for _, source in byKind.towerCrit do
+		local after = 1 + math.clamp(source.value or 0, 0, 1) * (Config.CritDamage - 1)
+		table.insert(chain, { label = `{source.label} (crits)`, left = source.left, mult = finite(after / critBefore), value = finite(baseDps * power * rate * after) })
+		critBefore = after
+	end
 
 	local towers = {}
 	for _, tower in state.towerList do
 		local damage = tower.base * power
 		local shots = tower.def.rate * rate
-		local dps = damage * shots
+		local dps = damage * shots * towerCrit
 		table.insert(towers, {
 			pad = tower.pad,
 			kind = tower.kind,
@@ -187,6 +201,22 @@ local function snapshot(Game, player: Player, data, state)
 	for index, source in byKind.petDps do
 		if index > #petLines and source.label ~= LIMIT_LABEL then
 			table.insert(petBonuses, { label = source.label, left = source.left, mult = source.mult, add = source.add, value = source.value })
+		end
+	end
+
+	-- Mini cannon crits: what they add on average, shared out over the sources of the chance.
+	local critAdded, chanceAdded = petPower - petOwn, 0
+	for _, source in byKind.petCrit do
+		chanceAdded += math.max(0, source.add or 0)
+	end
+	if critAdded > 0 and chanceAdded > 0 then
+		local running = petOwn
+		for _, source in byKind.petCrit do
+			local add = critAdded * math.max(0, source.add or 0) / chanceAdded
+			if add > 0 then
+				running += add
+				table.insert(petBonuses, { label = `{source.label} (crits)`, left = source.left, mult = nil, add = finite(add), value = finite(running) })
+			end
 		end
 	end
 

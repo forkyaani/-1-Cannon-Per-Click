@@ -109,7 +109,7 @@ Gems are the one currency that survives everything. Rebirths wipe coins. Events 
 | Mini cannon slot | +1 equip slot | 3 | 250 · 750 · 2,000 | 3,000 | One more mini cannon's whole bonus and one more auto shot a second (C) |
 | Lucky Hatch | +10% luck on Rare and better | 10 | 150 → 5,800 | 16,980 | Legendary 0.5% → 1%. Every new egg and every Diamond fuse (27 copies) needs it again |
 | Extra Time | +1 second on every wave timer | 10 | 100 → 3,800 | 11,280 | Every wall is a timer (30–45 s, C) |
-| Rapid Minis | +5% mini cannon fire rate | 10 | 120 → 4,600 | 13,690 | AFK damage, at every stage |
+| Rapid Minis | +5% mini cannon fire rate (would do nothing now that mini cannon damage is flat: built as Mastery Mini Crit, `docs/BALANCE.md` 5c) | 10 | 120 → 4,600 | 13,690 | AFK damage, at every stage |
 | Bounty | +10% coins | 10 | 100 → 3,800 | 11,280 | Each rebirth resets coins and the cannon (C) |
 | Deep Pockets | +25 storage | 4 | 200 · 400 · 800 · 1,600 | 3,000 | One Diamond fuse needs 27 copies. Storage is 50 (C) |
 

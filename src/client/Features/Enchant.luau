@@ -231,7 +231,7 @@ local function start(ctx)
 			shownCounts = counts
 			-- Strongest first; equal ones by id, so the list keeps its order.
 			table.sort(ids, function(a, b)
-				local bonusA, bonusB = Config.Pets[a].bonus, Config.Pets[b].bonus
+				local bonusA, bonusB = Config.Pets[a].strength, Config.Pets[b].strength
 				return if bonusA == bonusB then a < b else bonusA > bonusB
 			end)
 			local owned = {}

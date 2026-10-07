@@ -710,6 +710,7 @@ Config.MaxEquipped = 3
 Config.MaxExtraSlots = 3
 Config.MaxPets = 50
 Config.AutoShotsPerPet = 1 -- automatic shots per second from each equipped mini cannon
+Config.CritDamage = 2 -- what a crit multiplies a shot by (the `towerCrit`, `petCrit` and `petCritDamage` modifiers of the core)
 
 Config.RarityColors = {
 	Common = rgb(190, 190, 190),
@@ -1033,24 +1034,24 @@ end
 -- id is part of the saved pet ids (wooden_silver), so never change the id of a tier players already own.
 -- bonus multiplies the base mini cannon's bonus (and so its DPS). color is the trim on its model and in the inventory.
 -- Each tier adds a perk and keeps the perks of the tiers below it:
---   fireRate   that mini cannon auto-fires this many times as fast, in shots that are as much smaller: its
---              damage per second stays what it is
+--   dpsBonus   that mini cannon's own damage per second is multiplied by this (1.25 = +25%), on top of the
+--              tier's bonus. (It was fireRate = 2 until 7 Oct: twice the shots of half the size, so nothing.)
 --   coinBonus  extra coins from monsters (0.25 = +25%), added up over the equipped mini cannons
 --   healCut    how much slower monsters heal (0.2 = 20%), multiplied over the equipped mini cannons
 ----------------------------------------------------------------------------------------------------
 Config.FuseCount = 3
 Config.MinHealShare = 0.2 -- healCut never takes healing below this share of the wave's normal rate
 Config.FuseTiers = {
-	{ id = "silver", name = "Silver", bonus = 3.5, color = rgb(205, 212, 224), perk = "Rapid Fire", fireRate = 2 },
+	{ id = "silver", name = "Silver", bonus = 3.5, color = rgb(205, 212, 224), perk = "Overcharge", dpsBonus = 1.25 },
 	{ id = "gold", name = "Gold", bonus = 12, color = rgb(255, 205, 60), perk = "Coin Magnet", coinBonus = 0.25 },
 	{ id = "diamond", name = "Diamond", bonus = 40, color = rgb(110, 230, 255), perk = "Heal Block", healCut = 0.2 },
 }
 
--- What a tier's own perk does, in a few words: "fires 2x as fast".
+-- What a tier's own perk does, in a few words: "+25% DPS".
 function Config.perkText(tier): string
 	local parts = {}
-	if tier.fireRate then
-		table.insert(parts, `fires {tier.fireRate}x as fast`)
+	if tier.dpsBonus then
+		table.insert(parts, `+{math.floor((tier.dpsBonus - 1) * 100 + 0.5)}% DPS`)
 	end
 	if tier.coinBonus then
 		table.insert(parts, `+{math.floor(tier.coinBonus * 100 + 0.5)}% coins`)
@@ -1069,9 +1070,13 @@ local baseIds = {}
 for id, pet in Config.Pets do
 	pet.tier, pet.base, pet.perks = if pet.huge then -1 else 0, id, {}
 	pet.plain = id -- the id without enchantments (see "Enchanted mini cannons" below)
-	pet.fireRate, pet.coinBonus, pet.healCut = 1, 0, 0
+	pet.fireRate, pet.dpsBonus, pet.coinBonus, pet.healCut = 1, 1, 0, 0
 	-- Its own damage per second. A Huge's depends on what is equipped beside it (Config.petDpsList): nil here.
 	pet.dps = if pet.huge then nil else pet.bonus * Config.PetDps
+	-- What "the strongest" goes by wherever mini cannons are ranked (Config.equippedPets, a full storage, the
+	-- inventory lists): `bonus` with the fuse perk's own DPS in it, so the order is the order of `dps`.
+	-- Infinite for a Huge, like its bonus.
+	pet.strength = pet.bonus
 	if not pet.huge then
 		table.insert(baseIds, id)
 	end
@@ -1083,18 +1088,21 @@ for _, baseId in baseIds do
 		local id = `{baseId}_{tier.id}`
 		local perks = table.clone(below.perks)
 		table.insert(perks, tier.perk)
+		local dpsBonus = tier.dpsBonus or below.dpsBonus
 		Config.Pets[id] = {
 			short = base.short, -- unchanged, so the set bonus still finds the matching cannon
 			name = `{tier.name} {base.name}`,
 			rarity = base.rarity,
 			bonus = base.bonus * tier.bonus,
-			dps = base.bonus * tier.bonus * Config.PetDps,
+			dps = base.bonus * tier.bonus * Config.PetDps * dpsBonus, -- `bonus` stays the tier's own: the perk is in `dps` and `strength`
+			strength = base.bonus * tier.bonus * dpsBonus,
 			color = base.color,
 			tier = index,
 			base = baseId,
 			plain = id,
 			perks = perks,
-			fireRate = tier.fireRate or below.fireRate,
+			fireRate = below.fireRate, -- 1: only a Huge fires faster (Features/Huge.luau)
+			dpsBonus = dpsBonus,
 			coinBonus = tier.coinBonus or below.coinBonus,
 			healCut = tier.healCut or below.healCut,
 		}
@@ -1522,7 +1530,7 @@ function Config.equippedPets(petIds: { string }, slots: number): { string }
 		return better(a, b, "power")
 	end)
 	table.sort(others, function(a, b)
-		return better(a, b, "bonus")
+		return better(a, b, "strength") -- not `bonus`: Overcharge's +25% is not in it
 	end)
 	-- One of each Huge, whatever its enchantments: the rest are spares.
 	local firsts, spares, seen = {}, {}, {}
