@@ -133,7 +133,7 @@ LOOKS = {
                    hills=("A662E2", "9A58DA", "8E50D2", "8248C6"), stars=("FFFFFF", "FFE27A", "C8FFF8"), lamp_glow=True, monsters=("6CE0E8", "FFE27A", "B49CFF", "FFFFFF")),
     "Crystal Belt": dict(road="under", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="under", hot="FF4D8F", ember="FFB03D", lair="wood_dark",
                          roof="prism", knob="prism", window="accent", iron="wood_dark", board="1A3480", landmark="geode", cloud="3C78B8", ambient=1.0, fill=3.4, sun=2.9,
-                         stars=("FFFFFF", "ECD8FF", "8CF0E6"), lamp_glow=True,
+                         stars=("FFFFFF", "ECD8FF", "8CF0E6"), lamp_glow=True, hills=("36B6C2", "30AABE", "2A9CB8", "2690B2"),
                          sky=((0.0, "1E4A8C"), (0.36, "101E4A"), (0.47, "24589A"), (0.5, "2E6C9C"), (0.62, "1E4A8C"), (0.8, "101E4A"), (1.0, "101E4A")),
                          monsters=("FF7AD0", "FFD24A", "B46CFF", "FFFFFF")),
     "Robot Factory": dict(road="sand", road_edge="sand_dark", kerb="2C3870", kerb_glow=0.0, band="sand_dark", hot="FF3C3C", ember="FFC21A", lair="under_dark",
@@ -900,6 +900,7 @@ def telescope():
 
 def geode():
     """The Crystal Belt: a giant geode split open, its hollow full of glowing crystals, loose ones beside it."""
+    whole = len(made)
     chunk((3.6, 2.8, 1.7), (0, 2.2, 0.8), ROCK_DARK)
     first = len(made)
     lathe([(0, -3.2), (2.8, -1.9), (3.8, 0.6), (4.3, 0.9), (4.7, 0.2), (4.0, -2.9), (0, -4.6)], ROCK, segments=10, rough=0.2, smooth=False)
@@ -915,6 +916,7 @@ def geode():
     moved(first, Matrix.Translation((0, 0.6, 4.25)) @ Matrix.Rotation(math.radians(32), 4, "X"))
     for x, y, radius, length, lean, colour in ((4.5, -2.8, 0.9, 3.6, (0.3, -0.2, 1), LEAVES[1]), (5.2, -1.5, 0.6, 2.3, (-0.2, 0.3, 1), LEAVES[2]), (-4.7, -2.4, 0.75, 2.9, (-0.35, -0.1, 1), LEAVES[0])):
         prism(radius, length, (x, y, -0.2), lean, colour, roughness=0.12)
+    moved(whole, Matrix.Scale(1.4, 4))  # on the base it has to show from across the plot, next to hills of crystals
 
 
 def robot_arm():
@@ -1638,6 +1640,11 @@ for x, z, size in ((-15.5, 153.8, 1.5), (14.6, 153.8, 1.1)):  # a boulder at its
 for x, z, radius, length, lean, colour in ((-13.0, 151.6, 0.9, 4.6, -0.3, HOT), (-14.6, 151.2, 0.6, 2.8, -0.6, EMBER), (13.4, 151.5, 0.95, 5.0, 0.3, HOT), (15.0, 151.1, 0.6, 3.0, 0.6, EMBER),
                                            (-11.9, 151.0, 0.5, 2.2, 0.1, HOT), (12.2, 150.9, 0.5, 2.4, -0.1, EMBER)):  # crystals beside the portal: they go to Glow
     tube(radius, length, at(x, z, 0), (-lean, 0, 1), colour, tip=0.0, vertices=5, roughness=0.15, emission=0.8)
+if LOOK["landmark"] == "geode":  # Crystal Belt: giant crystals grown through the rock behind the portal, the island's skyline
+    for x, z, y, radius, length, lean, colour in ((-29, 169, 14, 4.2, 30, -0.16, LEAVES[0]), (-45, 165, 8, 3.2, 22, -0.3, LEAVES[1]), (-24, 172, 20, 2.6, 19, 0.2, LEAVES[2]),
+                                                  (31, 171, 14, 4.0, 31, 0.14, LEAVES[1]), (47, 166, 8, 3.2, 21, 0.32, LEAVES[0]), (38, 172, 18, 2.4, 20, -0.12, LEAVES[2]),
+                                                  (-58, 164, 6, 2.2, 15, -0.4, LEAVES[2]), (60, 165, 6, 2.2, 16, 0.4, LEAVES[1])):
+        prism(radius, length, at(x, z, y), (-lean, 0.05, 1), colour, roughness=0.12)
 # The world's name: a flat, empty board where the game writes it (WORLD_SIGN), hung on two beams.
 left, right, low, high = WORLD_SIGN
 sign_x, sign_y, sign_wide, sign_tall = (left + right) / 2, (low + high) / 2, right - left + 1.2, high - low + 0.9
