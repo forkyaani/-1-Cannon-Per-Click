@@ -198,16 +198,16 @@ needs a second pass doubles its job.
 - [x] K8. **[Yaani]** (done 7 Oct: `the_big_bang_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
 - [ ] K9. **[open]** Import the seven islands and look at each in a play test **[S]** · **45 min**
 
-## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
+## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; taken by Yaani on 7 Oct 19:06)
 
-- [ ] L1. **[open]** Base looks for the seven themes in `tools/blender/base.py` (gate, monster portal, backdrop per world; the themes come from K1) · **1 h 00**
-- [ ] L2. **[open]** The Void base: render, check the photos · **20 min**
-- [ ] L3. **[open]** Nebula base: render, check the photos · **20 min**
-- [ ] L4. **[open]** Crystal Belt base: render, check the photos · **20 min**
-- [ ] L5. **[open]** Robot Factory base: render, check the photos · **20 min**
-- [ ] L6. **[open]** Alien Jungle base: render, check the photos · **20 min**
-- [ ] L7. **[open]** Black Hole base: render, check the photos · **20 min**
-- [ ] L8. **[open]** The Big Bang base: render, check the photos · **20 min**
+- [ ] L1. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Base looks for the seven themes in `tools/blender/base.py` (gate, monster portal, backdrop per world; the themes come from K1) · **1 h 00**
+- [ ] L2. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) The Void base: render, check the photos · **20 min**
+- [ ] L3. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Nebula base: render, check the photos · **20 min**
+- [ ] L4. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Crystal Belt base: render, check the photos · **20 min**
+- [ ] L5. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Robot Factory base: render, check the photos · **20 min**
+- [ ] L6. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Alien Jungle base: render, check the photos · **20 min**
+- [ ] L7. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) Black Hole base: render, check the photos · **20 min**
+- [ ] L8. **[Yaani]** (taken: Yaani, 7 Oct 19:06, a workflow) The Big Bang base: render, check the photos · **20 min**
 - [ ] L9. **[open]** Import the seven bases and see each in a play test **[S]** · **45 min**
 
 ## M. Monsters and bosses for worlds 6 to 12 (asked for by Yaani on 7 Oct; NOT started, nobody has it yet)
