@@ -20,14 +20,14 @@ UI.TITLE_FONT = Enum.Font.LuckiestGuy
 UI.Atlases = {
 	a = "rbxassetid://75982409729652",
 	b = "rbxassetid://89091306681120",
-	-- Sheets C to H (docs/ICONS.md, assets/ui/atlas-c.png ...): "" until the image is uploaded to Roblox and its
-	-- id pasted here. An icon on a sheet without an id is simply not drawn, and the old oval shows.
-	c = "",
-	d = "",
-	e = "",
-	f = "",
-	g = "",
-	h = "",
+	-- Sheets C to H (docs/ICONS.md, assets/ui/atlas-c.png ...). A sheet with "" for an id draws no icon, and the old
+	-- oval shows.
+	c = "rbxassetid://103062879865504",
+	d = "rbxassetid://78392187816203",
+	e = "rbxassetid://73148987143993",
+	f = "rbxassetid://92148934171613",
+	g = "rbxassetid://89245700421390",
+	h = "rbxassetid://133537584728505",
 }
 
 local hex = Color3.fromHex
