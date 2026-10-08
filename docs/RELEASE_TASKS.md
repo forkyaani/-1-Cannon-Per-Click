@@ -175,7 +175,8 @@ needs a second pass doubles its job.
   - STORE's gem packs and the rows of MINI CANNONS show a plain coloured disc, not a picture.
   - STATS, VISIT and CODES in the drawer show a letter, not an icon.
   - A tap on a HUD button while a window is open only closes the window; the button needs a second tap.
-  - **Not done:** a new save from level 1 (the tutorial and welcome cards; it needs the test save wiped, which is Victor's to say), hatching and the egg prompts by touch, buying anything, trading, the frame rate, portrait, a real phone
+  - Done 8 Oct 19:15 (d1v), iPhone XR: at the Gem Egg in the marketplace the three prompts (WHAT'S INSIDE?, HATCH, HATCH X3) are tappable and do not overlap; WHAT'S INSIDE? opens LOOT, which fits the screen (the egg's picture there is a plain oval: Q8); HATCH took 60 gems, showed the egg model and the reveal card (Rare, Mini Sapphire Cannon) in the middle of the screen, then gave the prompts back. HATCH X3 not tapped.
+  - **Not done:** a new save from level 1 (the tutorial and welcome cards; it needs the test save wiped, which is Victor's to say), buying anything, trading, the frame rate, portrait, a real phone
 - [ ] I6. **[Yaani]** Publish **[S]** · **5 min**
 
 ## J. Asked for on 7 Oct (Yaani)
