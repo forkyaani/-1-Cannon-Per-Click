@@ -71,6 +71,7 @@ function Feature.start(ctx)
 		row.title.Size = UDim2.new(1, -338, 0, 26)
 		row.sub.Size = UDim2.new(1, -338, 0, 22)
 		row.icon.BackgroundColor3 = Color3.fromHSV(id % 360 / 360, 0.55, 0.95)
+		UI.face(row, id)
 		-- The main button invites them, or sends them home while they are on my base. The second one is JOIN,
 		-- while their own invitation waits.
 		row.second = UI.button({

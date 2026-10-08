@@ -688,6 +688,18 @@ function UI.row(parent: Instance, height: number, order: number)
 	return row
 end
 
+-- A player's face on a row (UI.row), over the coloured oval, which shows until Roblox has sent the picture.
+function UI.face(row, userId: number): ImageLabel
+	return UI.make("ImageLabel", {
+		Name = "Face",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		Image = `rbxthumb://type=AvatarHeadShot&id={userId}&w=150&h=150`,
+		ScaleType = Enum.ScaleType.Crop,
+		Parent = row.icon,
+	}, { UI.make("UICorner", { CornerRadius = UDim.new(0.5, 0) }) })
+end
+
 -- A section heading inside a list.
 function UI.header(parent: Instance, order: number): TextLabel
 	return UI.text({

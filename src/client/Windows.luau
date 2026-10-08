@@ -86,6 +86,7 @@ local REBIRTH_HEIGHT = 136
 local REBIRTH_CONFIRM_SECONDS = 4 -- how long the button waits for the second press
 local rebirthRow = UI.row(worldsList, REBIRTH_HEIGHT, 0)
 rebirthRow.icon.BackgroundColor3 = Colors.gold
+rebirthRow.setIcon("rebirth")
 local rebirthGives = UI.text({
 	Size = UDim2.new(1, -212, 0, 20),
 	Position = UDim2.fromOffset(58, 33),

@@ -51,6 +51,13 @@ local function start(ctx)
 
 	local list = UI.scroll(window.body, { Position = UDim2.fromOffset(0, LIST_TOP), Size = UDim2.new(1, 0, 1, -LIST_TOP) })
 
+	-- Each track's picture (UI.icon); a track not listed shows the mastery star.
+	local TRACK_ICONS = {
+		attack = "power", rate = "speed", range = "ench_reach", boss = "boss", crit = "ench_sharp",
+		bond = "minicannon", rapid = "ench_rapid", critpower = "ench_executioner", slots = "slot",
+		coins = "coin", luck = "luck", discount = "sale", crates = "chest", gems = "gem",
+		lives = "heart", slow = "ench_frostbite", offline = "clock", nightshift = "ench_guardian",
+	}
 	local groupColor = {}
 	for _, group in Mastery.Groups do
 		groupColor[group.id] = group.color
@@ -61,6 +68,7 @@ local function start(ctx)
 	for order, track in Mastery.Tracks do
 		local row = UI.row(list, CARD_HEIGHT, order)
 		row.icon.BackgroundColor3 = groupColor[track.group] or Colors.white
+		row.setIcon(TRACK_ICONS[track.id] or "mastery")
 		row.title.Position = UDim2.fromOffset(TEXT_LEFT, 4)
 		row.title.Size = UDim2.new(1, -212, 0, 24)
 		row.sub.Position = UDim2.fromOffset(TEXT_LEFT, 44)

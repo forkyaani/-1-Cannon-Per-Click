@@ -220,6 +220,7 @@ function Trading.start(ctx)
 		row.title.Size = UDim2.new(1, -276, 0, 26)
 		row.sub.Size = UDim2.new(1, -276, 0, 20)
 		row.icon.BackgroundColor3 = Color3.fromHSV(id % 360 / 360, 0.55, 0.95)
+		UI.face(row, id)
 		row.no = UI.button({
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -150, 0.5, 0),
