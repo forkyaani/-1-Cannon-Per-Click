@@ -4,8 +4,9 @@
                 Secrets and 7 Huges those eggs hide (world_minis.fbx).
   late          the same for worlds 6 to 12 (14 eggs, 70 mini cannons, 28 Secrets), the 10 Secrets of the
                 marketplace's eggs and the last 4 Huges (late_minis.fbx).
+  extras        the 18 mini cannons no egg hatches: crates, shops, events and rewards (extra_minis.fbx).
 
-Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds | late] [from=<row>]
+Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds | late | extras] [from=<row>]
 `from=shadowegg` photographs that row and the ones after it only (every model is still built and exported).
 
 A mini cannon is a rounded creature with big eyes that is still a cannon: wheels, a barrel on its head, a fuse
@@ -1696,12 +1697,196 @@ WORLDS = [
     ("secrets1", None, SECRETS[0:5]), ("secrets2", None, SECRETS[5:10]), ("secrets3", None, SECRETS[10:15]), ("secrets4", None, SECRETS[15:20]),
     ("huges1", None, HUGES[0:4]), ("huges2", None, HUGES[4:7]),
 ]
+# ---------------------------------------------------------------------------------------------------
+# The mini cannons no egg hatches: what crates, shops, events and rewards give (Exclusive and Secret).
+# ---------------------------------------------------------------------------------------------------
+def coins(places, colour=GOLD):
+    for x, y in places:
+        tube(0.26, 0.08, (x, y, 0.05), (0, 0, 1), colour, vertices=10)
+
+
+def x_bonedragon():
+    standard("EBE6D2", "9CFF3A", mood="fierce", barrel_colour="8E8876")
+    horns("FFFFFF", size=1.3)
+    spikes("C9C2A8")
+    wings("C9C2A8", "bat")
+    tail("EBE6D2", tip="C9C2A8", bushy=True)
+    halo(top=3.3, colour="9CFF3A", radius=0.55)
+
+
+def x_calendar():
+    standard(WHITE, "E6463C", shape="tall", barrel_colour="E6463C")
+    box((1.74, 1.64, 0.4), (0, 0, 2.28), "E6463C", bevel=0.1)  # the red strip a calendar's page hangs from
+    for x in (-0.5, 0.5):
+        bpy.ops.mesh.primitive_torus_add(location=(x, -0.5, 2.55), rotation=(0, math.radians(90), 0), major_radius=0.16, minor_radius=0.04, major_segments=10, minor_segments=5)
+        finish(bpy.context.object, "8E949C", roughness=0.2)
+    for x, z in ((-0.5, 0.7), (0, 0.7), (0.5, 0.7)):  # days
+        box((0.26, 0.06, 0.22), (x, FRONT - 0.02, z - 0.25), "DDE6F5", bevel=0.03)
+
+
+def x_candycorn():
+    standard("FFC83C", "8A5A2B", barrel_colour="FF8A1F")
+    bands("FF8A1F", ((0.72, 0),), thickness=0.5)
+    cap(WHITE)
+    horns(WHITE, size=1.0)
+
+
+def x_candyskull():
+    standard("FFEBF5", "FF3CF0", shape="round", barrel_colour="FF8FB8")
+    for index, (x, z) in enumerate(((-0.7, 1.95), (0, 2.12), (0.7, 1.95), (-0.95, 1.0), (0.95, 1.0))):  # sugar flowers
+        ball(0.16, (x, FRONT + 0.25 if abs(x) > 0.8 else FRONT + 0.1, z), ("3FE0FF", "FFE23A", "9CFF3A", "FF3CF0", "FF8A1F")[index], scale=(1, 0.5, 1), emission=0.6)
+    ball(0.09, (0, FRONT - 0.08, 1.0), INK, scale=(1, 0.5, 1.3))
+    halo(top=3.3, colour="FF8FB8", radius=0.55)
+
+
+def x_cauldron():
+    standard("2B2438", "9CFF3A", shape="round", barrel_colour="16131F")
+    bpy.ops.mesh.primitive_torus_add(location=(0, 0, 2.02), major_radius=0.95, minor_radius=0.13, major_segments=18, minor_segments=6)
+    finish(bpy.context.object, "16131F")
+    ball(0.9, (0, 0, 2.0), "3CC85A", scale=(1, 1, 0.2), emission=1.5)  # the brew
+    for x, y, z, r in ((-0.5, -0.3, 2.3, 0.16), (0.55, 0.1, 2.5, 0.12), (-0.1, 0.4, 2.75, 0.1)):
+        ball(r, (x, y, z), "9CFF3A", emission=3)
+
+
+def x_crate():
+    standard("B07C4C", "FFE23A")
+    bands("7A5230", ((0.6, 0), (1.9, 0)), thickness=0.14)
+    for x in (-0.88, 0.88):
+        box((0.16, 1.74, 1.5), (x, 0, 1.25), "7A5230", bevel=0.04)
+    box((0.5, 0.08, 0.5), (0.55, FRONT - 0.02, 0.7), "FFE23A", bevel=0.05, rotation=(0, math.radians(45), 0))
+
+
+def x_dragon():
+    standard("DC321E", "FFE23A", mood="fierce", barrel_colour="7A140C")
+    horns("FFE9A0", size=1.3)
+    spikes("7A140C")
+    wings("7A140C", "bat")
+    tail("DC321E", tip="FFE23A", bushy=True)
+    flames(("FFC83A", "FF7A1E"))
+
+
+def x_fortune():
+    standard("5AFFAA", "FFE23A", shape="round", barrel_colour="1E8A62")
+    tube(0.08, 0.5, (0.6, -0.3, 1.95), (0.2, 0, 1), "1E8A3C", vertices=6)
+    for dx, dz in ((-0.24, 0), (0.24, 0), (0, 0.24), (0, -0.24)):
+        ball(0.26, (0.7 + dx, -0.3, 2.62 + dz), "3CE070", scale=(1, 0.35, 1))
+    coins(((-1.0, 0.5), (1.0, 0.4), (0.3, 1.0)))
+    halo(top=3.4, colour=GOLD, radius=0.55)
+
+
+def x_jackpot():
+    standard("FFD73C", "E6463C", barrel_colour="C98A12")
+    box((1.5, 0.08, 0.5), (0, FRONT - 0.02, 0.55), WHITE, bevel=0.04)  # the reels
+    for x in (-0.45, 0, 0.45):
+        ball(0.14, (x, FRONT - 0.07, 0.55), "E6463C", scale=(1, 0.4, 1))
+    tube(0.07, 1.0, (1.05, 0, 1.2), (0.5, 0, 1), "8E949C", vertices=6)  # the lever
+    ball(0.2, (1.52, 0, 2.12), "E6463C")
+    crown(top=3.02, y=0.1, radius=0.34, gems="E6463C")
+    halo(top=3.55, colour="FFF1B0", radius=0.5)
+
+
+def x_mecha():
+    standard("5A6478", "3FE0FF", mood="fierce", barrel_colour="2B3240")
+    rivets("C9D3E0")
+    antennae("2B3240", "FF3355")
+    for side in (-1, 1):  # shoulder plates and thrusters
+        box((0.5, 1.2, 0.6), (side * 1.15, 0.1, 1.7), "2B3240", bevel=0.1)
+        tube(0.2, 0.5, (side * 1.15, 0.9, 1.2), (0, 1, -0.3), "FF7A2E", tip=0.05, vertices=8, emission=2)
+    box((1.3, 0.08, 0.2), (0, FRONT - 0.02, 0.6), "3FE0FF", bevel=0.03, emission=2)
+
+
+def x_mimic():
+    standard("AA3C46", "FFE23A", mood="fierce", barrel_colour="5A1E24")
+    bands(GOLD, ((0.62, 0),), thickness=0.14)
+    box((0.3, 0.1, 0.36), (0, FRONT - 0.04, 0.62), GOLD, bevel=0.05)
+    box((2.0, 1.8, 0.4), (0, 0.25, 2.05), "5A1E24", bevel=0.12, rotation=(math.radians(-14), 0, 0))  # its lid, ajar
+    for x in (-0.6, -0.3, 0, 0.3, 0.6):
+        tube(0.1, 0.26, (x, FRONT - 0.02, 1.98), (0, 0, -1), WHITE, tip=0.0, vertices=6)
+    ball(0.3, (0.3, FRONT - 0.15, 0.55), "FF8FB8", scale=(0.8, 0.5, 1.2))  # tongue
+
+
+def x_motherlode():
+    standard("FFFAEB", "FFCD3C", shape="round", barrel_colour="C98A12")
+    crystals(GOLD, ((-0.66, 0.15, 1.95, 0.28, 0.9, -0.35), (0.66, 0.15, 1.95, 0.28, 0.9, 0.35), (-1.0, 0.3, 1.2, 0.2, 0.7, -0.9), (1.0, 0.3, 1.2, 0.2, 0.7, 0.9)), emission=0.6)
+    for x, y, r in ((-1.0, -0.5, 0.3), (1.05, -0.3, 0.36), (0.3, 1.05, 0.28), (-0.6, 0.9, 0.24)):
+        ball(r, (x, y, r * 0.6), GOLD, scale=(1.2, 1, 0.7), roughness=0.2)
+    crown(top=3.02, y=0.1, radius=0.34, gems="3FE0FF")
+    halo(top=3.55, colour="FFF1B0", radius=0.5)
+
+
+def x_neon():
+    standard("16131F", "3CFFA0", barrel_colour="2B2438")
+    bands("3CFFA0", ((0.7, 0),), thickness=0.1, emission=4)
+    bands("FF3CF0", ((1.85, 0),), thickness=0.1, emission=4)
+    antennae("2B2438", "FF3CF0")
+    bpy.ops.mesh.primitive_torus_add(location=(0, 0, 1.25), rotation=(0, math.radians(14), 0), major_radius=1.5, minor_radius=0.07, major_segments=24, minor_segments=6)
+    finish(bpy.context.object, "3FE0FF", emission=4)
+
+
+def x_pumpkinking():
+    body("FF6E14", "round")
+    for x in (-0.55, 0, 0.55):
+        ball(1.0, (x, 0, 1.3), shade("FF6E14", -0.14), scale=(0.36, 0.95, 0.92))
+    wheels()
+    barrel("7A4A1E", top=2.0)
+    fuse()
+    face("FFE23A", front=-0.93, mood="fierce", brow="7A4A1E")
+    stem(top=2.12)
+    crown(top=3.0, y=0.1, radius=0.4, gems="9B6BFF")
+    box((2.2, 0.5, 1.3), (0, 0.95, 1.2), "6B2BD9", bevel=0.12)  # a king's cape
+
+
+def x_royalguard():
+    standard("C81E28", WHITE, barrel_colour="16131F")
+    tube(0.8, 1.0, (0, 0.2, 1.98), (0, 0, 1), "16131F", vertices=14)  # the bearskin, the barrel sits in it
+    ball(0.8, (0, 0.2, 2.98), "16131F", scale=(1, 1, 0.5))
+    bands(WHITE, ((0.8, 0),), thickness=0.14)
+    for z in (1.05, 1.35):
+        ball(0.09, (0.35, FRONT - 0.03, z - 0.45), GOLD, scale=(1, 0.5, 1))
+    box((0.3, 0.1, 0.24), (0, FRONT - 0.04, 0.8), GOLD, bevel=0.05)
+
+
+def x_treasure():
+    standard("FFCD3C", "E6463C", barrel_colour="8A5A2B")
+    bands("8A5A2B", ((0.62, 0), (1.9, 0)), thickness=0.14)
+    for index, (x, y) in enumerate(((-0.55, -0.2), (0.6, -0.3), (0.5, 0.5), (-0.6, 0.45))):  # jewels on its lid
+        ball(0.2, (x, y, 2.12), ("E6463C", "3FE0FF", "3CE070", "AA5AE1")[index], scale=(1, 1, 0.8), roughness=0.15, emission=0.5)
+    coins(((-1.05, 0.5), (1.05, 0.4), (0.3, 1.05), (-0.4, 1.1)))
+
+
+def x_vault():
+    standard("78C8FF", WHITE, barrel_colour="3A5E82")
+    bands("5A6E82", ((0.62, 0), (1.9, 0)), thickness=0.16)
+    rivets("C9D3E0", height=1.9)
+    # The wheel of its door, on its back.
+    bpy.ops.mesh.primitive_torus_add(location=(0, 0.95, 1.25), rotation=(math.radians(90), 0, 0), major_radius=0.5, minor_radius=0.08, major_segments=16, minor_segments=6)
+    finish(bpy.context.object, "C9D3E0", roughness=0.2)
+    for angle in (0, 60, 120):
+        box((1.0, 0.1, 0.1), (0, 0.95, 1.25), "C9D3E0", bevel=0.03, rotation=(0, math.radians(angle), 0))
+    ball(0.16, (0, 1.0, 1.25), GOLD)
+
+
+def x_witchinghour():
+    standard("7828C8", "FFE23A", mood="fierce", barrel_colour="2B1450")
+    witch_hat(colour="2B1450", band="FFE23A")
+    wings("2B1450", "bat")
+    ball(0.42, (0.95, 0.5, 3.2), "FFE97A", scale=(1, 0.25, 1), emission=3)  # a moon behind it
+    ball(0.38, (1.12, 0.45, 3.28), "7828C8", scale=(1, 0.3, 1))
+    halo(top=3.75, colour="C896FF", radius=0.5)
+
+
+EXTRAS = [("bonedragon", x_bonedragon), ("calendar", x_calendar), ("candycorn", x_candycorn), ("candyskull", x_candyskull),
+          ("cauldron", x_cauldron), ("crate", x_crate), ("dragon", x_dragon), ("fortune", x_fortune), ("jackpot", x_jackpot),
+          ("mecha", x_mecha), ("mimic", x_mimic), ("motherlode", x_motherlode), ("neon", x_neon), ("pumpkinking", x_pumpkinking),
+          ("royalguard", x_royalguard), ("treasure", x_treasure), ("vault", x_vault), ("witchinghour", x_witchinghour)]
+EXTRA_SET = [("extras%d" % (1 + index // 5), None, EXTRAS[index:index + 5]) for index in range(0, len(EXTRAS), 5)]
+
 # A set of its own: one run with every world in it takes Blender far longer than two runs do.
 LATE_SET = LATE_ROWS + [("secrets%d" % (5 + index // 5), None, LATE_SECRETS[index:index + 5]) for index in range(0, len(LATE_SECRETS), 5)] + [
     ("huges3", None, LATE_HUGES),
 ]
-EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS, "late": LATE_SET}[SET]
-FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis", "late": "late_minis"}[SET]
+EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS, "late": LATE_SET, "extras": EXTRA_SET}[SET]
+FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis", "late": "late_minis", "extras": "extra_minis"}[SET]
 
 
 def model_name(name):
