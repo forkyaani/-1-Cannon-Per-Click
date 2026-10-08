@@ -47,6 +47,7 @@ function Backpack.start(ctx)
 		row.order = def.order or math.huge
 		row.powerup = if table.find(Powerups.List, def) then def else nil
 		row.icon.BackgroundColor3 = def.color or Colors.white
+		row.setIcon(id)
 		-- White for an item without a rarity, or with one this build has no colour for.
 		row.title.TextColor3 = Config.RarityColors[def.rarity] or Colors.white
 		row.button.Visible = def.usable == true
@@ -110,6 +111,7 @@ function Backpack.start(ctx)
 		end
 		local row = UI.row(list, BUNDLE_HEIGHT, BUNDLES_ORDER + index)
 		row.icon.BackgroundColor3 = Colors.gold
+		row.setIcon("gift")
 		row.title.Text = bundle.name
 		row.sub.Text = table.concat(contents, "  •  ")
 		if bundle.product == 0 then

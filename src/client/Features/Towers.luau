@@ -226,6 +226,7 @@ function Feature.start(ctx)
 			if def and not kindRows[kind] then
 				local row = UI.row(kindList, KIND_ROW, index)
 				row.icon.BackgroundColor3 = def.color or Colors.gold
+				row.setIcon("tower_" .. kind)
 				row.title.Text = def.name
 				local stats = UI.text({
 					Size = UDim2.new(1, -212, 0, 20),

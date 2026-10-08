@@ -47,6 +47,7 @@ for index, world in Config.Worlds do
 	-- A row: the world's name, its twist, then the player's progress in it.
 	local row = UI.row(worldsList, 84, index)
 	row.icon.BackgroundColor3 = world.floor
+	row.setIcon("world_" .. string.lower((string.gsub(world.name, "%s", ""))))
 	row.title.Text = `{index}. {world.name}`
 	row.title.Size = UDim2.new(1, -WORLD_TEXT_TRIM, 0, 26)
 	UI.text({
@@ -205,6 +206,8 @@ local function shopRow(item, order: number, action: string)
 	local row = UI.row(shopList, 70, order)
 	row.title.Text = item.name
 	row.icon.BackgroundColor3 = if item.pet then Config.Pets[item.pet].color else Colors.gold
+	-- A boost, a slot, gems or a backpack item has a picture; a mini cannon keeps its colour.
+	row.setIcon(if item.kind == "boost" then item.boost elseif item.kind == "slot" then "slot" elseif item.kind == "diamonds" then "gem" elseif item.kind == "item" then item.item else nil)
 	row.button.Activated:Connect(function()
 		act(action, item.id)
 	end)
@@ -395,6 +398,7 @@ for index, mission in Config.Missions do
 	local row = UI.row(missionsList, 60, index + 1)
 	row.title.Text = mission.text
 	row.icon.BackgroundColor3 = Color3.fromRGB(80, 220, 255)
+	row.setIcon("mission_" .. mission.key)
 	row.button.Activated:Connect(function()
 		act("claimMission", mission.id)
 	end)

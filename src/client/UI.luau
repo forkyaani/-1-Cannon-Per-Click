@@ -744,7 +744,16 @@ local ICONS = {
 -- A picture from the atlas. `fallback` is what stands in for it (a glyph, a code-drawn shape): it stays
 -- until the picture has loaded, so a slow, pending or rejected upload never leaves a hole.
 -- Returns nil for a name that is not in the atlas.
+-- Other names for an icon: an item's own id, where the sheet named the picture differently.
+local ICON_ALIASES = {
+	woodcrate = "crate_wooden", dailycrate = "crate_daily", gemcrate = "crate_gem", royalcrate = "crate_royal",
+	pumpkincrate = "crate_pumpkin", cursedcrate = "crate_cursed",
+	mission_upgrades = "upgrade", mission_kills = "monster", mission_bosses = "boss", mission_waves = "wave",
+	mission_hatches = "hatch",
+}
+
 function UI.icon(name: string?, props, fallback: GuiObject?): ImageLabel?
+	name = name and (ICON_ALIASES[name] or name)
 	local cell = name and ICONS[name]
 	local atlas = cell and UI.Atlases[cell[1]]
 	if not atlas or atlas == "" then
