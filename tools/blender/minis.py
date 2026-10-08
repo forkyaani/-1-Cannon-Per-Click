@@ -1,9 +1,12 @@
 """Mini cannons ("cannon critters") and eggs. Two sets:
   marketplace   the Gem Egg and the four Halloween eggs, with their 25 mini cannons (marketplace_minis.fbx)
-  worlds        the two coin eggs of each of the first five worlds, and their 50 mini cannons
-                and the 20 Secrets and 7 Huges those eggs hide (world_minis.fbx).
+  worlds        the two coin eggs of each of the first five worlds, their 50 mini cannons, and the 20
+                Secrets and 7 Huges those eggs hide (world_minis.fbx).
+  late          the same for worlds 6 to 12 (14 eggs, 70 mini cannons, 28 Secrets), the 10 Secrets of the
+                marketplace's eggs and the last 4 Huges (late_minis.fbx).
 
-Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds]
+Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds | late] [from=<row>]
+`from=shadowegg` photographs that row and the ones after it only (every model is still built and exported).
 
 A mini cannon is a rounded creature with big eyes that is still a cannon: wheels, a barrel on its head, a fuse
 for a tail. Each one is a short recipe that picks pieces from the kit below. Every model is joined into one
@@ -20,6 +23,7 @@ from mathutils import Matrix, Vector
 OUT = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "."
 MODE = sys.argv[sys.argv.index("--") + 2] if "--" in sys.argv and len(sys.argv) > sys.argv.index("--") + 2 else "full"
 SET = sys.argv[sys.argv.index("--") + 3] if "--" in sys.argv and len(sys.argv) > sys.argv.index("--") + 3 else "marketplace"
+FROM = next((word[5:] for word in sys.argv if word.startswith("from=")), None)  # photograph this row and those after it only
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
@@ -1094,7 +1098,7 @@ def glitched(colour, egg):
         smile(0.86)
         for index, (x, y, z, size) in enumerate(((-1.25, 0.2, 2.2, 0.26), (1.3, -0.1, 1.9, 0.2), (1.15, 0.4, 2.6, 0.16), (-1.1, -0.3, 0.5, 0.18), (-0.5, 0.5, 2.9, 0.14))):
             box((size, size, size), (x, y, z), ("3FE0FF", "FF3CF0", colour)[index % 3], bevel=0.01, emission=3)
-        ears(colour, WEAR[egg], inner="FF3CF0")
+        ears(colour, WEAR[egg % len(WEAR)], inner="FF3CF0")
     return build
 
 
@@ -1106,7 +1110,7 @@ def forbidden(colour, egg):
         box((0.4, 0.14, 0.46), (0, FRONT - 0.06, 0.62), GOLD, bevel=0.06)  # the lock
         horns("16131F", size=1.35)
         wings(shade(colour, -0.6), "bat")
-        ears(shade(colour, -0.35), WEAR[egg], inner="FF3355")
+        ears(shade(colour, -0.35), WEAR[egg % len(WEAR)], inner="FF3355")
         for index in range(5):  # a halo in pieces
             angle = math.radians(index * 72 + egg * 20)
             ball(0.12, (math.cos(angle) * 0.6, 0.1 + math.sin(angle) * 0.6, 3.55), "FF3355", scale=(1.6, 1.6, 0.7), emission=3)
@@ -1425,6 +1429,256 @@ MARKETPLACE = [
     ("crypt", egg_crypt, [("tombstone", tombstone), ("spider", spider), ("mummy", mummy), ("gargoyle", gargoyle), ("lich", lich)]),
     ("bloodmoon", egg_bloodmoon, [("crow", crow), ("scarecrow", scarecrow), ("werewolf", werewolf), ("banshee", banshee), ("bloodmoon", blood_moon)]),
 ]
+# ---------------------------------------------------------------------------------------------------
+# Worlds 6 to 12, and the hidden ones the marketplace's eggs were still missing. These are made from a
+# table: a mini cannon is its colour, the colour of its eyes, a shape, a mood and what it wears (the
+# pieces above, by name); an egg is the one egg design dressed for its world. The colours are the game's
+# (Config.Pets, Config.Eggs). The rarer, the more it wears: the fifth of an egg always has the crown.
+# ---------------------------------------------------------------------------------------------------
+PITS = ((-0.55, 0.1, 2.02, 0.26), (0.6, -0.2, 1.98, 0.18), (-0.98, 0.2, 1.3, 0.2), (0.98, -0.1, 1.5, 0.24))
+SHARDS = ((-0.66, 0.15, 1.95, 0.24, 0.7, -0.35), (0.66, 0.15, 1.95, 0.24, 0.7, 0.35))
+EARS = ("cat", "bat", "round", "bunny", "floppy", "leaf")
+
+
+def bright(colour):
+    return sum(int(colour[i:i + 2], 16) for i in (0, 2, 4)) > 330
+
+
+def quick(colour, iris, wear, shape="cube", mood="happy"):
+    def build():
+        light = shade(colour, 0.45) if not bright(colour) or colour.upper() != "FFFFFF" else "DDE6F5"
+        dark = shade(colour, -0.45)
+        standard(colour, iris, mood=mood, shape=shape, barrel_colour=dark)
+        top = 2.42 if shape == "tall" else 2.0
+        for item in wear.split():
+            if item in EARS:
+                ears(colour, item, inner=light, top=top)
+            elif item == "horns":
+                horns(light, top=top, size=1.2)
+            elif item == "spikes":
+                spikes(dark, top=top)
+            elif item == "tail":
+                tail(colour, tip=light)
+            elif item == "bushy":
+                tail(colour, tip=light, bushy=True)
+            elif item == "antennae":
+                antennae(dark, iris, top=top)
+            elif item == "crystals":
+                crystals(light, SHARDS, emission=0.6)
+            elif item == "cap":
+                cap(light, top=top)
+            elif item == "flames":
+                flames((light, iris), top=top)
+            elif item == "star":
+                star_points(light, emission=1.0)
+            elif item == "scarf":
+                scarf(iris)
+            elif item == "snout":
+                snout(light)
+            elif item == "pits":
+                pits(dark, PITS)
+            elif item == "wings":
+                wings(light, "crystal")
+            elif item == "batwings":
+                wings(dark, "bat")
+            elif item == "rivets":
+                rivets(light)
+            elif item == "bands":
+                bands(dark, ((0.72, 0), (1.22, 0)), thickness=0.08)
+            elif item == "streak":
+                streak(light, emission=1.0)
+            elif item == "dish":
+                dish(dark, top=top)
+            elif item == "sting":
+                sting(colour, iris)
+            elif item == "orbit":
+                bpy.ops.mesh.primitive_torus_add(location=(0, 0, 0.95), rotation=(0, math.radians(12), 0), major_radius=1.55, minor_radius=0.09, major_segments=24, minor_segments=6)
+                finish(bpy.context.object, iris, emission=2)
+            elif item == "crown":
+                crown(top=top + 1.02, y=0.1, radius=0.34, gems=iris)
+                halo(top=top + 1.55, colour=light, radius=0.5)
+            else:
+                raise ValueError("no such piece: " + item)
+    return build
+
+
+def late_egg(colour, kind, grand):
+    """The egg of a late world. `grand` is the world's second, dearer egg: it also gets a halo."""
+    def build():
+        spot = shade(colour, 0.3) if not bright(colour) else shade(colour, -0.22)
+        glow = shade(colour, 0.55) if not bright(colour) else "FFFFFF"
+        if kind == "void":
+            world_egg(colour, spot, roughness=0.3)
+            crystals(spot, ((-1.1, 0.2, 0.0, 0.28, 1.2, -0.5), (1.15, 0.1, 0.0, 0.32, 1.4, 0.45), (0.6, -0.9, 0.0, 0.2, 0.8, 0.3), (-0.5, -1.0, 0.0, 0.2, 0.7, -0.3)), emission=1.0)
+            ball(0.4, (0, -1.3, 2.0), "C896FF", scale=(1, 0.25, 0.45), emission=3)  # an eye in the dark
+        elif kind == "nebula":
+            world_egg(colour, spot, roughness=0.2)
+            ring(glow, 1.9, tilt=18, emission=2)
+            for x, z in ((-0.95, 2.8), (1.0, 1.5), (-0.9, 1.2)):
+                ball(0.12, (x, -0.75, z), WHITE, scale=(1, 1, 2.2), emission=4)
+                ball(0.12, (x, -0.75, z), WHITE, scale=(2.2, 1, 1), emission=4)
+        elif kind == "crystal":
+            world_egg(colour, spot, roughness=0.15)
+            crystals(glow, ((-1.1, 0.2, 0.0, 0.3, 1.2, -0.5), (1.15, 0.1, 0.0, 0.34, 1.45, 0.45), (0.6, -0.9, 0.0, 0.22, 0.8, 0.3), (-0.5, -1.0, 0.0, 0.2, 0.7, -0.3), (0.0, 1.1, 0.0, 0.3, 1.1, 0.1)), emission=0.8)
+            crystals(glow, ((0, 0, 3.4, 0.3, 0.8, 0), (-0.3, 0.1, 3.3, 0.18, 0.5, -0.6), (0.3, 0.1, 3.3, 0.18, 0.5, 0.6)), emission=0.8)
+        elif kind == "robot":
+            shell(colour, roughness=0.3)
+            for z in (1.2, 2.5):
+                ring(spot, z, thickness=0.1, roughness=0.3)
+            for index in range(8):
+                angle = math.radians(index * 45)
+                ball(0.1, (math.cos(angle) * 1.33, math.sin(angle) * 1.33, 1.85), GOLD, roughness=0.2)
+            tube(0.05, 0.6, (0, 0, 3.5), (0.2, 0, 1), spot, vertices=6)
+            ball(0.13, (0.12, 0, 4.12), "FF3355", emission=3)
+        elif kind == "jungle":
+            world_egg(colour, spot)
+            stem(top=3.52)
+            ring(spot, 1.75, tilt=14)
+            tufts(spot, FOOT)
+            ball(0.16, (0.6, -1.25, 2.0), "FF8FB8", scale=(1, 0.5, 1))
+        elif kind == "hole":
+            shell(colour, roughness=0.3)
+            ring(glow, 1.8, tilt=20, thickness=0.14, emission=3)
+            ring(spot, 1.8, tilt=-25, thickness=0.07, emission=1.5)
+            for x, z in ((-0.6, 2.7), (0.7, 1.2), (0.2, 3.0)):
+                ball(0.08, (x, -1.0, z), WHITE, emission=4)
+        elif kind == "bang":
+            world_egg(colour, spot, emission=0.5)
+            for index in range(10):
+                angle = math.radians(index * 36)
+                tube(0.2, 0.7, (math.cos(angle) * 1.4, 0.3, 1.9 + math.sin(angle) * 1.75), (math.cos(angle), 0, math.sin(angle) * 1.2), spot, tip=0.0, vertices=5, emission=2)
+        else:
+            raise ValueError("no such egg: " + kind)
+        if grand:
+            halo(top=4.2, colour=glow, radius=0.7)
+    return build
+
+
+LATE = [
+    ("shadowegg", "221638", "void", [
+        ("shadow", "3C3255", "C896FF", "bat", "round", "happy"), ("rift", "8C3CD2", "3FE0FF", "crystals streak", "cube", "happy"),
+        ("abyss", "191946", "FF3C78", "horns pits scarf", "cube", "fierce"), ("singularity", "F5F5FF", "8C3CD2", "wings orbit", "round", "happy"),
+        ("omega", "FF3C78", "FFE23A", "horns batwings crown", "cube", "fierce")]),
+    ("omegaegg", "0C0618", "void", [
+        ("phantom", "AAA0D2", "FFFFFF", "bat", "round", "happy"), ("nightmare", "46143C", "FF3C78", "horns spikes", "cube", "fierce"),
+        ("paradox", "3CDCC8", "FF96FF", "antennae crystals scarf", "cube", "happy"), ("infinity", "F0F0FF", "3FE0FF", "wings orbit", "round", "happy"),
+        ("godly", "FFD75A", "FF7A1E", "wings star crown", "cube", "happy")]),
+    ("nebulaegg", "543E96", "nebula", [
+        ("stardust", "E8C4FF", "FF6EC8", "star", "round", "happy"), ("plasma", "FF6EC8", "FFE23A", "cat flames", "cube", "happy"),
+        ("nova", "78D7FF", "FFFFFF", "star scarf", "cube", "happy"), ("pulsar", "96FFE1", "FF96FF", "antennae wings", "round", "happy"),
+        ("quasar", "FFF0AA", "8C3CD2", "star orbit crown", "round", "fierce")]),
+    ("starlightegg", "E870C4", "nebula", [
+        ("twinkle", "FFF5C8", "FF8FB8", "cat", "round", "happy"), ("stargazer", "5A6ECD", "FFE23A", "bunny dish", "cube", "happy"),
+        ("zodiac", "A55AE1", "FFE23A", "horns scarf", "cube", "happy"), ("constellation", "78C8FF", "FFFFFF", "wings star", "cube", "happy"),
+        ("celestial", "FFD7FA", "8C3CD2", "wings orbit crown", "round", "happy")]),
+    ("shardegg", "40BEB8", "crystal", [
+        ("shard", "96EBE6", "FF96FF", "crystals", "cube", "happy"), ("quartz", "F6ECFA", "AA5AE1", "crystals round", "round", "happy"),
+        ("amethyst", "AA5AE1", "FFE23A", "crystals scarf", "cube", "happy"), ("opal", "BEF5E1", "FF96FF", "cat wings", "round", "happy"),
+        ("radiant", "FFAAF0", "3FE0FF", "crystals wings crown", "cube", "happy")]),
+    ("geodeegg", "163456", "crystal", [
+        ("pebble", "968E88", "FFE23A", "pits", "round", "happy"), ("garnet", "AA283E", "FFD0D6", "crystals", "cube", "fierce"),
+        ("topaz", "FFBE46", "8A5A2B", "crystals scarf", "cube", "happy"), ("onyx", "202028", "FF3355", "horns batwings", "cube", "fierce"),
+        ("moonstone", "C8DEFF", "8C3CD2", "wings orbit crown", "round", "happy")]),
+    ("scrapegg", "545A64", "robot", [
+        ("scrap", "96785F", "FFE23A", "rivets bands", "cube", "happy"), ("gear", "CDA550", "3FE0FF", "round rivets", "cube", "happy"),
+        ("piston", "AAB4BE", "FF7828", "rivets scarf", "tall", "happy"), ("chrome", "E1EBF5", "3FE0FF", "antennae dish", "cube", "happy"),
+        ("reactor", "6EFF78", "FFE23A", "antennae orbit crown", "cube", "fierce")]),
+    ("circuitegg", "EEBA34", "robot", [
+        ("bolt", "BEC4CE", "FFE23A", "rivets", "round", "happy"), ("circuit", "3CC86E", "C8FFD9", "antennae bands", "cube", "happy"),
+        ("turbo", "FF7828", "FFE23A", "flames scarf", "cube", "fierce"), ("laser", "FF3250", "FFFFFF", "dish wings", "cube", "fierce"),
+        ("cyber", "3CF0FF", "FF96FF", "antennae wings crown", "cube", "happy")]),
+    ("jungleegg", "226848", "jungle", [
+        ("moss", "6E9646", "FFE23A", "cap", "round", "happy"), ("thorn", "7D5A3C", "96EB3C", "spikes", "cube", "fierce"),
+        ("venom", "96EB3C", "AA5AE1", "sting scarf", "cube", "fierce"), ("orchid", "DE6ED4", "FFE23A", "leaf wings", "round", "happy"),
+        ("apex", "FF9632", "96EB3C", "horns bushy crown", "cube", "fierce")]),
+    ("bloomegg", "AADE54", "jungle", [
+        ("fern", "5AAA5A", "FFE23A", "leaf", "round", "happy"), ("bamboo", "AFC85A", "8A5A2B", "bands", "tall", "happy"),
+        ("lotus", "FAA0C8", "FFE23A", "leaf scarf", "round", "happy"), ("viper", "3C8C3C", "FFE23A", "spikes batwings", "cube", "fierce"),
+        ("raptor", "CD5032", "FFE23A", "horns bushy crown", "cube", "fierce")]),
+    ("gravityegg", "16141E", "hole", [
+        ("gravity", "60548C", "FFE23A", "pits", "round", "happy"), ("vortex", "7D3CCD", "3FE0FF", "cat streak", "cube", "happy"),
+        ("eclipse", "282232", "FF783C", "horns scarf", "cube", "fierce"), ("neutron", "BEE6FF", "FF96FF", "antennae wings", "round", "happy"),
+        ("horizon", "FF783C", "FFE23A", "flames orbit crown", "round", "fierce")]),
+    ("warpegg", "961C3A", "hole", [
+        ("warp", "825AE6", "78FFC8", "streak", "cube", "happy"), ("tachyon", "78FFC8", "FF96FF", "antennae streak", "round", "happy"),
+        ("wormhole", "46287D", "78FFC8", "pits scarf", "round", "happy"), ("quantum", "5AC8FF", "FFFFFF", "crystals wings", "cube", "happy"),
+        ("darkmatter", "3C1864", "FF3C78", "horns batwings crown", "cube", "fierce")]),
+    ("cosmicegg", "FFD66E", "bang", [
+        ("quark", "FF786E", "FFE23A", "antennae", "round", "happy"), ("atom", "6ED2FF", "FFFFFF", "orbit", "round", "happy"),
+        ("photon", "FFFABE", "FF7A1E", "star scarf", "round", "happy"), ("cosmic", "BE6EFF", "FFE23A", "cat wings", "cube", "happy"),
+        ("bigbang", "FFEB96", "FF3C78", "flames star crown", "round", "fierce")]),
+    ("genesisegg", "FFFAEB", "bang", [
+        ("proton", "FF5A5A", "FFFFFF", "round", "round", "happy"), ("electron", "5AA0FF", "FFE23A", "antennae", "round", "happy"),
+        ("eternal", "FFC85A", "8C3CD2", "bunny scarf", "cube", "happy"), ("alpha", "FFFFFF", "3FE0FF", "horns wings", "cube", "happy"),
+        ("genesis", "FFF0C8", "FF96FF", "wings star crown", "round", "happy")]),
+]
+LATE_ROWS = [(egg_id, late_egg(colour, kind, index % 2 == 1), [(name, quick(c, iris, wear, shape, mood)) for name, c, iris, wear, shape, mood in pets])
+             for index, (egg_id, colour, kind, pets) in enumerate(LATE)]
+LATE_SECRET_EGGS = (
+    ("shadow", "34B996", "73152D"), ("omega", "2EB48C", "6D1023"), ("nebula", "43C5B2", "822149"), ("starlight", "70D4C0", "AF3057"),
+    ("shard", "3DECBC", "7C4753"), ("geode", "31C29F", "701E36"), ("scrap", "43CEA3", "82293A"), ("circuit", "71EA95", "B0462C"),
+    ("jungle", "34D29B", "732D32"), ("bloom", "5DF59E", "9C5135"), ("gravity", "31B88E", "701425"), ("warp", "57BB96", "96162D"),
+    ("cosmic", "76F3A6", "B64E3D"), ("genesis", "76FECC", "B65962"),
+    # the marketplace's eggs
+    ("gem", "42F4D2", "815068"), ("pumpkin", "76DA8E", "B63525"), ("haunted", "4BC4B5", "8A204C"), ("crypt", "46D2A8", "862D3F"),
+    ("bloodmoon", "5DB88E", "9C1425"))
+LATE_SECRETS = []
+for index, (egg, glitch_colour, forbid_colour) in enumerate(LATE_SECRET_EGGS):
+    LATE_SECRETS += [("glitched" + egg, glitched(glitch_colour, index + 3)), ("forbidden" + egg, forbidden(forbid_colour, index + 3))]
+
+
+def huge_gemstone():
+    huge("5AE1FF", "FF96FF", mood="happy")
+    crystals("C9F9FF", ((-0.66, 0.15, 1.95, 0.28, 0.9, -0.35), (0.66, 0.15, 1.95, 0.28, 0.9, 0.35), (-1.0, 0.3, 1.3, 0.2, 0.7, -0.9), (1.0, 0.3, 1.3, 0.2, 0.7, 0.9)), emission=1.0)
+    wings("FF96FF", "crystal")
+    ball(0.3, (0, FRONT - 0.1, 2.0), "FF96FF", scale=(1, 0.4, 1.2), emission=2)  # the gem on its brow
+
+
+def huge_pumpkin():
+    body("FF821E", "round")
+    for x in (-0.55, 0, 0.55):
+        ball(1.0, (x, 0, 1.3), shade("FF821E", -0.12), scale=(0.36, 0.95, 0.92))
+    wheels(hub="46A03C")
+    barrel("7A4A1E", top=2.0, band="46A03C")
+    fuse()
+    face("FFE23A", front=-0.93, mood="fierce", brow="7A4A1E")
+    stem(top=2.12, colour="46A03C")
+    wings("46A03C", "bat")
+    halo(top=3.7, colour="46A03C", radius=0.62)
+
+
+def huge_tycoon():
+    huge("EBF0FA", "FFCD3C", mood="happy", iris="2B2438", barrel_colour="2B2438")
+    # A top hat beside the barrel, a monocle and a gold chain.
+    tube(0.62, 0.1, (-0.6, -0.3, 2.02), (0, 0, 1), "2B2438", vertices=14)
+    tube(0.42, 0.75, (-0.6, -0.3, 2.1), (0, 0, 1), "2B2438", vertices=14)
+    tube(0.44, 0.14, (-0.6, -0.3, 2.14), (0, 0, 1), "FFCD3C", vertices=14)
+    bpy.ops.mesh.primitive_torus_add(location=(0.46, FRONT - 0.22, 1.45), rotation=(math.radians(90), 0, 0), major_radius=0.36, minor_radius=0.05, major_segments=14, minor_segments=5)
+    finish(bpy.context.object, "FFCD3C", roughness=0.2)
+    tube(0.03, 0.9, (0.8, FRONT - 0.2, 1.3), (0.3, 0.2, -1), "FFCD3C", vertices=5)
+    for x, y in ((-1.1, 0.5), (1.1, 0.4), (0.3, 1.05), (-0.4, 1.1)):  # coins round its wheels
+        tube(0.28, 0.08, (x, y, 0.05), (0, 0, 1), "FFCD3C", vertices=10)
+
+
+def huge_spectre():
+    lift = 0.55
+    body("96FFCD", "round", lift=lift)
+    tail_wisps("96FFCD", lift, emission=0.6)
+    for side in (-1, 1):
+        ball(0.26, (side * 1.02, -0.2, 1.3 + lift), "96FFCD", scale=(1, 0.8, 1.2))
+    barrel("9650E6", top=2.05 + lift, band="C9B8FF")
+    fuse(height=1.3 + lift)
+    eyes(1.5 + lift, iris="9650E6", front=-0.93)
+    brows("5A2EA0", 2.0 + lift, front=-0.93)
+    ball(0.13, (0, -1.0, 0.98 + lift), INK, scale=(1, 0.4, 1.25))
+    wings("9650E6", "bat", height=1.5 + lift)
+    halo(top=3.7 + lift, colour="9650E6", radius=0.62)
+    ball(0.95, (0, 0.1, 0.03), "5A2EA0", scale=(0.9, 0.9, 0.03), emission=1)
+
+
+LATE_HUGES = [("hugegemstone", huge_gemstone), ("hugepumpkin", huge_pumpkin), ("hugetycoon", huge_tycoon), ("hugespectre", huge_spectre)]
+
+
 # A row is photographed together. An entry named egg_... is another egg standing in the row, not a mini cannon.
 # The ids are the game's: a coin egg's is its name without the space ("Basic Egg" is basicegg).
 WORLDS = [
@@ -1442,12 +1696,41 @@ WORLDS = [
     ("secrets1", None, SECRETS[0:5]), ("secrets2", None, SECRETS[5:10]), ("secrets3", None, SECRETS[10:15]), ("secrets4", None, SECRETS[15:20]),
     ("huges1", None, HUGES[0:4]), ("huges2", None, HUGES[4:7]),
 ]
-EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS}[SET]
-FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis"}[SET]
+# A set of its own: one run with every world in it takes Blender far longer than two runs do.
+LATE_SET = LATE_ROWS + [("secrets%d" % (5 + index // 5), None, LATE_SECRETS[index:index + 5]) for index in range(0, len(LATE_SECRETS), 5)] + [
+    ("huges3", None, LATE_HUGES),
+]
+EGGS = {"marketplace": MARKETPLACE, "worlds": WORLDS, "late": LATE_SET}[SET]
+FILE = {"marketplace": "marketplace_minis", "worlds": "world_minis", "late": "late_minis"}[SET]
 
 
 def model_name(name):
     return name if name.startswith("egg_") else "mini_" + name
+
+
+def fuse_model(name, model_parts, at):
+    """For Roblox: a model's pieces become one mesh with its colours on the vertices and its origin under its
+    feet, in the middle, so it stands on whatever it is placed on. Done as soon as the model is built: Blender
+    looks at every object in the scene after each step, and a scene of loose pieces gets slower with every model."""
+    triangles = 0
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in model_parts:
+        colour = obj.data.materials[0].diffuse_color
+        attribute = obj.data.color_attributes.new(name="Col", type="BYTE_COLOR", domain="CORNER")
+        attribute.data.foreach_set("color", [colour[0], colour[1], colour[2], 1.0] * len(obj.data.loops))
+        obj.data.calc_loop_triangles()
+        triangles += len(obj.data.loop_triangles)
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = model_parts[0]
+    bpy.ops.object.join()
+    joined = bpy.context.object
+    joined.name = name
+    joined.data.name = name
+    scene.cursor.location = (at.x, at.y, 0)
+    bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+    joined.select_set(False)
+    print(f"MODEL {name} triangles {triangles}", flush=True)
+    return joined
 
 
 ROW_GAP = 60  # each egg's line-up is far enough from the next to be photographed alone
@@ -1458,7 +1741,7 @@ for row, (egg_id, egg_build, minis) in enumerate(EGGS):
         parts = []
         origin = Vector((x, row * ROW_GAP, 0))
         build()
-        models[name] = (parts, origin.copy())
+        models[name] = ([fuse_model(name, parts, origin)], origin.copy())
 
 # ---- The photos: grass, sky, sun ----
 bpy.ops.mesh.primitive_plane_add(size=4000, location=(0, 0, 0))
@@ -1517,6 +1800,9 @@ if MODE == "eggs":
     bpy.ops.render.render(write_still=True)
     raise SystemExit
 for row, (egg_id, _, minis) in enumerate(EGGS if MODE == "full" else []):
+    if FROM and egg_id != FROM:
+        continue
+    FROM = None
     in_row = ({"egg_" + egg_id} if "egg_" + egg_id in models else set()) | {model_name(name) for name, _ in minis}
     for name, (model_parts, at) in models.items():
         for obj in model_parts:
@@ -1534,28 +1820,8 @@ for model_parts, _ in models.values():
     for obj in model_parts:
         obj.hide_render = False
 
-# ---- For Roblox: one mesh per model, colours on the vertices ----
+# ---- For Roblox: the export (each model was made one mesh as it was built, see fuse_model) ----
 ground.select_set(False)
-for name, (model_parts, at) in models.items():
-    triangles = 0
-    bpy.ops.object.select_all(action="DESELECT")
-    for obj in model_parts:
-        colour = obj.data.materials[0].diffuse_color
-        attribute = obj.data.color_attributes.new(name="Col", type="BYTE_COLOR", domain="CORNER")
-        attribute.data.foreach_set("color", [colour[0], colour[1], colour[2], 1.0] * len(obj.data.loops))
-        obj.data.calc_loop_triangles()
-        triangles += len(obj.data.loop_triangles)
-        obj.select_set(True)
-    bpy.context.view_layer.objects.active = model_parts[0]
-    bpy.ops.object.join()
-    joined = bpy.context.object
-    joined.name = name
-    joined.data.name = name
-    # Its origin goes under its feet, in the middle, so it stands on whatever it is placed on.
-    scene.cursor.location = (at.x, at.y, 0)
-    bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
-    print(f"MODEL {name} triangles {triangles}")
-
 bpy.ops.object.select_all(action="DESELECT")
 for name in models:
     bpy.data.objects[name].select_set(True)
