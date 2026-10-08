@@ -196,7 +196,7 @@ needs a second pass doubles its job.
 - [x] K6. **[Yaani]** (done 7 Oct: `alien_jungle_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Alien Jungle island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
 - [x] K7. **[Yaani]** (done 7 Oct: `black_hole_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) Black Hole island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
 - [x] K8. **[Yaani]** (done 7 Oct: `the_big_bang_island.*`; colliders in `Islands.SOLIDS`; photos looked at; not yet imported, see K9) The Big Bang island: render, check the photo, colliders into `Islands.SOLIDS` · **25 min**
-- [ ] K9. **[Yaani]** (taken: Yaani, 8 Oct) Import the seven islands and look at each in a play test **[S]** · **45 min**
+- [ ] K9. **[Yaani]** (HALF done 8 Oct 07:20: all 21 files of worlds 6 to 12 imported, filed with `setup_models.luau` and saved to the group's place: 12 islands, 12 bases, 85 creature templates, nothing left in workspace. Studio crashed once during the base imports; nothing was lost. STILL TO DO: look at each world in a play test. Not published) Import the seven islands and look at each in a play test **[S]** · **45 min**
 
 ## L. Bases for worlds 6 to 12 (asked for by Yaani on 7 Oct; taken by Yaani on 7 Oct 19:06)
 
@@ -208,7 +208,7 @@ needs a second pass doubles its job.
 - [x] L6. **[Yaani]** (done 7 Oct: `assets/models/bases/alien_jungle_base.*`; photos looked at; not yet imported, see L9) Alien Jungle base: render, check the photos · **20 min**
 - [x] L7. **[Yaani]** (done 7 Oct: `assets/models/bases/black_hole_base.*`; photos looked at; not yet imported, see L9) Black Hole base: render, check the photos · **20 min**
 - [x] L8. **[Yaani]** (done 7 Oct: `assets/models/bases/the_big_bang_base.*`; photos looked at; not yet imported, see L9) The Big Bang base: render, check the photos · **20 min**
-- [ ] L9. **[Yaani]** (taken: Yaani, 8 Oct) Import the seven bases and see each in a play test **[S]** · **45 min**
+- [ ] L9. **[Yaani]** (HALF done 8 Oct 07:20: all 21 files of worlds 6 to 12 imported, filed with `setup_models.luau` and saved to the group's place: 12 islands, 12 bases, 85 creature templates, nothing left in workspace. Studio crashed once during the base imports; nothing was lost. STILL TO DO: look at each world in a play test. Not published) Import the seven bases and see each in a play test **[S]** · **45 min**
 
 ## M. Monsters and bosses for worlds 6 to 12 (asked for by Yaani on 7 Oct; taken by Yaani on 7 Oct 19:49)
 
@@ -221,7 +221,7 @@ Each world: its 5 monsters, mid boss and final boss (names in `Config.Worlds`), 
 - [x] M5. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/alien_jungle.py`, `assets/models/creatures/alien_jungle_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Alien Jungle: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
 - [x] M6. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/black_hole.py`, `assets/models/creatures/black_hole_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) Black Hole: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
 - [x] M7. **[Yaani]** (done 7 Oct: `tools/blender/creature_worlds/the_big_bang.py`, `assets/models/creatures/the_big_bang_creatures.*`; all seven inside the triangle limits, photo looked at; not yet imported, see M8) The Big Bang: 5 monsters and 2 bosses, render, check the photo · **1 h 10**
-- [ ] M8. **[Yaani]** (taken: Yaani, 8 Oct) Import the seven batches and watch a wave in each world **[S]** · **1 h 00**
+- [ ] M8. **[Yaani]** (HALF done 8 Oct 07:20: all 21 files of worlds 6 to 12 imported, filed with `setup_models.luau` and saved to the group's place: 12 islands, 12 bases, 85 creature templates, nothing left in workspace. Studio crashed once during the base imports; nothing was lost. STILL TO DO: look at each world in a play test. Not published) Import the seven batches and watch a wave in each world **[S]** · **1 h 00**
 
 ## N. Egg opening (asked for by Yaani on 7 Oct; PLAN only, not started, nobody has it yet)
 
