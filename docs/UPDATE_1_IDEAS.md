@@ -82,3 +82,40 @@ auras, base skins), so battles cannot be farmed for progress. A weekly ranked la
 - Is the parkour only for fun and a daily chest, or should it give something that helps the farm?
 - Battles: happy with auto-battle, or must the player control the fight?
 - Combat mini cannons: the ones players own, or a separate set?
+
+---
+
+## Another idea (MAYBE): a moon over each island with its own mini-game (Yaani, 9 Oct)
+
+In Yaani's words: each island has a moon where it is a whole, completely different game: a side quest, so
+there is always something else to do. Not decided, not scheduled, not started.
+
+**How Claude reads it:** over each world's island floats a small moon; a portal or a cannon on the island
+takes the player up; on it is one small game that is nothing like the tower defence. Twelve worlds, twelve
+different games. The farm keeps running below.
+
+**Claude's thoughts (suggestions only)**
+
+- It fits with the parkour idea above: parkour can simply be one of the moon games (Earth's, say), instead of
+  a separate sky base. One idea, one way up, twelve flavours.
+- Twelve full games is too much to build at once. Start with two or three and reuse them: each later world's
+  moon is the same game, harder and in that world's look, until there is time for a new one.
+- Games that are cheap to build with what exists (the models, the cannons, the leaderboards):
+  - **Obby** (parkour course, best time).
+  - **Cannon golf / target range:** fire yourself or a ball from a cannon at targets. On theme.
+  - **Egg hunt:** a timed dash to collect eggs scattered over the moon.
+  - **Monster bowling:** roll a boulder down a lane of the world's monsters.
+  - **Survive the wave:** dodge monsters on a small platform for as long as possible.
+  - **Low-gravity race:** a lap of the moon with big jumps (the Moon's own twist is low gravity).
+- Every game: one to three minutes, a score or a time, a leaderboard per world, and a reward once a day
+  (gems, a key, a crate). Daily, so it brings players back without becoming a faster farm than the base.
+- Unlocking a world's moon by clearing that world gives each world a second thing to look forward to.
+
+**To watch**
+- Rewards must stay small and daily, or the mini-games replace the main game.
+- Each game has to work on a phone and never punish a fall or a loss.
+- It is a lot of building: this is several updates' worth, not one.
+
+**Questions for Yaani**
+- Is this instead of the sky base and parkour above, or as well?
+- Twelve different games in the end, or three or four that repeat with a twist?
