@@ -3,6 +3,18 @@
 Yaani's idea, 9 Oct 2026. **Nothing here is promised or scheduled.** It is written down so it is not lost.
 Nobody builds any of it until Yaani says so and it is turned into jobs in `docs/RELEASE_TASKS.md`.
 
+## What Yaani has said yes to so far (9 Oct)
+
+Still a MAYBE as an update, but if it happens these are settled:
+
+- **Parkour has leaderboards**: a best time per course, ranked.
+- **Battles are auto-battles**, as described below: each player picks mini cannons and they fight by
+  themselves; fair stats (rarity, tier, enchantments, not farming damage); combat enchantments on the
+  existing enchanting table with a Combat Key; the mini cannons players already own; 1v1 before 2v2; a saved
+  team to fight when nobody is online; no stakes and nothing lost on a defeat.
+
+Not answered yet: the open questions at the end.
+
 ## The idea, in Yaani's words (tidied)
 
 - A **portal on the base** (by the fence, near the gate) that leads to a second place of the player's own: a
