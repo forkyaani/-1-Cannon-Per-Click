@@ -43,23 +43,26 @@ local worldRows = {}
 -- player to the world's island (its eggs and shop; src/server/Islands.luau).
 local ISLAND_BUTTON_WIDTH = 104
 local WORLD_TEXT_TRIM = 212 + ISLAND_BUTTON_WIDTH + 8 -- what the two buttons and the icon take from a row's width
+local WORLD_ROW_HEIGHT = 104 -- room for a twist of two lines
 for index, world in Config.Worlds do
 	-- A row: the world's name, its twist, then the player's progress in it.
-	local row = UI.row(worldsList, 84, index)
+	local row = UI.row(worldsList, WORLD_ROW_HEIGHT, index)
 	row.icon.BackgroundColor3 = world.floor
 	row.setIcon("world_" .. string.lower((string.gsub(world.name, "%s", ""))))
 	row.title.Text = `{index}. {world.name}`
 	row.title.Size = UDim2.new(1, -WORLD_TEXT_TRIM, 0, 26)
 	UI.text({
-		Size = UDim2.new(1, -WORLD_TEXT_TRIM, 0, 20),
+		Size = UDim2.new(1, -WORLD_TEXT_TRIM, 0, 40),
 		Position = UDim2.fromOffset(58, 33),
 		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		TextWrapped = true,
 		TextColor3 = Colors.gold,
 		MaxSize = 15,
 		Text = world.twist,
 		Parent = row.frame,
 	})
-	row.sub.Position = UDim2.fromOffset(58, 56)
+	row.sub.Position = UDim2.fromOffset(58, 76)
 	row.sub.Size = UDim2.new(1, -WORLD_TEXT_TRIM, 0, 20)
 	row.button.Activated:Connect(function()
 		act("travel", index)
@@ -67,7 +70,7 @@ for index, world in Config.Worlds do
 	row.island = UI.button({
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -150, 0.5, 0),
-		Size = UDim2.fromOffset(ISLAND_BUTTON_WIDTH, 84 - 18),
+		Size = UDim2.fromOffset(ISLAND_BUTTON_WIDTH, WORLD_ROW_HEIGHT - 18),
 		Parent = row.frame,
 	})
 	row.island.Activated:Connect(function()
@@ -82,7 +85,7 @@ end
 
 -- The REBIRTH row, above the worlds. Rebirth is a rare prestige (Config.Rebirth): the row says what it gives,
 -- what it keeps and what it resets, and its button needs a second, confirming press.
-local REBIRTH_HEIGHT = 136
+local REBIRTH_HEIGHT = 156
 local REBIRTH_CONFIRM_SECONDS = 4 -- how long the button waits for the second press
 local rebirthRow = UI.row(worldsList, REBIRTH_HEIGHT, 0)
 rebirthRow.icon.BackgroundColor3 = Colors.gold
@@ -308,7 +311,7 @@ end
 
 local packRows = {}
 for order, pack in Store.GemPacks do
-	local row = UI.row(storeLists.GEMS, 70, order)
+	local row = UI.row(storeLists.GEMS, 86, order)
 	row.icon.BackgroundColor3 = GEM_BLUE
 	row.setIcon(pack.id)
 	row.button.Activated:Connect(function()
@@ -319,7 +322,7 @@ end
 
 local itemRows = {}
 for order, entry in Store.Items do
-	local row = UI.row(storeLists.ITEMS, 70, order)
+	local row = UI.row(storeLists.ITEMS, 86, order)
 	row.button.Activated:Connect(function()
 		act("storeBuyItem", entry.id)
 	end)
@@ -331,7 +334,7 @@ local passRows = {}
 local function ensurePassRows()
 	for key, pass in Config.Passes do
 		if not passRows[key] then
-			local row = UI.row(storeLists.PASSES, 70, pass.order)
+			local row = UI.row(storeLists.PASSES, 86, pass.order)
 			row.icon.BackgroundColor3 = Colors.gold
 			row.setIcon(PASS_ICONS[key])
 			row.title.Text = pass.name

@@ -20,6 +20,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Rules = require(ReplicatedStorage.Shared.Features.Trading)
 local Data = require(script.Parent.Parent.Data)
 local Passes = require(script.Parent.Parent.Passes)
+local Huge = require(script.Parent.Huge)
 
 local Trading = {}
 
@@ -376,6 +377,7 @@ local function swap(trade)
 			for _ = 1, count do
 				step(Game.pets.add, player, id, true)
 			end
+			step(Huge.discover, player, id) -- ticked in the index now, not at the next join
 		end
 		for id, count in arriving.items do
 			step(Game.items.give, player, id, count)

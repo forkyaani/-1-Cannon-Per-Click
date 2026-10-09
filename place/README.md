@@ -29,7 +29,7 @@ Do this whenever a new `.fbx` lands in git. It takes about two minutes a file.
    how many meshes. The model is gone from the Workspace: it now lives in `ReplicatedStorage`.
 8. File > Save to Roblox.
 9. Press Play and look at the thing you imported (walk to the island, start a wave, ...).
-10. File > Publish to Roblox.
+10. Do NOT publish: Save to Roblox is enough. Publishing changes the live game and is Yaani's call (I6).
 11. File > Download a Copy, save it over `place/ProjectEgg.rbxl`, commit and push.
 
 Running the script twice does no harm. A newer import replaces the older model of the same name.
@@ -43,7 +43,8 @@ Running the script twice does no harm. A newer import replaces the older model o
 | `assets/models/marketplace/marketplace.fbx` | `MarketModels.Market` and `MarketModels.MarketShells` |
 | `<world>_creatures.fbx` under `assets/models/` | `Creatures.<monster's name>`, one per monster |
 
-`<world>` is the world in small letters: `earth`, `moon`, `mars`, `neptune`, `the_sun`. The script goes by the
+`<world>` is the world in small letters: `earth`, `moon`, `mars`, `neptune`, `the_sun`, `the_void`,
+`nebula`, `crystal_belt`, `robot_factory`, `alien_jungle`, `black_hole`, `the_big_bang`. The script goes by the
 file's name, so do not rename the files.
 
 ### If something goes wrong

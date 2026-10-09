@@ -378,7 +378,7 @@ local function start(ctx)
 		if typeof(counts) ~= "table" then
 			counts = {}
 		end
-		buyButton.Visible = not restricted
+		buyButton.Visible = not restricted and product.product ~= 0
 		refreshPanel(counts, unlocked and not restricted, here)
 		refreshList(counts)
 	end

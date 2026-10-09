@@ -100,6 +100,10 @@ function Feature.start(Game)
 			return
 		end
 		local store = saved(data)
+		-- Only a mini the player has can be locked; a lock left behind can always be taken off.
+		if not store.locked[id] and Game.pets.count(data, id) < 1 then
+			return
+		end
 		store.locked[id] = if store.locked[id] then nil else true
 		publish(player, data)
 	end

@@ -48,6 +48,14 @@ local function keyName(prompt: ProximityPrompt, inputType: Enum.ProximityPromptI
 	return "" -- touch: the pill itself is the button
 end
 
+local function hidePrompt(prompt: ProximityPrompt)
+	local gui = promptGuis[prompt]
+	if gui then
+		promptGuis[prompt] = nil
+		gui:Destroy()
+	end
+end
+
 local function showPrompt(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInputType)
 	if prompt.Style ~= Enum.ProximityPromptStyle.Custom or promptGuis[prompt] then
 		return
@@ -109,14 +117,20 @@ local function showPrompt(prompt: ProximityPrompt, inputType: Enum.ProximityProm
 		end
 	end)
 	promptGuis[prompt] = gui
-end
-
-local function hidePrompt(prompt: ProximityPrompt)
-	local gui = promptGuis[prompt]
-	if gui then
-		promptGuis[prompt] = nil
-		gui:Destroy()
+	-- The texts change while the player stands there (Buy pad, then Build, then Upgrade): draw the pill again.
+	local function redraw()
+		if promptGuis[prompt] == gui then
+			prompt:InputHoldEnd() -- a finger still on the old pill would never end its press
+			hidePrompt(prompt)
+			showPrompt(prompt, inputType)
+		end
 	end
+	local actionChanged = prompt:GetPropertyChangedSignal("ActionText"):Connect(redraw)
+	local objectChanged = prompt:GetPropertyChangedSignal("ObjectText"):Connect(redraw)
+	gui.Destroying:Connect(function()
+		actionChanged:Disconnect()
+		objectChanged:Disconnect()
+	end)
 end
 
 ----------------------------------------------------------------------------------------------------

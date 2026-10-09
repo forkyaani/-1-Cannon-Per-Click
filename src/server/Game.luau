@@ -1952,12 +1952,30 @@ local function onPlayerAdded(player: Player)
 		Data.release(player)
 		return
 	end
+	if not loaded then
+		local _, why = Data.loaded(player)
+		if why == "locked" then
+			-- Another server (most likely one that crashed) still holds the save: a blank unsaved game would look like a wipe.
+			Passes.unload(player)
+			Data.release(player)
+			player:Kick("Your save is still closing on another server. Please rejoin in a few minutes.")
+			return
+		end
+	end
 	player.CameraMaxZoomDistance = MAX_CAMERA_ZOOM
 	data.rebirths = math.clamp(math.floor(data.rebirths), 0, #Config.Worlds)
 	data.speed = if data.speed == data.speed then math.clamp(math.floor(data.speed), 1, MAX_SPEED) else 1
 	data.bestCleared = math.max(data.bestCleared, data.cleared)
 	data.wave = math.clamp(data.wave, 1, math.min(data.cleared + 1, Config.TotalWaves))
 	cleanTowers(data)
+	-- A mini cannon that no longer exists is dropped: addPet reads every stored one's strength.
+	local pets = {}
+	for _, id in data.pets do
+		if typeof(id) == "string" and Config.Pets[id] then
+			table.insert(pets, id)
+		end
+	end
+	data.pets = pets
 
 	local slot = takeSlot(player)
 	local state = {
@@ -2521,9 +2539,15 @@ function Game.boosts.remaining(data, id: string): number
 end
 
 -- Robux developer products: Game.products[productId] = function(player) -> true once the purchase is granted.
+-- A purchase is only granted onto a save that is loaded and locked to this server (Studio aside, for testing):
+-- otherwise Roblox delivers the receipt again on a later join.
 Game.products = {}
 
 function Game.promptProduct(player: Player, productId: number)
+	if not Data.loaded(player) and not RunService:IsStudio() then
+		notify(player, "Purchases are off while your save is not loaded. Please rejoin.", "bad")
+		return
+	end
 	MarketplaceService:PromptProductPurchase(player, productId)
 end
 
@@ -2534,7 +2558,16 @@ local function processReceipt(receipt): Enum.ProductPurchaseDecision
 	if not player or not data or not handler then
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
+	-- A session whose save did not load never writes: granting here would take the Robux and lose the goods.
+	if not Data.loaded(player) and not RunService:IsStudio() then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	-- Roblox is only told the purchase is finished once the grant and its receipt id are in the store.
+	-- Data.save yields. An unloaded save (Studio only, past the check above) is answered without one.
 	if table.find(data.receipts, receipt.PurchaseId) then
+		if Data.loaded(player) and not Data.save(player) then
+			return Enum.ProductPurchaseDecision.NotProcessedYet
+		end
 		return Enum.ProductPurchaseDecision.PurchaseGranted
 	end
 	local ok, granted = pcall(handler, player)
@@ -2549,6 +2582,9 @@ local function processReceipt(receipt): Enum.ProductPurchaseDecision
 		table.remove(data.receipts, 1)
 	end
 	syncAll(player)
+	if Data.loaded(player) and not Data.save(player) then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end
 
@@ -2740,15 +2776,17 @@ function Game.start()
 
 		sinceHook += dt
 		if sinceHook >= HOOK_SECONDS then
+			-- Set back first: something below that waits must not leave the next frames running this again.
+			local elapsed = sinceHook
+			sinceHook = 0
 			for _, player in Players:GetPlayers() do
 				local data, state = Data.get(player), states[player]
 				if data and state then
-					fire("tick", player, data, state, sinceHook)
+					fire("tick", player, data, state, elapsed)
 					state.dirty = true -- boosts run out, features change multipliers
-					catchFallen(player)
+					task.spawn(catchFallen, player) -- putting a character back may wait
 				end
 			end
-			sinceHook = 0
 		end
 
 		sinceField += dt
@@ -2776,19 +2814,35 @@ function Game.start()
 		while true do
 			task.wait(AUTOSAVE_SECONDS)
 			for _, player in Players:GetPlayers() do
-				local data, state = Data.get(player), states[player]
-				if data and Data.save(player) then
-					Leaderboard.submit(player, data, { power = if state then state.boardDps else 0 })
+				-- One player's save erroring must not end the autosaves (and the lock renewals) of everyone.
+				local ok, err = pcall(function()
+					local data, state = Data.get(player), states[player]
+					if data and Data.save(player) then
+						Leaderboard.submit(player, data, { power = if state then state.boardDps else 0 })
+					end
+				end)
+				if not ok then
+					warn(`[Game] autosave failed for {player.Name}: {err}`)
 				end
 			end
 		end
 	end)
 
 	-- Release (not just save) so PlayerRemoving does not write the same key a second time.
+	-- Every player at once, then held open until they are all written: one slow save must not hold up the rest.
 	game:BindToClose(function()
+		local left = 0
 		for _, player in Players:GetPlayers() do
 			local state = states[player]
-			saveAndRelease(player, if state then state.boardDps else nil)
+			left += 1
+			task.spawn(function()
+				saveAndRelease(player, if state then state.boardDps else nil)
+				left -= 1
+			end)
+		end
+		local deadline = os.clock() + 25
+		while left > 0 and os.clock() < deadline do
+			task.wait(0.2)
 		end
 	end)
 end

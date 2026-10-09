@@ -69,11 +69,17 @@ local BOARDS = {
 local names = {}
 
 local function nameFor(userId: number): string
-	if not names[userId] then
-		local ok, result = pcall(Players.GetNameFromUserIdAsync, Players, userId)
-		names[userId] = if ok then result else "Player"
+	local cached = names[userId]
+	if cached then
+		return cached
 	end
-	return names[userId]
+	-- Only a lookup that worked is kept: a failed one is asked again at the next refresh.
+	local ok, result = pcall(Players.GetNameFromUserIdAsync, Players, userId)
+	if ok and typeof(result) == "string" then
+		names[userId] = result
+		return result
+	end
+	return "Player"
 end
 
 local folder: Folder? = nil -- ReplicatedStorage.Leaderboards, once started
@@ -88,7 +94,11 @@ local function boardById(id: string)
 end
 
 local function submitTo(board, player: Player, data, stats: { power: number }?)
-	local score = board.score(data, stats)
+	local fine, score = pcall(board.score, data, stats)
+	if not fine then
+		warn(`[Leaderboard] {board.id} score failed: {score}`)
+		return
+	end
 	if board.store and typeof(score) == "number" and score > 0 then
 		local ok, err = pcall(board.store.SetAsync, board.store, tostring(player.UserId), score)
 		if not ok then
@@ -170,7 +180,10 @@ end
 -- Reads every board again and publishes it. Runs by itself every REFRESH_SECONDS. Yields.
 local function refresh()
 	for _, board in BOARDS do
-		refreshBoard(board)
+		local ok, err = pcall(refreshBoard, board)
+		if not ok then
+			warn(`[Leaderboard] {board.id} refresh errored: {err}`)
+		end
 	end
 end
 Leaderboard.refresh = refresh

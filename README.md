@@ -26,11 +26,14 @@ You need a Mac or Windows PC with Roblox Studio installed.
    rojo serve
    ```
 4. In Roblox Studio: install the Rojo plugin (Plugins tab, or `rojo plugin install`), open the place
-   **Project Egg WIP** (ask Yaani for edit access to the experience), open the Rojo panel and press **Connect**.
+   **+1 Cannon Per Click** of the group **Astral Crafts** from Studio's Experiences list (ask Yaani or Victor
+   for a group role with edit access; see `docs/RELEASE_PLAN.md`, section 1, "One place"), open the Rojo panel
+   and press **Connect**.
 5. Press Play in Studio. You should spawn on your own base with a level bar at the bottom of the screen.
 
 The code lives in this repo, not in the Studio place. Edit files here and Rojo pushes them into Studio.
-The 3D models (monsters, the Earth island, the base) live in the Studio place, not in the repo.
+The 3D models are made by the Blender scripts in `tools/blender/`, exported to `assets/models/`, and imported
+into the Studio place by hand (steps in `place/README.md`). `place/ProjectEgg.rbxl` is a kept copy of that place.
 
 ## 2. How the project is laid out
 
@@ -44,6 +47,7 @@ The 3D models (monsters, the Earth island, the base) live in the Studio place, n
 | `docs/` | Design and technical docs (see section 5) |
 | `tools/` | Checks you can run without Studio (see section 3) |
 | `assets/` | UI icon atlases and 3D source files |
+| `place/` | `ProjectEgg.rbxl`, a full copy of the Studio place (imported model templates, Lighting), and how to import a model |
 
 A feature plugs into the core through hooks instead of editing it. Read `docs/ARCHITECTURE.md` before writing one.
 
@@ -73,7 +77,8 @@ Then play it in Studio. The offline checks cannot judge how anything looks or fe
 ## 4. Working rules
 
 - **Pull before you start, push small commits.** Say in the commit message what changed for a player.
-- **Do not close Studio without saving** (File, Save to Roblox). Imported 3D models exist only in the place.
+- **Do not close Studio without saving** (File, Save to Roblox). The imported model templates live in the
+  place, and `place/ProjectEgg.rbxl` is only as new as the last copy someone downloaded.
 - **Publishing is Yaani's call.** "Save to Roblox" is fine; "Publish to Roblox" changes the live game.
 - **The server decides everything.** The client asks; never trust a number the client sends.
 - **Numbers go in `Config.luau`** or a feature's shared file, not scattered through the code.
@@ -85,12 +90,14 @@ Then play it in Studio. The offline checks cannot judge how anything looks or fe
 
 ## 5. Docs worth reading, in order
 
-1. `docs/IDLE_DEFENSE.md`: the game's design on one page.
-2. `docs/BUILD_QUEUE.md`: every decision Yaani has made, with dates. If it is written there, it is decided.
-3. `docs/ARCHITECTURE.md`: how to add a feature; the server and client APIs; debug commands.
-4. `docs/DEFENSE_SPEC.md`: the contract between the server core, the base and the client.
-5. `docs/BALANCE.md`: the pacing model and its simulator (`tools/balance`).
-6. `docs/UI_VISION.md` and `docs/VISUAL_AUDIT.md`: the art direction and the list of placeholder visuals.
+1. `docs/RELEASE_TASKS.md`: the live job list. Read its "Who is on what" rules: pull, claim a job on its line
+   and push BEFORE starting. `docs/RELEASE_PLAN.md` is the 5 Oct plan with what is done.
+2. `docs/IDLE_DEFENSE.md`: the game's design on one page.
+3. `docs/BUILD_QUEUE.md`: every decision Yaani has made, with dates. If it is written there, it is decided.
+4. `docs/ARCHITECTURE.md`: how to add a feature; the server and client APIs; debug commands.
+5. `docs/DEFENSE_SPEC.md`: the contract between the server core, the base and the client.
+6. `docs/BALANCE.md`: the pacing model and its simulator (`tools/balance`).
+7. `docs/UI_VISION.md` and `docs/VISUAL_AUDIT.md`: the art direction and the list of placeholder visuals.
 
 ## 6. What is built
 
@@ -102,11 +109,12 @@ candy leaderboard; offline earnings; the story and the first-join tutorial.
 
 ## 7. What is left before launch
 
-Roughly in order. Pick one, tell Yaani, and note it in `docs/BUILD_QUEUE.md` when it is done.
+Roughly in order. The live list is `docs/RELEASE_TASKS.md`: claim a job there and push before starting, and
+tick it there when it is done.
 
-1. **Balance.** Mini cannons were changed from a damage multiplier to flat DPS, which makes the game stall
-   from world 2 on. Monster health or tower growth has to be retuned with `tools/balance`. Target: about
-   10 minutes for the first 10 levels, 75 to 90 minutes for Earth, each world longer than the last.
+1. **Balance.** Retuned on 6 Oct in the simulator (`docs/RELEASE_PLAN.md`, A1; `Config.PetDps = 525`) after
+   mini cannons became flat DPS and the game stalled from world 2 on. Not yet played through. The pacing
+   model and the simulator (`tools/balance`) are in `docs/BALANCE.md`.
 2. **Play every feature in Studio and fix what is wrong.** Islands, Mastery, Enchanting, Fuse, STATS, visits,
    the tutorial and offline earnings have passed offline checks but have barely been looked at.
 3. **Phones.** Check every window and the HUD on a phone-sized screen (Studio's device emulator).
@@ -114,13 +122,16 @@ Roughly in order. Pick one, tell Yaani, and note it in `docs/BUILD_QUEUE.md` whe
 5. **Loose ends in code:** dead clicker pieces still hidden in `Hud.luau`. (Mastery was reworked on 7 Oct:
    18 tracks, every one measured in `tools/emu/tests/mastery.luau`. "Rapid" is Mini Crit and the Silver fuse
    tier's "Rapid Fire" is Overcharge, +25% DPS. The pace has to be fitted again after it: `docs/BALANCE.md`, 5c.)
-6. **Visuals.** `docs/VISUAL_AUDIT.md` lists the placeholder models; Earth's island and monsters are done.
-7. **Robux.** The game passes and developer products exist in `Config` with id 0. Yaani creates them on
-   Roblox and their ids get pasted in. The fan bonus needs the group id (`Config.Fan.groupId`).
-8. **Launch.** Game icon and thumbnail, server size set to 12, publish, then the ad plan in `docs/PLAN.md`.
+6. **Visuals.** Blender models for all twelve worlds are in `assets/models`. `docs/VISUAL_AUDIT.md` and
+   `docs/RELEASE_TASKS.md` say what is imported and what is still placeholder.
+7. **Robux.** The six game passes, the six gem packs and the group id (`Config.Fan.groupId`) are set. Still
+   at id 0: the Royal Crate, the powerup packs and `Enchant.ShinyProduct` (`docs/RELEASE_TASKS.md`, O2 and S3).
+   Buying each once on the live place is still open (`docs/RELEASE_PLAN.md`, C13).
+8. **Launch.** Game icon and thumbnail, publish, then the ad plan in `docs/PLAN.md`.
 
 ## 8. Open questions for Yaani
 
 - Should fusing stay locked until island 5? It slows worlds 1 to 4 a lot.
-- Should the "Lucky" enchant be rollable from the Shiny key, which will be sold for Robux?
+- Should the "Lucky" enchant be rollable from the Shiny key, which is sold for gems (1,000 in the island
+  shop)?
 - Should candy won from candy-bought crates count toward the Halloween leaderboard?

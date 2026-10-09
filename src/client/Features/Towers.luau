@@ -597,7 +597,7 @@ function Feature.start(ctx)
 				action, object = "Buy", "pad"
 			end
 			sign.gui.StudsOffsetWorldSpace = Vector3.new(0, height, 0)
-			local prompt = part:FindFirstChildOfClass("ProximityPrompt")
+			local prompt = part:FindFirstChildWhichIsA("ProximityPrompt", true)
 			if prompt then
 				prompt.ActionText = action
 				prompt.ObjectText = object

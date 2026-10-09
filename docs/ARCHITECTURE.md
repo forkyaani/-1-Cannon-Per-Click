@@ -403,8 +403,9 @@ the two keys and their odds (`Enchant.Keys`, `Enchant.roll`, `Enchant.odds`), th
 
 - **Keys** are backpack items, tradable, not usable from the backpack: `enchantkey` (1 to 3 enchantments, each
   level I to III) and `shinykey` (always 3, at least two at level III). They come from crates (rows in
-  `Features/Crates.luau`), the island shops from The Sun's on (`IslandShop.Key`, for gems) and, the Shiny one,
-  the Robux product `Enchant.ShinyProduct` (`product = 0`: not on sale yet; action `enchantBuyKey`).
+  `Features/Crates.luau`), the island shops from The Sun's on (`IslandShop.Key` and `IslandShop.ShinyKey`, for
+  gems), the store (`Store.Items`, 1,000 gems for the Shiny one). The old Robux product `Enchant.ShinyProduct`
+  stays at `product = 0` (not sold; action `enchantBuyKey` refuses).
 - **The action** is `enchant { pet = id, key = item id, replace = true? }`: the player must have reached The
   Sun (`bestCleared`), stand on its island, own the mini cannon, a key and the gems, and may buy paid random
   items (`PolicyService`, as for the crates). A mini cannon that is enchanted already is only rolled again with
@@ -435,7 +436,9 @@ the enchantments of the first pick and the others' are lost (the window warns an
 picks three matching ones without enchantments. The rules are `Fuse.result`, `Fuse.lost` and `Fuse.fill` in
 the shared module. The action is `fuse { id, id, id }` (a list of exactly three ids, in the order picked): the
 player must have reached The Sun, stand on its island and own every pick. The answer comes on the `fuse`
-channel (`{ pet }`). The MINI CANNONS window no longer fuses, and the story asks for no fusing before
+channel (`{ pet }`). FUSE ALL is the action `fuseAll` (no argument): it fuses every set of three matching mini
+cannons without enchantments, and the results with them, until no set is left (at most `FUSE_ALL_LIMIT`
+fusions a press, 60 today), under the same rules of place; it answers with a toast. The MINI CANNONS window no longer fuses, and the story asks for no fusing before
 chapter 5 (`Story.FuseTask`).
 
 ### Events and their leaderboard (`Features/Event.luau` x3)
@@ -577,7 +580,9 @@ purchases a server sees. It changes nothing in the game and uses hooks only.
   `Passes.owns(player, key)` (`require(script.Parent.Parent.Passes)`). The store window lists it automatically.
   `id = 0` means not on sale yet. Nobody owns a pass they have not bought, in Studio either: there the Debug
   remote gives or takes one (`"pass:<key>"`, below). The passes today: x3 Egg Opener, x3 Luck, +3 and +5 Mini
-  Cannon Slots, +500 Mini Cannon Storage, 3x Speed (`gameSpeed`; 2x is free).
+  Cannon Slots, +500 Mini Cannon Storage, 3x Speed (`gameSpeed`; 2x is free), and the HUGE Tycoon Cannon
+  (`hugeStarter`, added by `src/shared/Features/Huge.luau` as `Huge.PassKey`; owning it gives the
+  `Huge.PassPet` once).
 - Developer products: `Game.products[productId] = function(player) ... return true end`, prompt with
   `Game.promptProduct(player, productId)`.
 - Paid random items: anything random that is paid for with Robux or with a currency of `Config.PaidCurrencies`
@@ -624,7 +629,8 @@ the carriers of every prompt, sign and attribute; the lamps' bulbs, the teleport
 signs stay visible. Shells are placed on the game's own spots: `Pad` + `PadTrim` (tinted with the pad's state
 colour), `Gate` + `GateTrim` (the owner's colour), `Portal` + `PortalSheet`, `Teleporter` + `TeleporterTrim`,
 `Lamp`. `BASE_SOLIDS` adds unseen colliders for the model's solid pieces. Without the folder in the place, or
-on a plot nobody owns, the base looks as before. Not yet run in Studio.
+on a plot nobody owns, the base looks as before. All twelve bases are in the place; those of worlds 1 to 5 were
+seen in a Studio play test on 6 Oct.
 
 ### The world islands
 
@@ -646,7 +652,7 @@ arrival pad, facing it, and the statues and the scenery stand at the rim.
 Require it with `require(script.Parent.Parent.Islands)` from a server feature. All return nil for an unknown
 island or spot.
 
-**A world with a Blender island** (Earth so far; `tools/blender/island.py <World>` makes any of the five, `earth_island.py` is its old name for Earth; imported into the place as
+**A world with a Blender island** (all twelve have a model in the place; `tools/blender/island.py <World>` makes any of them, `earth_island.py` is its old name for Earth; imported into the place as
 `ReplicatedStorage.IslandModels`) wears it over the island built from parts. `IslandModels.<World>` is a model
 of scenery meshes whose pivot is the middle of the island on the ground, in island space;
 `IslandModels.<World>Shells` holds the landmark meshes (`EggPedestal`, `Stall`, `Portal`, `PortalSheet`,

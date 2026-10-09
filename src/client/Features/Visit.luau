@@ -224,12 +224,13 @@ function Feature.start(ctx)
 		Text = "JOIN",
 		BackgroundColor3 = Colors.green,
 	})
-	local card = UI.slot({ Name = "VisitInvite", AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(460, 64), Visible = false, ZIndex = 20 }, {
+	local card = UI.slot({ Name = "VisitInvite", AnchorPoint = Vector2.new(1, 0), Size = UDim2.fromOffset(460, 64), Visible = false, ZIndex = 20 }, {
 		UI.chip({ Size = UDim2.fromScale(1, 1), Active = true }, { cardText, cardJoin }),
 	})
-	-- Under the toast line and the level banner.
+	-- In the notification corner, at a fixed height: under the four-toast stack (ends at y 228) and just above
+	-- the menu orbs (y 296), wherever the stack itself is pushed to.
 	ctx.Hud.onLayout(function(layout)
-		card.Position = UDim2.new(0.5, 0, 0, layout.toast + 136)
+		card.Position = UDim2.new(1, -layout.noteRight, 0, 228)
 	end)
 	local cardFrom: number? = nil
 	cardJoin.Activated:Connect(function()

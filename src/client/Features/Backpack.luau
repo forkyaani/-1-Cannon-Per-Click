@@ -101,8 +101,10 @@ function Backpack.start(ctx)
 		emptyLabel.Visible = order == 0
 	end
 
-	-- GET MORE: one row per Robux bundle, built once.
-	UI.header(list, BUNDLES_ORDER).Text = "GET MORE POWERUPS"
+	-- GET MORE: one row per Robux bundle, built once. refresh() shows the ones that are on sale.
+	local bundleHeader = UI.header(list, BUNDLES_ORDER)
+	bundleHeader.Text = "GET MORE POWERUPS"
+	bundleHeader.Visible = false
 	local bundleRows = {}
 	for index, bundle in Powerups.Bundles do
 		local contents = {}
@@ -114,12 +116,9 @@ function Backpack.start(ctx)
 		row.setIcon("gift")
 		row.title.Text = bundle.name
 		row.sub.Text = table.concat(contents, "  •  ")
-		if bundle.product == 0 then
-			row.button.Text = "NOT ON\nSALE YET"
-		else
-			row.button.Text = `{bundle.price} R$`
-			row.button.BackgroundColor3 = Colors.green
-		end
+		row.button.Text = `{bundle.price} R$`
+		row.button.BackgroundColor3 = Colors.green
+		row.frame.Visible = false
 		row.button.Activated:Connect(function()
 			ctx.act("buyPowerups", bundle.id)
 		end)
@@ -166,15 +165,18 @@ function Backpack.start(ctx)
 		seen = table.clone(items)
 
 		local eventLive = (State.meta.event or {}).active == true
+		-- A bundle without a product id is not on sale and is not listed; an event bundle only during its event.
+		local anyBundle = false
 		for _, bundle in Powerups.Bundles do
-			if bundle.event then
-				bundleRows[bundle.id].frame.Visible = eventLive
-			end
+			local show = bundle.product ~= 0 and (not bundle.event or eventLive)
+			bundleRows[bundle.id].frame.Visible = show
+			anyBundle = anyBundle or show
 		end
+		bundleHeader.Visible = anyBundle
 	end
 
 	ctx.Windows.register(NAME, window, refresh)
-	local menuButton = ctx.Hud.addMenuButton(NAME, Color3.fromRGB(160, 110, 70), 10, window.toggle)
+	ctx.Hud.addMenuButton(NAME, Color3.fromRGB(160, 110, 70), 10, window.toggle)
 	-- "!" while the player holds usable items they have not looked at in here: after joining that is all of
 	-- them, later only what they have gained since.
 	ctx.flag(NAME, function(): boolean
@@ -189,8 +191,7 @@ function Backpack.start(ctx)
 
 	window.frame:GetPropertyChangedSignal("Visible"):Connect(function()
 		if window.frame.Visible then
-			-- Everything in here has been seen now: the "!" goes at once, not at the next state change.
-			menuButton.Text = NAME
+			-- Opening: refresh() has already marked everything as seen; the "!" clears at the next state change.
 			return
 		end
 		-- Closing the window is when used-up items leave the list: nothing can be mid-press then.

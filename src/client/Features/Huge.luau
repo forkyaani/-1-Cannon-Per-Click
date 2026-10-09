@@ -6,7 +6,6 @@
 -- And what the player sees of a Huge at work: the sign on the HUD while one is equipped, the giant shot and
 -- its number whenever the server fires a Huge Shot, and the reveal when the game pass's Huge is given.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 -- Requiring it is also what gives this client the things the shared module adds to Config: the Huge game
@@ -267,8 +266,6 @@ function Huge.start(ctx)
 		badge.Position = UDim2.new(0.5, 0, 0, (layout.top + 210) * layout.s)
 	end)
 
-	local shotAt = os.clock() -- when the last Huge Shot was fired
-	local shotGap = Config.HugeShot.seconds -- the wait between two of them: shorter with several Huges
 	local badgeShown = "" -- what the badge last said
 
 	local function refreshBadge()
@@ -286,7 +283,6 @@ function Huge.start(ctx)
 		if #huges == 0 then
 			return
 		end
-		shotGap = Config.HugeShot.seconds / #huges
 		local name = if #huges == 1 then string.upper(Config.Pets[huges[1]].name) else `{#huges} HUGE CANNONS`
 		local text = `{name}  •  x{Format.abbreviate(power)} TOWER DAMAGE  •  HUGE SHOT x{Config.HugeShot.shots}`
 		if text ~= badgeShown then
@@ -296,12 +292,6 @@ function Huge.start(ctx)
 	end
 	State.onChange(refreshBadge)
 	refreshBadge()
-
-	RunService.RenderStepped:Connect(function()
-		if badge.Visible then
-			chargeFill.Size = UDim2.fromScale(math.clamp((os.clock() - shotAt) / shotGap, 0, 1), 1)
-		end
-	end)
 
 	------------------------------------------------------------------------------------------------
 	-- The Huge Shot: the server fires it at the lead monster near the player (the one their mini cannons shoot
@@ -348,7 +338,6 @@ function Huge.start(ctx)
 		if typeof(petId) ~= "string" or typeof(damage) ~= "number" then
 			return
 		end
-		shotAt = os.clock()
 		pop.Scale = 1.2
 		TweenService:Create(pop, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 		local pet = Config.Pets[petId]

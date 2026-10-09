@@ -28,15 +28,39 @@ end
 -- Nobody starts with a pass they have not bought, in Studio either; setForTesting gives one for a test.
 function Passes.load(player: Player)
 	local set = {}
+	local failed = {} -- [pass key] = the error, for the checks Roblox did not answer
 	for key, pass in Config.Passes do
 		if pass.id ~= 0 then
 			local ok, result = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, pass.id)
 			if ok and result then
 				set[key] = true
 			elseif not ok then
-				warn(`[Passes] ownership check failed for {key}: {result}`)
+				failed[key] = result
 			end
 		end
+	end
+	-- Ask again for the ones that errored, all together, so a Roblox hiccup adds 3 seconds to a join at most.
+	for _, delay in { 1, 2 } do
+		if next(failed) == nil then
+			break
+		end
+		task.wait(delay)
+		if player.Parent == nil then
+			break
+		end
+		local still = {}
+		for key in failed do
+			local ok, result = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, Config.Passes[key].id)
+			if ok and result then
+				set[key] = true
+			elseif not ok then
+				still[key] = result
+			end
+		end
+		failed = still
+	end
+	for key, result in failed do
+		warn(`[Passes] ownership check failed for {key}: {result}`)
 	end
 	owned[player] = set
 end

@@ -14,7 +14,7 @@ local DARK = rgb(44, 46, 54)
 local STONE = rgb(206, 200, 190)
 local CORE = rgb(190, 120, 255)
 local GOLD = rgb(255, 200, 40)
-local FUSE_ALL_LIMIT = 400 -- fusions in one FUSE ALL: far more than a full storage holds
+local FUSE_ALL_LIMIT = 60 -- fusions in one FUSE ALL: every fusion rebuilds the equipped models, so one press is bounded (a storage without the pass needs 24 at most; press again if sets remain)
 local SPOT_SIDE = 5 -- the machine stands on the right half of the island's `enchant` spot (the enchanting table on the left)
 
 local Feature = {}
@@ -177,7 +177,8 @@ function Feature.start(Game)
 			return
 		end
 		Game.send(player, "fuse", { pet = best })
-		Game.notify(player, `Fused {fusions} time{if fusions == 1 then "" else "s"}! Best: {Config.Pets[best].name}, {Format.petPower(Config.Pets[best])}`, "good")
+		local more = if fusions == FUSE_ALL_LIMIT then " Press FUSE ALL again for the rest." else ""
+		Game.notify(player, `Fused {fusions} time{if fusions == 1 then "" else "s"}! Best: {Config.Pets[best].name}, {Format.petPower(Config.Pets[best])}{more}`, "good")
 	end
 end
 

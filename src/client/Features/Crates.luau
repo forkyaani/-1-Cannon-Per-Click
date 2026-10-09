@@ -67,6 +67,11 @@ function Crates.start(ctx)
 		end
 		local ok, err = pcall(function()
 			for order, crate in Shared.List do
+				-- A Robux crate without a product id is not on sale, so it is not listed.
+				local price = crate.price
+				if price and price.currency == "robux" and price.product == 0 then
+					continue
+				end
 				Loot.register({
 					id = "crate:" .. crate.id,
 					group = "Crates",
@@ -322,7 +327,9 @@ function Crates.start(ctx)
 			local held = items[crate.id] or 0
 			local source = Shared.sourceText(crate, best)
 			-- An event crate leaves the shop with the event, unless the player still has some to open.
-			row.frame.Visible = not (price and price.event) or eventLive or held > 0
+			-- A Robux crate without a product id is not on sale yet: hidden too, unless some are held.
+			local unsold = price ~= nil and price.currency == "robux" and price.product == 0
+			row.frame.Visible = (not unsold or held > 0) and (not (price and price.event) or eventLive or held > 0)
 			row.title.Text = if crate.instant then crate.name else `{crate.name}  x{held}`
 
 			if crate.daily then

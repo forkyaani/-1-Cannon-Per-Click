@@ -533,6 +533,7 @@ end
 local toastPanel: Frame
 local layoutHooks: { (layout: any) -> () } = {}
 local layout = { s = 1, W = 1280, T = 58, top = 8, stack = 66, toast = 252, noteRight = 16, noteTop = 12 }
+local noteFloor = 0 -- design px the notifications must start below (the tutorial banner, when it is in their way)
 
 local function relayout()
 	local s, W, T = UI.scale(), UI.W(), UI.T()
@@ -561,12 +562,20 @@ local function relayout()
 	slim.Position = UDim2.fromOffset(MARGIN, T + 8)
 	-- Notifications hang in the top-right corner, left of the menu column when that stands on the right edge.
 	layout.noteRight = if inMarket then right + CELL.X * columns + 18 else MARGIN
-	layout.noteTop = 12
+	layout.noteTop = math.max(12, noteFloor)
 	if toastPanel then
 		toastPanel.Position = UDim2.new(1, -layout.noteRight * s, 0, layout.noteTop * s)
 	end
 	for _, hook in layoutHooks do
 		hook(layout)
+	end
+end
+
+-- Something of another feature stands in the notifications' corner down to y (design px); 0 frees it again.
+function Hud.keepNoticesBelow(y: number)
+	if y ~= noteFloor then
+		noteFloor = y
+		relayout()
 	end
 end
 
@@ -758,8 +767,8 @@ function Hud.refresh()
 
 	-- Coins earned since the last refresh float up next to the pill.
 	if lastCoins and coins > lastCoins then
-		local frame = coinPill.frame
-		local at = frame.AbsolutePosition + Vector2.new(frame.AbsoluteSize.X + 60 * UI.scale(), frame.AbsoluteSize.Y / 2 + 30)
+		local frame = if inMarket then slimCoins.frame else coinPill.frame
+		local at = frame.AbsolutePosition + (if inMarket then Vector2.new(frame.AbsoluteSize.X / 2, frame.AbsoluteSize.Y + 30 + 100 * UI.scale()) else Vector2.new(frame.AbsoluteSize.X + 60 * UI.scale(), frame.AbsoluteSize.Y / 2 + 30))
 		Hud.popup(at, `+{Format.abbreviate(coins - lastCoins)}`, Colors.gold)
 	end
 	lastCoins = coins

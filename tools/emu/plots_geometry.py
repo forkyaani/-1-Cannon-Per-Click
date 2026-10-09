@@ -600,7 +600,7 @@ def main():
                   f"plot {slot} pad {index + 1} is at Layout.padPosition")
             check(pad.attrs.get("Pad") == index + 1 and pad.attrs.get("Slot") == slot and pad.attrs.get("Owned") is False,
                   f"plot {slot} pad {index + 1} attributes")
-            prompt = next((c for c in pad.children if c.cls == "ProximityPrompt"), None)
+            prompt = next((c for child in pad.children for c in child.children if c.cls == "ProximityPrompt"), None)
             check(prompt is not None and prompt.attrs.get("Pad") == index + 1 and prompt.attrs.get("Slot") == slot,
                   f"plot {slot} pad {index + 1} prompt attributes")
             square = Shape(pad, frame)

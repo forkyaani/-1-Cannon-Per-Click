@@ -489,7 +489,12 @@ local function buildPads(plot)
 		part:SetAttribute("Pad", index)
 		part:SetAttribute("Slot", plot.slot)
 		part:SetAttribute("Owned", false)
-		local prompt = Build.prompt(part, "Buy", "Cannon Pad")
+		-- The prompt hangs above the slab, not in it: at floor level it shows under the feet of whoever stands here.
+		local anchor = Instance.new("Attachment")
+		anchor.Name = "PromptAnchor"
+		anchor.Position = Vector3.new(0, 2.5, 0)
+		anchor.Parent = part
+		local prompt = Build.prompt(anchor, "Buy", "Cannon Pad")
 		prompt.MaxActivationDistance = 10
 		prompt.Enabled = false
 		prompt:SetAttribute("Pad", index)
@@ -1096,7 +1101,11 @@ function Plots.buildPets(slot: number, equipped: { string }, userId: number): Mo
 			model.PrimaryPart = modelled
 			model:SetAttribute("Home", model:GetPivot())
 			model:SetAttribute("PetId", id)
-			model:SetAttribute("Follow", followSpot)
+			if perch then
+				model:SetAttribute("Perch", perch)
+			else
+				model:SetAttribute("Follow", followSpot)
+			end
 			model.Parent = container
 			continue
 		end

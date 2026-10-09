@@ -70,7 +70,7 @@ function Build.billboard(part: BasePart, size: Vector2, offset: Vector3, maxDist
 	return gui
 end
 
-function Build.prompt(part: BasePart, action: string, object: string): ProximityPrompt
+function Build.prompt(part: Instance, action: string, object: string): ProximityPrompt
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = action
 	prompt.ObjectText = object

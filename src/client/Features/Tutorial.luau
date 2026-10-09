@@ -254,13 +254,13 @@ function Feature.start(ctx)
 	local skipLink = UI.make("TextButton", {
 		Name = "Skip",
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, BUTTON_Y + 94),
-		Size = UDim2.fromOffset(380, 40),
+		Position = UDim2.new(0.5, 0, 0, BUTTON_Y + 90),
+		Size = UDim2.fromOffset(400, 54),
 		BackgroundTransparency = 1,
 		AutoButtonColor = false,
 		Font = UI.FONT,
 		Text = "",
-		TextSize = 20,
+		TextSize = 22,
 		TextColor3 = Colors.cream,
 		Visible = false,
 		ZIndex = 2,
@@ -502,6 +502,7 @@ function Feature.start(ctx)
 	local STAT_ROW = Vector2.new(776, 60)
 	local lastLayout = nil
 	local placedOpen: boolean? = nil
+	local bannerY = 0 -- design px, where the banner was last put
 	local function placeBanner(open: boolean)
 		local layout = lastLayout
 		if not layout then
@@ -514,6 +515,7 @@ function Feature.start(ctx)
 		elseif layout.W / 2 - BANNER.X / 2 >= STAT_ROW.X + 8 then
 			y = layout.T + 8
 		end
+		bannerY = y
 		bannerScale.Scale = layout.s
 		banner.Position = UDim2.new(0.5, 0, 0, y * layout.s)
 	end
@@ -698,6 +700,16 @@ function Feature.start(ctx)
 		return false
 	end
 
+	-- A window taller than the ones the steps use has its title and X where the banner goes.
+	local function tallWindowOpen(): boolean
+		for _, window in ctx.Windows.byName do
+			if window.frame.Visible and window.frame.Size.Y.Offset > 480 then
+				return true
+			end
+		end
+		return false
+	end
+
 	-- What the step asks for right now: the second line, the place to walk to, the menu button to press.
 	-- Every step that happens on the plot sends a player who has wandered off back home first.
 	local ON_PLOT = { pad = true, open = true, upgrade = true, pad2 = true, build = true, lives = true }
@@ -762,6 +774,7 @@ function Feature.start(ctx)
 		if not step or step.card or cardUp then
 			banner.Visible = false
 			target, pointAt = nil, nil
+			Hud.keepNoticesBelow(0)
 			return
 		end
 		local now = meta()
@@ -778,7 +791,7 @@ function Feature.start(ctx)
 		if open ~= placedOpen then
 			placeBanner(open)
 		end
-		banner.Visible = true
+		banner.Visible = not tallWindowOpen()
 		countLabel.Text = `{Tutorial.Index[step.id]}/{#Tutorial.Steps}`
 		titleLine.Text = step.title
 		detailLine.Text = detail
@@ -795,6 +808,14 @@ function Feature.start(ctx)
 			openAskedAt = os.clock()
 			ctx.act("tutorialAck", "open")
 		end
+
+		-- The story box and the notifications hang in the top right: they start under the banner when it reaches them.
+		local layout = lastLayout
+		local inTheWay = banner.Visible
+			and layout ~= nil
+			and layout.W / 2 + BANNER.X / 2 > layout.W - layout.noteRight - 470
+			and bannerY < 12 + 90
+		Hud.keepNoticesBelow(if inTheWay then bannerY + BANNER.Y + 12 else 0)
 	end
 
 	local function refresh()

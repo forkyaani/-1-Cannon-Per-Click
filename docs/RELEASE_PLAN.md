@@ -1,6 +1,11 @@
 # Release plan: public on Saturday 10 October 2026
 
-Written Monday 5 October 2026. Five days. This is the one list for the release: everything that has to
+**Status frozen on 7 October.** The live job list is `docs/RELEASE_TASKS.md`; where the two disagree, that
+file is right. The model counts in section 0, the summary in section D and the dates in section 8 are as
+written on 5 and 6 October: all twelve worlds' islands, bases and monsters have since been modelled
+(RELEASE_TASKS K, L, M).
+
+Written Monday 5 October 2026. Five days. This was the one list for the release as planned on 5 October: everything that has to
 happen, in code, in Blender, in Studio and on Roblox. `README.md` is how to set up and the working rules,
 `docs/BUILD_QUEUE.md` the record of what Yaani decided and what was built, `docs/VISUAL_AUDIT.md` the full
 inventory of what looks placeholder (the M, D, U and E numbers below are its), and `docs/PLAN.md` the money,
@@ -20,7 +25,7 @@ the ad budget and the human checklist.
    no missing model can break the game. The plan models what a player sees on the first day and ships the
    rest in order, world by world, after the release.
 3. **Settled 6 October: the group's experience is the release.** Yaani imported every model into the group's
-   place (`2504544`) and works there. What follows is the record of why it was a question.
+   place (ids in section 1, "One place") and works there. What follows is the record of why it was a question.
    There were two experiences, and only one can be the release. Yaani's "Project Egg WIP" holds the
    models as first imported (meshes owned by the account `OhYaani`; `place/ProjectEgg.rbxl` is its copy). On
    5 October Victor published a second one, `+1 Cannon Per Click`, under the group Astral Crafts, built from
@@ -95,8 +100,8 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 | B9 | P0 | Paid random items: the odds are shown for every egg, crate and enchant roll, and `PolicyService` is asked before each paid roll (it is in Crates and Enchant; check the x3 Luck pass and the eggs) | a restricted test account cannot buy a random item | Yaani | doing: 6 Oct one helper (`src/server/Policy.luau`); the Gem Egg and the x3 Luck pass now ask too (`tests/policy.luau`). Left: a restricted player still sees the Gem Egg stand and the pass and is refused on pressing; a restricted account in Studio |
 | B10 | P0 | Halloween event end to end: candy drops, the four eggs, the candy shop, the event leaderboard, the top five's rewards paid once on the next join, everything gone after `Config.Halloween.endsAt` (1 November 2026, 00:00 UTC) | played with a test end time five minutes away | | open |
 | B11 | P0 | The first save of the real game. The live experience already holds test saves from 5 October in `PlayerData_v4`. Decide: wipe them or rename the store | no tester starts the release at level 28 | | open |
-| B12 | P0 | Marketplace wear code for D5: the model over the part-built square, the way `Islands.wear` does it; the Halloween dress shown and hidden with the event | every prompt and sign of `Marketplace.luau` stands where the model shows it | | open |
-| B13 | P0 | Base wear code for D7 in `Plots.luau` (shells placed as `earth_base.py`'s header says, the `...Trim` meshes tinted by the game), and `Models.tower` using D6's models; the part-built ones stay as the fall back | `tools/emu/tests/defense_client.luau` passes; aiming and the muzzle unchanged | | open |
+| B12 | P0 | Marketplace wear code for D5: the model over the part-built square, the way `Islands.wear` does it; the Halloween dress shown and hidden with the event | every prompt and sign of `Marketplace.luau` stands where the model shows it | d1v | done 6 Oct in code (d1v): `Marketplace.wear`, Halloween dress; see `docs/RELEASE_TASKS.md` F2 to F5 |
+| B13 | P0 | Base wear code for D7 in `Plots.luau` (shells placed as `earth_base.py`'s header says, the `...Trim` meshes tinted by the game), and `Models.tower` using D6's models; the part-built ones stay as the fall back | `tools/emu/tests/defense_client.luau` passes; aiming and the muzzle unchanged | | base wear done (`docs/RELEASE_TASKS.md` B2); `Models.tower` from models is after launch |
 | B14 | P1 | Loot viewer and the Huge showcase using `Models.mini` (M7, M8) | one mini cannon builder, not three | | open |
 | B15 | P0 | The group promises codes ("Exclusive codes" in its description) and the game has no way to redeem one. Build a small code box, or take the line out of the group | the promise and the game agree | Yaani | done 6 Oct in code and `tests/codes.luau`: a CODES window. The one code, LAUNCH for 100 gems, is a placeholder for Yaani to set; not seen in Studio |
 | B16 | P1 | Analytics: the funnel of the first ten minutes (joined, welcome done, first tower, level 5, first hatch, level 10, marketplace) and every purchase | visible in Creator Hub | Yaani | done 6 Oct in code and `tests/analytics.luau` (seven funnel steps, pass and product purchases). Not seen in Creator Hub: it sends nothing in Studio |
@@ -107,8 +112,9 @@ Status is `open`, `doing`, `done <date>` or `cut`. Owner is empty until somebody
 
 ### C. Robux: passes and products
 
-Every one has id 0 today, which means not on sale. Each needs to be created in Creator Hub under the
-experience, given an icon (E4), and its id pasted into the file named.
+The six passes, the HUGE Tycoon pass and the six gem packs have ids and are on sale. C7 to C12 are still id 0,
+which means not on sale, and are hidden. Each needs to be created in Creator Hub under the experience, given
+an icon (E4), and its id pasted into the file named.
 
 | # | P | Task | Robux | Where the id goes | Owner | Status |
 |---|---|---|---|---|---|---|
@@ -118,13 +124,15 @@ experience, given an icon (E4), and its id pasted into the file named.
 | C4 | P0 | Pass: +5 Mini Cannon Slots | 549 | `Config.Passes.slots5` | Victor | done 6 Oct |
 | C5 | P0 | Pass: +500 Mini Cannon Storage | 249 | `Config.Passes.storage500` | Victor | done 6 Oct |
 | C6 | P0 | Pass: 3x Speed (2x is free for everyone since 6 Oct; the code and `tests/smoke.luau` are done, the pass still has to be created) | 99 | `Config.Passes.gameSpeed` | Victor | done 6 Oct |
-| C7 | P0 | Product: Shiny Enchantment Key | 149 | `Enchant.ShinyProduct` (`src/shared/Features/Enchant.luau`) | | open |
-| C8 | P0 | Product: the Robux crate | 99 | `src/shared/Features/Crates.luau`, the `robux` price | | open |
-| C9 | P0 | Product: Boost Pack | 49 | `src/shared/Features/Powerups.luau` | | open |
-| C10 | P0 | Product: Boss Buster Pack | 129 | same | | open |
-| C11 | P0 | Product: Mega Pack | 399 | same | | open |
-| C12 | P0 | Product: Candy Pack (event) | 79 | same | | open |
-| C13 | P0 | Buy each once on the live place with a real account: the pass works at once and after rejoining; a product is granted once, and once only when the receipt is retried (`Game.processReceipt`) | 12 ticks | | open |
+| C6b | P0 | Pass: HUGE Tycoon Cannon | 1,499 | `Config.Passes.hugeStarter`, set in `src/shared/Features/Huge.luau` | Yaani | done 7 Oct (RELEASE_TASKS O1) |
+| C6c | P0 | Products: six gem packs | 49 to 2,499 | `Store.GemPacks` (`src/shared/Features/Store.luau`) | Yaani | done 7 Oct (RELEASE_TASKS J3) |
+| C7 | P0 | Product: Shiny Enchantment Key | 149 | `Enchant.ShinyProduct` (`src/shared/Features/Enchant.luau`) | | undecided, still `product = 0`, hidden at launch (RELEASE_TASKS O2, S3) |
+| C8 | P0 | Product: the Robux crate | 99 | `src/shared/Features/Crates.luau`, the `robux` price | | undecided, still `product = 0`, hidden at launch (RELEASE_TASKS O2, S3) |
+| C9 | P0 | Product: Boost Pack | 49 | `src/shared/Features/Powerups.luau` | | undecided, still `product = 0`, hidden at launch (RELEASE_TASKS O2, S3) |
+| C10 | P0 | Product: Boss Buster Pack | 129 | same | | undecided, still `product = 0`, hidden at launch (RELEASE_TASKS O2, S3) |
+| C11 | P0 | Product: Mega Pack | 399 | same | | undecided, still `product = 0`, hidden at launch (RELEASE_TASKS O2, S3) |
+| C12 | P0 | Product: Candy Pack (event) | 79 | same | | still `product = 0`, hidden at launch (RELEASE_TASKS S3); not listed in O2 |
+| C13 | P0 | Buy each once on the live place with a real account: the pass works at once and after rejoining; a product is granted once, and once only when the receipt is retried (`Game.processReceipt`) | 13 ticks (7 passes, 6 gem packs) | | open |
 | C14 | P0 | Group revenue: who gets what share of Astral Crafts' Robux (Victor and Yaani decide; set in the group's payouts) | set | | open |
 
 ### D. Models, islands, bases, sky and sound: see `docs/RELEASE_TASKS.md`
@@ -157,7 +165,7 @@ showcase still build mini cannons from parts (B14).
 
 ### F. Sound
 
-The game is silent today.
+Silent on 5 October; effects and music went in on 6 October (rows below).
 
 | # | P | Task | Done when | Owner | Status |
 |---|---|---|---|---|---|
@@ -203,7 +211,7 @@ Found in play tests (H3):
 |---|---|---|---|---|---|
 | R1 | P0 | This plan on `main`; both of us can push | merged | Victor | done 5 Oct |
 | R2 | P0 | The kept place file is the release experience's: `place/ProjectEgg.rbxl` refreshed from it (File, Download a Copy) after every import, as `place/README.md` says. Better, if there is time: the four folders saved as `.rbxm` and mapped in `default.project.json`, so `rojo build` gives the whole game | the committed file, opened and played, shows every model that is live | | open |
-| R3 | P0 | `tools/studio/organize_imports.luau` for every world: monsters and bosses by a name table instead of Earth's six; worlds with two-word names (`The Sun`, `Crystal Belt`, `Robot Factory`, `Alien Jungle`, `Black Hole`, `The Big Bang`) | the Moon's files import with no edit to the script | | open |
+| R3 | P0 | `tools/studio/organize_imports.luau` for every world: monsters and bosses by a name table instead of Earth's six; worlds with two-word names (`The Sun`, `Crystal Belt`, `Robot Factory`, `Alien Jungle`, `Black Hole`, `The Big Bang`) | the Moon's files import with no edit to the script | | superseded by `tools/studio/setup_models.luau` (RELEASE_TASKS A6, done) |
 | R4 | P0 | Rojo for both: `rokit install` works on both machines (`rokit.toml` pins Rojo 7.7.1), the Rojo plugin is in both Studios | both have synced a change | | open |
 | R5 | P1 | `README.md` (Yaani, 5 Oct): add how to import a model (section 7 here) and name the release experience | both in | Yaani | done 5 Oct, two lines to add |
 | R6 | P1 | A check on every pull request that runs the tests (GitHub Actions; the tests need only Python 3) | a red cross on a broken pull request | | open |
@@ -217,7 +225,7 @@ Each blocks a task above. Write the answer here.
 | 1 | Which experience is released: the group's `+1 Cannon Per Click` (the plan), or Yaani's "Project Egg WIP"? And who presses Publish? | C, G, R2, G10 | The group's (6 Oct: Yaani imported every model into it). Who publishes: still open |
 | 1b | Is it acceptable that worlds 4 to 12 are part-built on Saturday? The plan assumes yes | everything | |
 | 2 | Mastery Rapid and Silver's Rapid Fire: remove and refund, or a new meaning? | A3 | |
-| 3 | Gems for Robux at launch: no (the plan), or yes? | A7 | |
+| 3 | Gems for Robux at launch: no (the plan), or yes? | A7 | yes, 7 Oct (A7) |
 | 4 | Test saves in the live experience: wipe? | B11 | |
 | 5 | Codes: build a code box, or drop the promise? | B15 | |
 | 6 | Revenue split of the group | C14 | |
@@ -268,7 +276,7 @@ H2, H4, H5, H6 (the play tests). **18:00 code freeze.** Evening: H3 only.
 - [ ] One experience, named in section 0, and `place/ProjectEgg.rbxl` is its copy (decision 1, R2)
 - [ ] A new account plays the first ten minutes on a phone with no error, with sound, and with no bare
       placeholder on screen (H2)
-- [ ] All 6 passes and 6 products are on sale and each was bought once (C13)
+- [ ] All 7 passes and 6 gem packs are on sale and each was bought once (C13)
 - [ ] A restricted account cannot buy a random item, and every random item shows its odds (B9)
 - [ ] The group reward pays once: 250 gems and +10% coins (`Config.Fan.groupId = 230235107`)
 - [ ] Saves survive leaving, a second device and a server closing (H6); no test save is left (B11)
@@ -286,14 +294,17 @@ H2, H4, H5, H6 (the play tests). **18:00 code freeze.** Evening: H3 only.
    the island on the ground for scenery.
 2. `blender --background --python tools/blender/<script>.py -- assets/models/<folder>`. Commit the FBX, the
    `.blend` and the render.
-3. In Studio, the published place, edit mode: File, Import. Tick **Insert Using Scene Position**. Creator
-   **Astral Crafts**.
-4. Run `tools/studio/organize_imports.luau` in the command bar. It prints what it found, for example
-   `mini cannons 25/25, eggs 5/5, island pieces 13/13, creatures 6/6`.
-5. Delete the raw import from the Workspace. Play test: which way it faces, where it stands, its size.
-6. File, Download a Copy over `place/ProjectEgg.rbxl` (R2), commit, publish.
+3. Import and file it with the steps in `place/README.md`: in the group's place, edit mode, File > Import,
+   tick **Anchored**, Creator **Astral Crafts**, then run `tools/studio/setup_models.luau` in the command bar
+   (it files islands, bases, the marketplace, creatures, mini cannons and eggs by the file's name and removes
+   the import from the Workspace). Egg halves (`egg_halves.fbx`) go through `tools/studio/add_minis.luau`
+   instead. Do NOT run `tools/studio/organize_imports.luau`: it deletes MiniCannons, EggModels, IslandModels
+   and Creatures first and only knows Earth.
+4. Play test: which way it faces, where it stands, its size.
+5. File, Download a Copy over `place/ProjectEgg.rbxl` (R2), commit, publish.
 
-Known traps, all met on 5 October: the importer keeps a mesh's origin but not which way it looks (the script
+History of the old script (`organize_imports.luau`; its "Insert Using Scene Position" advice now applies only
+to `add_minis.luau`). Known traps, all met on 5 October: the importer keeps a mesh's origin but not which way it looks (the script
 turns every pivot; Blender's front, -Y, arrives as -Z); it drops material colours (hence D2); and
 "Set Pivot to Scene Origin" only helps with "Insert Using Scene Position" ticked.
 

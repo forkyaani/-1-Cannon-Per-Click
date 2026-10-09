@@ -54,7 +54,7 @@ local function start(ctx)
 	------------------------------------------------------------------------------------------------
 	-- Top line: what is equipped, and the storage bar.
 	------------------------------------------------------------------------------------------------
-	local headline = UI.text({ Size = UDim2.fromOffset(330, 26), TextXAlignment = left, MaxSize = 18, Parent = body })
+	local headline = UI.text({ Size = UDim2.fromOffset(330, 26), TextXAlignment = left, MaxSize = 22, Parent = body })
 	local storage = UI.bar({
 		parent = body,
 		position = UDim2.fromOffset(338, 1),
@@ -212,12 +212,12 @@ local function start(ctx)
 	local paneRarity = UI.text({ Position = UDim2.fromOffset(6, 145), Size = UDim2.new(1, -12, 0, 18), MaxSize = 14, Parent = pane })
 	local paneFacts = UI.text({
 		Position = UDim2.fromOffset(8, 166),
-		Size = UDim2.new(1, -16, 0, 96),
+		Size = UDim2.new(1, -16, 0, 112),
 		TextXAlignment = left,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		TextColor3 = Colors.text,
 		TextWrapped = true,
-		MaxSize = 13,
+		MaxSize = 17,
 		Parent = pane,
 	})
 	local function paneButton(y: number, color: Color3): TextButton
@@ -268,13 +268,14 @@ local function start(ctx)
 			Parent = body,
 		})
 	end
-	local bestButton = barButton(0, 136, "EQUIP BEST", Colors.green)
-	local noneButton = barButton(142, 136, "UNEQUIP ALL", Colors.orange)
-	local manyButton = barButton(284, 150, "DELETE MANY", Colors.red)
-	local cancelButton = barButton(440, 110, "CANCEL", Colors.grey)
+	local LOADOUT_X = 390 -- where the loadout buttons start; CANCEL takes their place in delete mode
+	local bestButton = barButton(0, 124, "EQUIP BEST", Colors.green)
+	local noneButton = barButton(130, 124, "UNEQUIP ALL", Colors.orange)
+	local manyButton = barButton(260, 124, "DELETE MANY", Colors.red)
+	local cancelButton = barButton(LOADOUT_X, 110, "CANCEL", Colors.grey)
 	local loadoutButtons = {}
 	for slot = 1, Minis.LOADOUTS do
-		local button = barButton(440 + (slot - 1) * 56, 50, tostring(slot), Colors.blue)
+		local button = barButton(LOADOUT_X + (slot - 1) * 56, 50, tostring(slot), Colors.blue)
 		button.Activated:Connect(function()
 			ctx.act("minisLoadout", { slot = slot, save = saving })
 			saving = false
@@ -282,15 +283,15 @@ local function start(ctx)
 		end)
 		loadoutButtons[slot] = button
 	end
-	local saveButton = barButton(440 + Minis.LOADOUTS * 56, 100, "SAVE", Colors.gold)
+	local saveButton = barButton(LOADOUT_X + Minis.LOADOUTS * 56, 84, "SAVE", Colors.gold)
 	UI.text({
 		AnchorPoint = Vector2.new(1, 1),
 		Position = UDim2.new(1, 0, 1, -2),
-		Size = UDim2.new(1, -(440 + Minis.LOADOUTS * 56 + 108), 0, BAR_HEIGHT - 4),
+		Size = UDim2.new(1, -(LOADOUT_X + Minis.LOADOUTS * 56 + 92), 0, BAR_HEIGHT - 4),
 		TextColor3 = Colors.text,
 		MaxSize = 13,
 		TextWrapped = true,
-		Text = "LOADOUTS: a number equips it. SAVE, then a number, stores what is equipped now.",
+		Text = "1-3: equip a loadout\nSAVE then 1-3: store",
 		Parent = body,
 	})
 	bestButton.Activated:Connect(function()
@@ -347,7 +348,7 @@ local function start(ctx)
 			return false
 		elseif kind == "enchanted" and not pet.enchanted then
 			return false
-		elseif kind == "fused" and not pet.tier then
+		elseif kind == "fused" and (pet.tier or 0) < 1 then
 			return false
 		elseif kind ~= "all" and kind ~= "equipped" and kind ~= "enchanted" and kind ~= "fused" and pet.rarity ~= kind then
 			return false

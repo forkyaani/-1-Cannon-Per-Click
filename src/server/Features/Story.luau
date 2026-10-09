@@ -285,7 +285,17 @@ local function claim(player: Player, data, _state, index: unknown)
 	local reward = Story.resolve(chapter.reward, wave, chapter.index, chapter.index)
 	-- Marked before it is paid, like a quest: a claim that failed half way must not be claimable again.
 	save.claimed[key] = true
+	-- The mini cannon goes first and unforced: a full storage must not lose a stronger one to it.
+	-- Nothing else is paid yet, so the claim can still be given back.
+	local pets = reward.pets
+	if pets[1] and not Game.pets.add(player, pets[1], false) then
+		save.claimed[key] = nil
+		Game.notify(player, "Free a mini cannon slot to claim this reward", "bad")
+		return
+	end
+	reward.pets = {}
 	pay(player, data, reward)
+	reward.pets = pets -- back in, so the message below still names it
 	publish(player, session)
 	Game.notify(player, `Chapter {chapter.index} reward: {Story.rewardText(reward)}`, "good")
 end
