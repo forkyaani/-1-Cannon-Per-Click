@@ -287,6 +287,24 @@ sheets C to E in `docs/UI_VISION.md` section 8 were planned and never made.
 - [ ] Q9. **[open]** Pictures for the Roblox purchase prompts: upload an icon to each of the six gem packs and the seven game passes in Creator Hub (they are blank today) **[S]** · **30 min**
 - [ ] Q10. **[open]** Seen in Studio: every window on a desktop and a phone-sized screen, no oval or emoji left **[S]** · **30 min**
 
+## R. Rebirth redone (asked for by Yaani on 9 Oct; PLAN only, not started, nobody has it yet)
+
+**The problem (Yaani):** after a rebirth the player is back at Earth level 1 with mini cannons that one-shot
+everything, and has to sit through hundreds of levels with nothing to do.
+
+**Today (`Config.Rebirth`, `actions.rebirth` in `src/server/Game.luau`):** a rebirth is allowed once the
+final boss of world (rebirths + 1) is beaten. It resets the level, coins, pads and towers; mini cannons,
+gems, items, mastery and enchantments are kept. It gives +5% tower damage for good and 100 gems. Twelve at
+most. Levels are replayed one by one at normal speed.
+
+- [ ] R1. **[open]** Yaani picks the fix (the options are in the chat of 9 Oct and below), then it is written here as jobs. Nothing is built before that.
+
+Options put to Yaani:
+- **A. Skip what you can one-shot.** After a rebirth the game starts the player at the highest level their kept mini cannons clear instantly (worked out from their damage), and pays the skipped levels' coins in one go. The replay shrinks from hundreds of levels to the ones that are a fight.
+- **B. Rush mode.** Levels the player has cleared before, and clears in under a few seconds, run in a fast mode: many levels a second, no waiting between them, until one puts up a fight.
+- **C. Monsters grow with rebirths.** Each rebirth makes every monster tougher (and pay more), so the kept mini cannons do not one-shot and the run is a game again.
+- **D. A bigger reason to do it.** Whatever of A to C is chosen, the reward (+5% and 100 gems) can be made worth the reset: rebirth tokens for a small permanent upgrade shop.
+
 ## After launch
 
 **Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
