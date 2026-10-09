@@ -305,6 +305,18 @@ Options put to Yaani:
 - **C. Monsters grow with rebirths.** Each rebirth makes every monster tougher (and pay more), so the kept mini cannons do not one-shot and the run is a game again.
 - **D. A bigger reason to do it.** Whatever of A to C is chosen, the reward (+5% and 100 gems) can be made worth the reset: rebirth tokens for a small permanent upgrade shop.
 
+## S. Release clean-up sweep (asked for by Yaani on 9 Oct; code only, no Studio)
+
+**For d1v: this touches many files in `src/` at once. Pull before working in `src/`, and expect one big push when it lands.**
+Small, safe fixes only: no new features, no balance changes, no redesigns. Every fix keeps the emulator tests passing.
+
+- [ ] S1. **[Yaani]** (taken: Yaani, 9 Oct 16:59) Audit of all of `src/` by area (server core, saving, purchases, features, client windows, tutorial, phone layout, leftovers of debugging, docs): a checked list of what is wrong · **1 h 00**
+- [ ] S2. **[Yaani]** (taken: Yaani, 9 Oct 16:59) Fix what S1 confirms, and the phone findings of I5 and P9: the Huge mini cannon in front of the camera, small print, the tutorial banner over window titles and over the story banner, the pad prompt that still says BUY PAD after building, no prompt when standing on a pad, the small "Skip tutorial" target, the HUD button that needs a second tap, the loadout hint · **3 h 00**
+- [ ] S3. **[Yaani]** (taken: Yaani, 9 Oct 16:59) Things for sale with `product = 0` (O2) are hidden until they have an id, instead of "not on sale yet". They come back by themselves when an id is pasted in · **30 min**
+- [ ] S4. **[Yaani]** (taken: Yaani, 9 Oct 16:59) Debug remotes, test switches and stray prints are off in the live game · **30 min**
+- [ ] S5. **[Yaani]** (taken: Yaani, 9 Oct 16:59) Docs that no longer match the game (`README.md`, `docs/ARCHITECTURE.md`, `place/README.md`) brought up to date · **30 min**
+- [ ] S6. **[Yaani]** (taken: Yaani, 9 Oct 16:59) `luau_check`, `rojo build` and the whole emulator suite pass on the result; a second read of the full diff. Still needs a play test in Studio by d1v before I6 **[S]** · **45 min**
+
 ## After launch
 
 **Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
