@@ -26,7 +26,7 @@ You need a Mac or Windows PC with Roblox Studio installed.
    rojo serve
    ```
 4. In Roblox Studio: install the Rojo plugin (Plugins tab, or `rojo plugin install`), open the place
-   **Cannon Tower Defense** (on Roblox still listed as "+1 Cannon Per Click" until it is renamed there) of the group **Astral Crafts** from Studio's Experiences list (ask Yaani or Victor
+   **Cannon Tower Defense** of the group **Astral Crafts** from Studio's Experiences list (ask Yaani or Victor
    for a group role with edit access; see `docs/RELEASE_PLAN.md`, section 1, "One place"), open the Rojo panel
    and press **Connect**.
 5. Press Play in Studio. You should spawn on your own base with a level bar at the bottom of the screen.
