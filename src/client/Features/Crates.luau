@@ -228,6 +228,17 @@ function Crates.start(ctx)
 			})
 		end
 		UI.text({ Position = UDim2.fromScale(0.25, 0.28), Size = UDim2.fromScale(0.5, 0.44), Text = "?", ZIndex = 2, Parent = icon })
+		-- Its picture (UI.icon, named by the crate's id) covers the drawn crate, which stays for a crate
+		-- without one and until the picture has loaded.
+		local picture = UI.icon(crate.id, {
+			Position = UDim2.fromOffset(4, 12),
+			Size = UDim2.fromOffset(76, 76),
+			ZIndex = 3,
+			Parent = frame,
+		}, icon)
+		if not picture then
+			icon.Visible = true
+		end
 
 		-- The server checks every press: what the buttons say is only what it will most likely answer.
 		local function button(action: string, count: number): TextButton
