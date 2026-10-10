@@ -106,6 +106,10 @@ harness.removePlayer(stranger)
 
 T.section("badges")
 local given = {}
+-- The badges have their ids on Roblox now: this test starts from "not made yet".
+for _, badge in Gifts.Badges do
+	badge.id = 0
+end
 Badges.award = function(_who: Player, id: number): boolean
 	table.insert(given, id)
 	return true

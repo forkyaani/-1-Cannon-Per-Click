@@ -21,13 +21,13 @@ Gifts.SAVED = { day = 0, seconds = 0, claimed = {} }
 Gifts.FRIEND_COINS = 0.1 -- +10% a friend
 Gifts.FRIEND_MAX = 3 -- friends that count
 
--- Badges. `id` is the badge's id on Roblox (Creator Hub > the experience > Engagement > Badges): 0 until it is
--- made there, and a badge with id 0 is simply not awarded.
+-- Badges. `id` is the badge's id on Roblox (Creator Hub > the experience > Engagement > Badges); a badge with
+-- id 0 is simply not awarded. The four were made on 10 Oct 2026; their pictures are assets/page/badges/.
 Gifts.Badges = {
-	hatch = { id = 0, name = "First Hatch", desc = "Hatch your first egg" },
-	boss = { id = 0, name = "Boss Buster", desc = "Defeat your first boss" },
-	world = { id = 0, name = "World Clear", desc = "Clear every level of Earth" },
-	rebirth = { id = 0, name = "Reborn", desc = "Rebirth for the first time" },
+	hatch = { id = 2871747086110144, name = "First Hatch", desc = "Hatch your first egg" },
+	boss = { id = 68919119244639, name = "Boss Buster", desc = "Defeat your first boss" },
+	world = { id = 1918327233301024, name = "World Clear", desc = "Clear every level of Earth" },
+	rebirth = { id = 2404591004498051, name = "Reborn", desc = "Rebirth for the first time" },
 }
 
 -- What a gift pays, as text: "+5 gems  •  +1 2x Coins".
