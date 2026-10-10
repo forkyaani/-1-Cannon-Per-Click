@@ -851,6 +851,9 @@ local function levelCleared(player: Player, data, state)
 		if wave % Config.MilestoneEvery == 0 then
 			data.diamonds += Config.MilestoneDiamonds
 			notify(player, `First clear of {Config.waveLabel(wave)}! +{Config.MilestoneDiamonds} gems`, "good")
+		elseif plan.kind ~= "normal" and Config.BossDiamonds > 0 then
+			data.diamonds += Config.BossDiamonds
+			notify(player, `First win over {plan.monster.name}! +{Config.BossDiamonds} gems`, "good")
 		end
 		for _, kind in Config.TowerOrder do
 			if Config.Towers[kind].unlock == wave then

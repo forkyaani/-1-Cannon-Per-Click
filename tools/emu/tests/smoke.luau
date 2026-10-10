@@ -2207,7 +2207,22 @@ do
 		check(iron > 0 and press("DELETE MANY"), "delete mode")
 		harness.click(shownCards()[1])
 		run(0.5)
-		check(press("DELETE " .. iron), "the button says how many will go")
+		-- With one iron, the detail pane's own button reads "DELETE 1" as well: press the bar's, the last one.
+		local function pressLast(text: string): boolean
+			local found
+			for _, inst in window.frame:GetDescendants() do
+				if inst:IsA("TextButton") and inst.Visible and inst.Text == text then
+					found = inst
+				end
+			end
+			if found then
+				harness.advance(0.2)
+				harness.click(found)
+				run(0.5)
+			end
+			return found ~= nil
+		end
+		check(pressLast("DELETE " .. iron), "the button says how many will go")
 		eq(Game.pets.count(data, "iron"), 0, "and they are deleted")
 		box.Text = ""
 		window.close()

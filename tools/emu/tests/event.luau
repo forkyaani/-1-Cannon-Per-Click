@@ -2,6 +2,8 @@
 -- freeze at the end and the prizes. Run with: python3 run.py --all-features tests/event.luau
 -- (tests/event.pre.luau adds a second event before the server starts.)
 local T = harness.load("_prelude.luau")
+-- This test counts gems to the one: the few a first boss win pays (Config.BossDiamonds) are left out of it.
+T.Config.BossDiamonds = 0
 local HttpService = game:GetService("HttpService")
 local DataStoreService = game:GetService("DataStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

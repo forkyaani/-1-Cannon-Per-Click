@@ -309,6 +309,7 @@ local ORBS = {
 	MARKET = { color = hex("#FF9A3D"), icon = "🏪", picture = "market" },
 	BASE = { color = hex("#FF9A3D"), icon = "🏰", picture = "cannon" },
 	SETTINGS = { color = hex("#97A0B9"), icon = "⚙️", picture = "gear" },
+	GIFTS = { color = hex("#5FE03A"), icon = "🎁", picture = "clock" },
 	STATS = { color = hex("#FFC61A"), icon = "S", picture = "upgrade" },
 	VISIT = { color = hex("#46C896"), icon = "V", picture = "base" },
 	CODES = { color = hex("#5FC878"), icon = "C", picture = "enchantkey" },

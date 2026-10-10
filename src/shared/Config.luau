@@ -469,6 +469,10 @@ end
 
 Config.MilestoneEvery = 25 -- first-ever clear of each 25th level pays diamonds
 Config.MilestoneDiamonds = 15
+-- The first-ever win over any other boss level (every 5th) pays a few gems too, so the long stretches between
+-- two unlocks (Earth 22 to 50 has one egg and one tower) have something to play for every five levels.
+-- 96 such levels in the game: 480 gems over all twelve worlds.
+Config.BossDiamonds = 5
 -- Game.damage (abilities, burns from features): damage left over from a kill carries into the next monster.
 -- One call kills at most this many, so the server's work per call stays bounded.
 Config.MaxChainKills = 50
