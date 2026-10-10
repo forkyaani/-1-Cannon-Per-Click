@@ -11,7 +11,9 @@ local Feature = {}
 
 -- Gives the badge on Roblox. True when Roblox took it. A test puts its own here.
 function Feature.award(player: Player, id: number): boolean
-	local ok, err = pcall(BadgeService.AwardBadge, BadgeService, player.UserId, id)
+	local ok, err = pcall(function()
+		return BadgeService:AwardBadge(player.UserId, id)
+	end)
 	if not ok then
 		warn(`[Badges] could not award {id} to {player.Name}: {err}`)
 	end
