@@ -353,6 +353,19 @@ Small additions from the audit of 10 Oct. No balance redesign: every reward here
 
 All of T is in the place: after the sync a check script found all 90 scripts under `src/` equal to the place's by length and checksum, the game started with no error, and the 19 emulator tests pass (three are new: `first_hatch`, `welcome_cards`, `gifts`). `smoke.luau` and `event.luau` were adjusted where they counted on exact rolls or exact gems. **Seen in Studio, 10 Oct 23:10 (d1v), iPhone XR, on a save wiped for it (Victor's say; it is a new player's at Earth level 8 with the tutorial finished):** the one WELCOME card with START TUTORIAL and the skip link; the tutorial to its end; the first hatch (an Epic, Mini Gold Cannon: a lucky roll, so the Rare floor itself was not what showed); after LET'S GO the ENJOYING THE GAME? card with one button, which closed (the group's card was left out: D1v991 has the fan bonus); the MORE drawer with its 16 buttons inside the screen; the GIFTS window, four countdowns and the friend row. No error in the output. **Not seen:** the group's card after the tutorial (needs an account that is not in the group), a boss win's gems, the friend bonus with real friends (Victor: leave it).
 
+
+## U. The FIRE button: something to do with your hands (asked for by Victor and Yaani on 10 Oct; d1v's)
+
+The game plays itself once the towers are up. A button of its own (not "tap anywhere") lets a player join the fight, and gets stronger the more it is used.
+
+- **What a press does:** one shot at the lead monster of the player's own base, worth a share of the player's whole damage per second (towers and mini cannons, with every boost they have). Only on the player's own base, only while a level is being fought.
+- **Progression:** every shot that had a target is 1 XP. Level L to L+1 takes 60 + 40 x L shots; 50 levels, 52,000 shots in all. The share is 4% of damage per second at level 0 and 10% at level 50. The level is kept through rebirths.
+- **Balance:** the server counts at most 5 shots a second, whatever is pressed (an auto-clicker gains nothing over a fast thumb). So pressing flat out adds 20% damage at level 0 and 50% at level 50; a 2x Power boost adds 100%. A shot is a share of damage per second, never of a monster's health, so it cannot carry a level the towers could not nearly clear. No coins, gems or drops come from a shot by itself.
+
+- [ ] U1. **[d1v]** (taken: d1v, 10 Oct 23:45) Shared numbers, server half (counts, pays damage, levels), a test · **45 min**
+- [ ] U2. **[d1v]** (taken: d1v, 10 Oct 23:45) The button on the base's HUD (phone: between the level panel and the jump button; F on a keyboard), its level and bar, the floating damage · **45 min**
+- [ ] U3. **[d1v]** (taken: d1v, 10 Oct 23:45) In the place, seen on a desktop and a phone-sized screen **[S]** · **20 min**
+
 ## After launch
 
 **Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
