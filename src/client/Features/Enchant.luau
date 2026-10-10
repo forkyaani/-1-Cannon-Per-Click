@@ -13,7 +13,7 @@ local ROW_HEIGHT = 62
 local TAB_TOP = 26
 local TAB_HEIGHT = 34
 local PAGE_TOP = TAB_TOP + TAB_HEIGHT + 6
-local PANEL_HEIGHT = 190
+local PANEL_HEIGHT = 244
 local CONFIRM_SECONDS = 5 -- how long the first of the two presses that replace enchantments stays armed
 local MAGIC = Color3.fromRGB(226, 170, 255)
 
@@ -124,11 +124,11 @@ local function start(ctx)
 	table.insert(oddsLines, `Every one of the {#Enchant.List} enchantments is equally likely`)
 	UI.text({
 		Position = UDim2.fromOffset(12, 150),
-		Size = UDim2.new(1, -24, 0, 36),
+		Size = UDim2.new(1, -24, 0, 90),
 		TextXAlignment = left,
 		TextWrapped = true,
 		TextColor3 = Colors.text,
-		MaxSize = 12,
+		MaxSize = 17,
 		Text = "ODDS  •  " .. table.concat(oddsLines, "\n"),
 		Parent = panel,
 	})

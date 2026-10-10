@@ -11,8 +11,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Features"):WaitForChild("Crates"))
 
 local NAME = "CRATES" -- the window's title, and the Window attribute of the stand's prompt
-local ROW_HEIGHT = 100
-local BUTTON_HEIGHT = 40
+local ROW_HEIGHT = 120 -- tall enough for print a thumb-sized screen can read
+local BUTTON_HEIGHT = 50
 local BUTTON_WIDTH = 112
 local BUTTON_GAP = 4
 local BUTTON_TOP = 8
@@ -212,7 +212,7 @@ function Crates.start(ctx)
 		}, { UI.corner(10) })
 		-- The crate, drawn small in its own colours.
 		local icon = UI.make("Frame", {
-			Position = UDim2.fromOffset(10, 18),
+			Position = UDim2.fromOffset(10, 28),
 			Size = UDim2.fromOffset(64, 64),
 			BackgroundColor3 = crate.color,
 			BorderSizePixel = 0,
@@ -231,7 +231,7 @@ function Crates.start(ctx)
 		-- Its picture (UI.icon, named by the crate's id) covers the drawn crate, which stays for a crate
 		-- without one and until the picture has loaded.
 		local picture = UI.icon(crate.id, {
-			Position = UDim2.fromOffset(4, 12),
+			Position = UDim2.fromOffset(4, 22),
 			Size = UDim2.fromOffset(76, 76),
 			ZIndex = 3,
 			Parent = frame,
@@ -259,23 +259,23 @@ function Crates.start(ctx)
 				Parent = frame,
 			}),
 			price = UI.text({
-				Position = UDim2.fromOffset(84, 74),
-				Size = UDim2.fromOffset(236, 20),
+				Position = UDim2.fromOffset(84, 92),
+				Size = UDim2.fromOffset(236, 22),
 				TextXAlignment = left,
 				TextColor3 = Colors.gold,
-				MaxSize = 15,
+				MaxSize = 17,
 				Parent = frame,
 			}),
 		}
 		-- buyOne, buyBatch, openOne and openBatch join it below: a crate only has the buttons it can use.
 		UI.text({
 			Position = UDim2.fromOffset(84, 31),
-			Size = UDim2.fromOffset(236, 40),
+			Size = UDim2.fromOffset(236, 58),
 			TextXAlignment = left,
 			TextYAlignment = Enum.TextYAlignment.Top,
 			TextWrapped = true,
 			TextColor3 = Colors.text,
-			MaxSize = 14,
+			MaxSize = 17,
 			Text = crate.desc,
 			Parent = frame,
 		})
@@ -379,8 +379,10 @@ function Crates.start(ctx)
 					else
 						-- The batch button buys a full batch, or what is left of today's stock.
 						local many = math.min(batch, stock)
-						setButton(row.buyOne, `{verb} 1\n{Format.abbreviate(each)} {icon}`, owned >= each)
-						setButton(row.buyBatch, `{verb} {many}\n{Format.abbreviate(each * many)} {icon}`, owned >= each * many)
+						-- A wide button (a crate opened as it is bought) has room for one big line.
+						local gap = if crate.instant then "  •  " else "\n"
+						setButton(row.buyOne, `{verb} 1{gap}{Format.abbreviate(each)} {icon}`, owned >= each)
+						setButton(row.buyBatch, `{verb} {many}{gap}{Format.abbreviate(each * many)} {icon}`, owned >= each * many)
 					end
 				end
 				if crate.drop then
