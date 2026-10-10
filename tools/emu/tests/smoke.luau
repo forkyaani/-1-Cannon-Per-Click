@@ -91,7 +91,7 @@ eq(player:GetAttribute("Island"), 0, "Island")
 eq(player:GetAttribute("InMarket"), false, "InMarket")
 eq(player:GetAttribute("VeteranLevel"), 0, "VeteranLevel")
 eq(player:GetAttribute("Rebirths"), 0, "Rebirths")
-eq(Config.GameName, "+1 Cannon Per Click", "the game's name")
+eq(Config.GameName, "Hatch a Cannon", "the game's name")
 do
 	local stats = player:FindFirstChild("leaderstats")
 	check(stats and stats:FindFirstChild("Gems") and stats:FindFirstChild("Rebirths") and stats:FindFirstChild("Cannon Power"), "leaderstats: Gems, Rebirths, Cannon Power")

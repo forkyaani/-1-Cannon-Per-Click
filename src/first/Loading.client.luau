@@ -12,7 +12,7 @@ local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
-local GAME_NAME = "+1 CANNON PER CLICK" -- Config.GameName, in capitals as every title is
+local GAME_NAME = "HATCH A CANNON" -- Config.GameName, in capitals as every title is
 local WAITING_TEXT = "Opening your base..."
 local TITLE_FONT = Enum.Font.LuckiestGuy -- UI.TITLE_FONT
 local FONT = Enum.Font.FredokaOne -- UI.FONT
