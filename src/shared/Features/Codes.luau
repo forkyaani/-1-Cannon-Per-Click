@@ -33,6 +33,8 @@ end
 Codes.List = {
 	-- The launch code (Victor, 10 Oct 2026): named in the game's description on Roblox. Do not change the word.
 	LAUNCH = { gems = 100 },
+	-- The Halloween event's code (Victor, 10 Oct 2026): gone with the event (Config.Halloween.endsAt).
+	SPOOKY = { item = "pumpkincrate", amount = 2, gems = 50, expires = Codes.day(2026, 10, 31) },
 	-- Examples of the other kinds:
 	-- WEEKEND = { clears = 3, expires = Codes.day(2026, 12, 31) },
 	-- BOOM = { item = "power2x", amount = 2 },

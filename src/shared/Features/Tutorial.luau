@@ -179,7 +179,9 @@ Tutorial.Cards = {
 			"Monsters march on your base. Build cannon towers to stop them!",
 			"Your towers shoot by themselves, even while you explore.",
 		},
-		next = "NEXT",
+		next = "START TUTORIAL",
+		skip = "Played before? Skip tutorial",
+		skipSure = "Skip the tutorial? Tap again",
 	},
 	{
 		id = "group",
@@ -202,11 +204,14 @@ Tutorial.Cards = {
 			"A 👍 like and a ⭐ favourite help the game grow.",
 			"There is no reward for it. It is simply a big help. Thank you!",
 		},
-		next = "START TUTORIAL",
-		skip = "Played before? Skip tutorial",
-		skipSure = "Skip the tutorial? Tap again",
+		next = "LET'S PLAY!",
 	},
 }
+-- One card before the game starts: a new player is playing within a tap. The other two come up once the
+-- walkthrough is finished, when the player knows what they would be joining or rating. The group's card is
+-- left out where there is nothing to ask (no group, or the bonus already paid).
+Tutorial.Welcome = { "welcome" }
+Tutorial.Outro = { "group", "like" }
 
 -- The last step's card: where things are from here on.
 Tutorial.Finish = {

@@ -267,8 +267,9 @@ function Feature.start(ctx)
 		Parent = card,
 	}, { UI.stroke(2) })
 
-	local WELCOME_PAGES = { "welcome", "group", "like" }
+	local WELCOME_PAGES, OUTRO_PAGES = Tutorial.Welcome, Tutorial.Outro
 	local page = 1 -- which welcome page is up
+	local outro = 0 -- which of the cards after the walkthrough is up (0: none)
 	local shownPage: string? = nil -- the page on screen
 	local pageAt = 0 -- os.clock() when it came up
 	local cardUp = false
@@ -303,11 +304,27 @@ function Feature.start(ctx)
 			return WELCOME_PAGES[page]
 		end
 		local step = currentStep()
-		return if step and step.card then "finish" else nil
+		if step and step.card then
+			return "finish"
+		end
+		-- After the last step: the group's card only while there is a bonus to claim, then the like card.
+		while outro > 0 and outro <= #OUTRO_PAGES do
+			if OUTRO_PAGES[outro] ~= "group" or (now.group == true and now.fanPaid ~= true) then
+				return OUTRO_PAGES[outro]
+			end
+			outro += 1
+		end
+		outro = 0
+		return nil
 	end
 
 	local function refreshCard()
 		local name = wantedPage()
+		if not name and shownPage == "finish" then
+			-- The walkthrough just ended on this screen: the two cards that waited for it.
+			outro = 1
+			name = wantedPage()
+		end
 		if not name then
 			cardUp, shownPage = false, nil
 			cardGui.Enabled = false
@@ -350,8 +367,9 @@ function Feature.start(ctx)
 
 		local def = cards[name]
 		titleLabel.Text = def.title
-		pageLabel.Text = `{page}/{#WELCOME_PAGES}`
-		local last = page == #WELCOME_PAGES
+		local welcoming = now.welcomed == false
+		pageLabel.Text = if welcoming and #WELCOME_PAGES > 1 then `{page}/{#WELCOME_PAGES}` else ""
+		local last = welcoming and page == #WELCOME_PAGES
 		local busy = last and waiting("welcome")
 		mainButton.Text = if busy then "..." else def.next
 		mainButton.BackgroundColor3 = if busy then Colors.grey else Colors.green
@@ -395,6 +413,9 @@ function Feature.start(ctx)
 		end
 		if shownPage == "finish" then
 			ask("finish", "tutorialAck", "finish")
+		elseif outro > 0 then
+			outro += 1
+			refreshCard()
 		elseif page < #WELCOME_PAGES then
 			page += 1
 			refreshCard()
@@ -408,7 +429,8 @@ function Feature.start(ctx)
 		end
 	end)
 	skipLink.Activated:Connect(function()
-		if not cardUp or shownPage ~= "like" or os.clock() - pageAt < PAGE_GUARD then
+		local def = shownPage and cards[shownPage]
+		if not cardUp or outro > 0 or not def or not def.skip or os.clock() - pageAt < PAGE_GUARD then
 			return
 		end
 		if os.clock() - skipArmed <= SKIP_CONFIRM_SECONDS then

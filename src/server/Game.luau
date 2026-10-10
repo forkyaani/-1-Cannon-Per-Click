@@ -495,7 +495,8 @@ end
 local function dailyIndex(data, day: number): number
 	if data.daily.last == day then
 		return math.max(1, data.daily.streak)
-	elseif data.daily.last == day - 1 then
+	elseif data.daily.last == day - 1 or data.daily.last == day - 2 then
+		-- One missed day is forgiven: the streak goes on where it was. Two in a row start it again.
 		return data.daily.streak % #Config.Daily + 1
 	end
 	return 1
