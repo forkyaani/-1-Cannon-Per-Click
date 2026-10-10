@@ -1,5 +1,5 @@
--- The FIRE button (run with --all-features): what a shot is worth, how many count, how it levels up, and where
--- it does nothing. The numbers are src/shared/Features/Blast.luau.
+-- The FIRE button (run with --all-features): what a shot is worth, how many count, how its levels are bought
+-- with coins or gems, and where it does nothing. The numbers are src/shared/Features/Blast.luau.
 local T = harness.load("_prelude.luau")
 local Game, Config = T.Game, T.Config
 local player, data, state = T.player, T.data, T.state
@@ -31,11 +31,16 @@ T.section("the numbers")
 check(math.abs(Blast.share(0) - 0.04) < 1e-9 and math.abs(Blast.share(Blast.MAX_LEVEL) - 0.10) < 1e-9, "a shot is 4% of damage per second at level 0 and 10% at the last level")
 check(Blast.RATE * Blast.share(Blast.MAX_LEVEL) <= 0.5 + 1e-9, "pressing flat out adds 50% damage at most")
 check(Blast.RATE * Blast.share(0) <= 0.2 + 1e-9, "and 20% for a new player")
-local all = 0
-for level = 0, Blast.MAX_LEVEL - 1 do
-	all += Blast.need(level)
+local gemsForAll, last = 0, 0
+for level = 1, Blast.MAX_LEVEL do
+	gemsForAll += Blast.cost(level, "gems")
+	local coins = Blast.cost(level, "coins")
+	check(coins >= last * 1.2, `level {level} costs more coins than the one before ({coins})`)
+	last = coins
 end
-eq(all, 52000, "fifty levels take 52,000 shots")
+eq(gemsForAll, 1525, "fifty levels cost 1,525 gems")
+check(math.abs(Blast.cost(1, "coins") - Config.levelCoins(3)) < Config.levelCoins(3) * 0.05, "the first level costs what clearing Earth level 3 pays")
+check(Blast.cost(0, "coins") == nil and Blast.cost(Blast.MAX_LEVEL + 1, "gems") == nil and Blast.cost(1, "candy") == nil, "nothing else has a price")
 eq(meta().level, 0, "a new player's button is level 0")
 
 T.section("a shot")
@@ -51,8 +56,9 @@ act("blast", 1)
 local dealt = before - health()
 check(math.abs(dealt - dps * Blast.share(0)) < dps * 0.001 + 1e-6, `one shot takes {Blast.share(0) * 100}% of the damage per second off the lead monster (took {dealt}, dps {dps})`)
 eq(data.diamonds, gems, "and pays no gems by itself")
-eq(meta().xp, 1, "it is one shot towards the next level")
-eq(meta().shots, 1, "and one shot counted")
+eq(meta().level, 0, "nor a level, however many are fired")
+eq(meta().xp, nil, "there is no xp any more")
+eq(meta().shots, 1, "one shot is counted")
 
 T.section("how many count")
 harness.advance(5)
@@ -72,11 +78,17 @@ end
 
 T.section("levels")
 local save = data.features.blast
-save.xp = Blast.need(0) - 1
-harness.advance(2)
-act("blast", 1)
-eq(meta().level, 1, "the last shot of a level levels the button up")
-eq(meta().xp, 0, "and the next level starts at nothing")
+save.xp = 40 -- a save from the build that levelled by pressing
+local price = Blast.cost(1, "coins")
+data.coins = price - 1
+act("blastBuy", "coins")
+eq(meta().level, 0, "a level is not sold for less than its price")
+eq(data.coins, price - 1, "and nothing is taken")
+data.coins = price + 7
+act("blastBuy", "coins")
+eq(meta().level, 1, "coins buy the first level")
+eq(data.coins, 7, "for exactly its price")
+eq(save.xp, nil, "the old xp is gone from the save")
 local toasted = false
 for _, toast in T.toasts do
 	toasted = toasted or string.find(toast.text, "FIRE level 1", 1, true) ~= nil
@@ -86,14 +98,29 @@ harness.advance(2)
 before = health()
 act("blast", 1)
 check(math.abs((before - health()) - dps * Blast.share(1)) < dps * 0.001 + 1e-6, "a level-1 shot is worth more")
-save.level, save.xp = Blast.MAX_LEVEL, 0
-harness.advance(2)
-act("blast", 1)
-eq(meta().level, Blast.MAX_LEVEL, "the last level is the last")
-eq(meta().xp, 0, "and collects nothing more")
+data.diamonds = Blast.cost(2, "gems") - 1
+act("blastBuy", "gems")
+eq(meta().level, 1, "nor for fewer gems than its price")
+data.diamonds = Blast.cost(2, "gems") + 3
+coins = data.coins
+act("blastBuy", "gems")
+eq(meta().level, 2, "gems buy the next level")
+eq(data.diamonds, 3, "for exactly its price")
+eq(data.coins, coins, "and no coins")
+for _, junk in { "candy", 1, true, { "coins" } } do
+	act("blastBuy", junk)
+	eq(meta().level, 2, "a junk currency buys nothing")
+end
+save.level = Blast.MAX_LEVEL
+data.coins, data.diamonds = 1e300, 1e6
+act("blastBuy", "coins")
+act("blastBuy", "gems")
+eq(save.level, Blast.MAX_LEVEL, "the last level is the last")
+eq(data.diamonds, 1e6, "and takes nothing")
 
 T.section("where it does nothing")
-save.level, save.xp = 3, 0
+save.level = 3
+data.coins = 0
 local shots = save.shots
 act("setPaused", true)
 harness.advance(2)
