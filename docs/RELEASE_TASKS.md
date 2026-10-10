@@ -382,3 +382,18 @@ Victor: "remove rebirth entirely". As it stands a rebirth sends a player back to
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
 6 Oct), the remaining feature windows, Auto Hatch and Fast Hatch passes,
 Huge models, mini cannons for worlds 2 to 12.
+
+
+## W. FIRE levels are bought, and louder openings (asked for by Victor on 11 Oct; d1v's)
+
+Victor: the FIRE button should not level up through use: its levels are bought with coins and gems. And the crate openings and the egg hatch should be "dopamine maxed".
+
+- **FIRE.** Shots no longer count towards anything. Level n (1 to 50) is bought, with either currency: **coins**, what clearing level 12n - 9 pays (level 1: Earth level 3; level 50: level 591), so the price keeps step with the game; or **gems**, 5 + n (6 for the first, 55 for the last, 1,525 for all fifty). What a level does is unchanged (a shot is 4% of damage per second at level 0, 10% at level 50; 5 shots a second count). A save keeps the level it has; its xp is dropped. Over the button: an UPGRADE chip with the level, which opens a small FIRE window with what the next level gives and the two prices.
+- **The hatch.** The egg glows more with every swing; at the crack a burst of confetti in the rarity's colour, more of it the rarer; the reveal sound climbs with rarity; the name slams in; Epic and better shake the screen; Legendary gets the turning rays that only a Secret and a Huge had; a mini cannon found for the first time says NEW!.
+- **A crate.** Ticks that speed up while it shakes; the screen jolts at the burst; every card is dealt a note higher than the one before; a card of Epic or better lands with a flash in its colour; coins, gems and candy count up in the totals; confetti falls over a batch whose best is Epic or better.
+- No new sound ids (none of the game's were chosen by ear): the ones there are, at other pitches. Nothing here changes what a hatch or a crate gives.
+
+- [ ] W1. **[d1v]** (taken: d1v, 11 Oct) FIRE: the numbers, the `blastBuy` action, the UPGRADE chip and the FIRE window, the test rewritten · **1 h 00**
+- [ ] W2. **[d1v]** (taken: d1v, 11 Oct) The hatch · **45 min**
+- [ ] W3. **[d1v]** (taken: d1v, 11 Oct) The crate opening · **45 min**
+- [ ] W4. **[d1v]** (taken: d1v, 11 Oct) In the place, seen on a desktop and a phone-sized screen **[S]** · **30 min**
