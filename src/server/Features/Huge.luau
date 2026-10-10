@@ -377,6 +377,11 @@ function Huge.start(api)
 	Game.on("hatch", function(player: Player, data, state, egg, results)
 		for _, result in results do
 			local pet = Config.Pets[result.pet]
+			-- The first one of its kind this player has ever had: the reveal says NEW! (the results go to the
+			-- client after this handler).
+			if not saved(data).found[pet.base] then
+				result.new = true
+			end
 			Huge.discover(player, result.pet)
 			if pet.hidden then
 				local what = if pet.huge then string.upper(pet.name) else `SECRET {pet.name}`

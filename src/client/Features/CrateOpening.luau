@@ -5,6 +5,9 @@
 --   3. the rewards come out as cards. One crate gives one big card; several deal theirs into a grid, most
 --      common first, and the rarest lies face down for a moment before it turns over
 --   4. the totals, with OPEN AGAIN and CLOSE. It closes itself after a few seconds
+-- Made louder on 11 Oct 2026 (Victor): ticks that speed up while the crate shakes, a jolt at the burst, every
+-- card dealt a note higher than the one before, a flash and a jolt for a card of Epic or better, coins, gems
+-- and candy that count up in the totals, and confetti over them when the best reward is Epic or better.
 -- A tap anywhere skips to the totals, and a second tap closes them. A Secret (or anything rarer than
 -- JACKPOT_BELOW) shakes the screen, tints it, and cannot be tapped away for a moment.
 -- The server sends what came out on the "crates" channel, however the crate was opened: the CRATES window, USE
@@ -62,6 +65,10 @@ local JACKPOT_STAY_SECONDS = 9
 local HOLD_SECONDS = 0.4 -- a tap cannot close the totals sooner: the tap that skipped is often a double tap
 local JACKPOT_HOLD_SECONDS = 2.5
 local QUAKE_SECONDS = 0.9
+local LOUD = { Epic = true, Legendary = true, Exclusive = true, Secret = true, Mythical = true } -- rarities that get the flash, the jolt and the confetti
+local TICK_SLOW, TICK_FAST = 0.17, 0.045 -- seconds between two ticks as the shake starts and as it ends
+local COUNT_SECONDS = 0.7 -- the totals' coins, gems and candy count up for this long
+local RAIN = 46 -- pieces of confetti over the totals
 
 local ODDS_BELOW = 0.1 -- per cent: a reward rarer than 1 in 1,000 says how rare it was
 local JACKPOT_BELOW = 0.02 -- per cent: rarer than 1 in 5,000 is a jackpot, whatever it is
@@ -317,8 +324,9 @@ function Opening.start(ctx)
 			})
 		end
 	end
-	local function sound(name: string)
+	local function sound(name: string, pitch: number?)
 		if sounds[name] then
+			sounds[name].PlaybackSpeed = pitch or 1
 			sounds[name]:Play()
 		end
 	end
@@ -364,6 +372,51 @@ function Opening.start(ctx)
 		return token == playToken
 	end
 
+	-- The whole canvas jolts and settles. It stops for a new opening, and for the jackpot's own quake.
+	local jolting = 0
+	local function jolt(token: number, seconds: number, power: number)
+		jolting += 1
+		local mine = jolting
+		local began = os.clock()
+		task.spawn(function()
+			while token == playToken and mine == jolting and os.clock() - began < seconds do
+				local left = (1 - (os.clock() - began) / seconds) * power
+				root.Position = UDim2.new(0.5, (math.random() - 0.5) * 2 * left, 0.5, (math.random() - 0.5) * 2 * left)
+				RunService.RenderStepped:Wait()
+			end
+			if token == playToken and mine == jolting then
+				root.Position = UDim2.fromScale(0.5, 0.5)
+			end
+		end)
+	end
+
+	-- Confetti that falls the height of the canvas, in the colour of the best reward. It looks after itself.
+	local function rain(color: Color3)
+		local palette = { color, color:Lerp(WHITE, 0.5), WHITE, Colors.gold }
+		for index = 1, RAIN do
+			local size = math.random(8, 16)
+			local x = math.random(20, CANVAS.X - 20)
+			local piece = UI.make("Frame", {
+				AnchorPoint = CENTER,
+				Position = UDim2.fromOffset(x, -math.random(10, 160)),
+				Size = UDim2.fromOffset(size, size * (0.5 + math.random() * 0.6)),
+				Rotation = math.random(0, 180),
+				BackgroundColor3 = palette[index % #palette + 1],
+				BorderSizePixel = 0,
+				ZIndex = 11,
+				Parent = root,
+			}, { UI.corner(2) })
+			local fall = TweenService:Create(piece, TweenInfo.new(1.3 + math.random() * 1.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {
+				Position = UDim2.fromOffset(x + math.random(-90, 90), CANVAS.Y + 30),
+				Rotation = math.random(-400, 400),
+			})
+			fall.Completed:Connect(function()
+				piece:Destroy()
+			end)
+			fall:Play()
+		end
+	end
+
 	local function tierOf(chance: number): string
 		for _, tier in CHANCE_TIERS do
 			if chance >= tier[1] then
@@ -379,6 +432,7 @@ function Opening.start(ctx)
 		for order, reward in rewards do
 			local view = Shared.view(reward)
 			table.insert(list, {
+				loud = LOUD[view.rarity or tierOf(reward.chance)] == true,
 				order = order,
 				reward = reward,
 				view = view,
@@ -428,7 +482,8 @@ function Opening.start(ctx)
 	end
 
 	-- "+1.20M coins  •  2x Power x2  •  Mini Cauldron Cannon": everything the crates held, added up.
-	local function totalsText(rewards): string
+	-- share: how far the count-up of coins, gems and candy has got, 0 to 1 (1 when left out).
+	local function totalsText(rewards, share: number?): string
 		local sums = { coins = 0, gems = 0, candy = 0 }
 		local names, counts = {}, {}
 		for _, reward in rewards do
@@ -446,7 +501,7 @@ function Opening.start(ctx)
 		local parts = {}
 		for _, kind in { "coins", "gems", "candy" } do
 			if sums[kind] > 0 then
-				table.insert(parts, `+{Format.abbreviate(sums[kind])} {kind}`)
+				table.insert(parts, `+{Format.abbreviate(math.max(1, math.floor(sums[kind] * (share or 1) + 0.5)))} {kind}`)
 			end
 		end
 		for _, name in names do
@@ -519,6 +574,7 @@ function Opening.start(ctx)
 	-- them to finish.
 	local function burst(crate, color: Color3)
 		sound("burst")
+		flash.BackgroundColor3 = WHITE
 		flash.BackgroundTransparency = 0.15
 		tween(flash, 0.35, { BackgroundTransparency = 1 })
 
@@ -591,6 +647,7 @@ function Opening.start(ctx)
 		stage = "intro"
 		root.Position = UDim2.fromScale(0.5, 0.5)
 		backdrop.BackgroundColor3 = BLACK
+		flash.BackgroundColor3 = WHITE
 		flash.BackgroundTransparency = 1
 		for _, card in cards do
 			card.frame.Visible = false
@@ -635,11 +692,17 @@ function Opening.start(ctx)
 		end
 		local shakeSeconds = if quick then QUICK_SHAKE_SECONDS else SHAKE_SECONDS
 		local started = os.clock()
+		local nextTick = started
 		while not skip do
 			local clock = os.clock()
 			local progress = (clock - started) / shakeSeconds
 			if progress >= 1 then
 				break
+			end
+			-- Ticks, closer together and higher as it is about to burst.
+			if clock >= nextTick then
+				sound("card", 0.8 + 0.9 * progress)
+				nextTick = clock + TICK_SLOW + (TICK_FAST - TICK_SLOW) * progress
 			end
 			local power = progress * progress
 			crateFrame.Rotation = math.sin(clock * 50) * (2 + 12 * power)
@@ -656,6 +719,7 @@ function Opening.start(ctx)
 			crateFrame.Rotation = 0
 			crateFrame.Position = HOME
 			burst(crate, best.color)
+			jolt(token, 0.28, if best.loud then 16 else 9)
 			if not pause(token, BURST_SECONDS) then
 				return
 			end
@@ -704,9 +768,11 @@ function Opening.start(ctx)
 					card.frame.Rotation = 0
 					card.scale.Scale = 1.3
 					tween(card.scale, POP_SECONDS, { Scale = 1 }, Enum.EasingStyle.Back)
-					flash.BackgroundTransparency = 0.6
+					flash.BackgroundColor3 = if entry.loud then entry.color else WHITE
+					flash.BackgroundTransparency = if entry.loud then 0.45 else 0.6
 					tween(flash, 0.3, { BackgroundTransparency = 1 })
-					sound(if entry.jackpot then "jackpot" else "rare")
+					jolt(token, 0.3, if entry.loud then 14 else 6)
+					sound(if entry.jackpot then "jackpot" else "rare", if entry.loud then 1.12 else 1)
 					if not pause(token, POP_SECONDS) then
 						return
 					end
@@ -718,7 +784,17 @@ function Opening.start(ctx)
 				card.frame.Visible = true
 				tween(card.frame, POP_SECONDS, { Position = position })
 				tween(card.scale, POP_SECONDS, { Scale = 1 }, Enum.EasingStyle.Back)
-				sound(if count == 1 and entry.jackpot then "jackpot" else "card")
+				-- Each card a note higher than the one before; a loud one lands with its colour on the screen.
+				sound(if count == 1 and entry.jackpot then "jackpot" else "card", if count == 1 then 1 else 0.9 + 0.08 * index)
+				if entry.loud then
+					flash.BackgroundColor3 = entry.color
+					flash.BackgroundTransparency = 0.7
+					tween(flash, 0.3, { BackgroundTransparency = 1 })
+					jolt(token, 0.22, 8)
+					if count == 1 then
+						sound("rare", 1.12)
+					end
+				end
 				if not pause(token, gap) then
 					return
 				end
@@ -748,8 +824,13 @@ function Opening.start(ctx)
 		rays.Visible = true
 		setGlow(best.color, bestPosition, bestSize.Y * 2, 0.6)
 		hint.Visible = false
-		summary.Text = totalsText(opened.rewards)
+		summary.Text = totalsText(opened.rewards, 0)
 		summary.Visible = true
+		jolting += 1 -- whatever jolt was running ends here
+		root.Position = UDim2.fromScale(0.5, 0.5)
+		if best.loud or best.jackpot then
+			rain(best.color)
+		end
 		if best.jackpot then
 			title.Text = if best.secret then "SECRET!" else "JACKPOT!"
 			title.TextColor3 = best.color
@@ -763,7 +844,14 @@ function Opening.start(ctx)
 		-- A jackpot shakes the screen, beats in its colour, and a Secret runs through the rainbow.
 		local bestCard = cards[count]
 		local quakeUntil = now + QUAKE_SECONDS
+		local counted = false
 		while token == playToken and os.clock() < closeAt do
+			if not counted then
+				local share = math.min(1, (os.clock() - now) / COUNT_SECONDS)
+				-- Fast at first, slowing into the real number.
+				summary.Text = totalsText(opened.rewards, 1 - (1 - share) * (1 - share))
+				counted = share >= 1
+			end
 			if best.jackpot then
 				local clock = os.clock()
 				local beat = (math.sin(clock * 8) + 1) / 2

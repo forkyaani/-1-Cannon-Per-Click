@@ -14,7 +14,9 @@ simulator's result, and section 5 lists what the simulator does not know.
 > numbers: the pace is the same, the shares of towers and mini cannons are not.
 
 > **11 October: the FIRE button** (`src/shared/Features/Blast.luau`). A press is 4% to 10% of the player's damage
-> per second, five a second at most, so pressing flat out is +20% (new) to +50% (level 50, after 52,000 shots).
+> per second, five a second at most, so pressing flat out is +20% (new) to +50% (level 50). Since 11 October a
+> level is bought, not earned by pressing: with coins (one clear of game level 3, 15, 27 ... 591, always at least
+> 1.25x the level before) or with gems (6 for the first, 55 for the last, 1,525 for all fifty).
 > Stood in for with `sim.py --seeds 4 --enchant X`: 6:54 for the whole game without it, 6:04 at x1.2, 5:40 at
 > x1.35, 4:37 at x1.5. To make pressing matter less or more, change `Blast.RATE`, `SHARE` or `SHARE_PER_LEVEL`.
 

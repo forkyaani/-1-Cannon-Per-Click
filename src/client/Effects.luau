@@ -451,6 +451,12 @@ local EGG_OUTLINE = 4
 -- tools/blender/egg_halves.py; an egg without halves bursts whole), pieces of shell fly out, and the mini cannon
 -- jumps up out of the bottom half with a spin and lands where the egg stood. A Secret or a Huge gets rays.
 local OPEN_SECONDS = 0.95
+-- How loud a reveal is, by what came out: the glow, the confetti, the pitch, the slam and the shake all read it.
+local TIER = { Common = 1, Uncommon = 2, Rare = 3, Epic = 4, Legendary = 5, Exclusive = 5, Secret = 6, Mythical = 6 }
+local TEASE_SHAKES = 4 -- the last swings, during which the egg's glow turns to the colour of what is inside
+local CONFETTI_MOST = 44 -- pieces from one egg
+local SHAKE_FROM = 4 -- the tier from which the reveal shakes the screen
+local EGG_ROW_AT = UDim2.fromScale(0.5, 0.42)
 local SHARDS = 9
 local RAYS = 10
 local CRACK_AT = 0.54 -- how far up an egg its crack runs (egg_halves.py)
@@ -615,7 +621,7 @@ local overlay = UI.make("TextButton", {
 -- The eggs share one scaled row, so the gaps between them shrink with the screen just like the eggs.
 local eggRow = UI.scaled(UI.make("Frame", {
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.fromScale(0.5, 0.42),
+	Position = EGG_ROW_AT,
 	Size = UDim2.fromOffset(MAX_REVEALS * CARD_SPACING, 190),
 	BackgroundTransparency = 1,
 	Parent = overlay,
@@ -632,10 +638,36 @@ for _ = 1, MAX_REVEALS do
 		Size = UDim2.new(0, 150, 1, 0),
 		Parent = frame,
 	}, { UI.make("UICorner", { CornerRadius = UDim.new(0.5, 0) }), outline })
+	local title = UI.text({ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.new(0.5, 0, 1, 48), Size = UDim2.new(1, 0, 0, 46), Parent = frame })
 	table.insert(cards, {
 		frame = frame,
 		outline = outline,
 		egg = shell,
+		-- Behind the egg: it grows with every swing, and stays behind a mini cannon worth showing off.
+		glow = UI.make("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(150, 150),
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			ZIndex = 0,
+			Parent = shell,
+		}, { UI.make("UICorner", { CornerRadius = UDim.new(0.5, 0) }) }),
+		-- The rarity slams in: big, then down to its size.
+		titlePop = UI.make("UIScale", { Parent = title }),
+		-- NEW!, over the egg's shoulder, for the first one of its kind.
+		tag = UI.text({
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.5, 96, 0, 6),
+			Size = UDim2.fromOffset(110, 40),
+			Rotation = 12,
+			Text = "NEW!",
+			TextColor3 = Colors.green,
+			Visible = false,
+			ZIndex = 4,
+			Parent = frame,
+		}),
 		-- The egg, and then what came out of it, in 3D. Bigger than the flat shape it stands in for, which only
 		-- shows for an egg or a mini cannon that has no model yet.
 		view = UI.preview({ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(330, 330), Parent = shell }),
@@ -651,7 +683,7 @@ for _ = 1, MAX_REVEALS do
 			ZIndex = 3,
 			Parent = shell,
 		}, { UI.make("UICorner", { CornerRadius = UDim.new(0.5, 0) }) }),
-		title = UI.text({ Position = UDim2.new(0, 0, 1, 25), Size = UDim2.new(1, 0, 0, 46), Parent = frame }),
+		title = title,
 		detail = UI.text({
 			Position = UDim2.new(0, 0, 1, 77),
 			Size = UDim2.new(1, 0, 0, 56),
@@ -676,6 +708,39 @@ overlay:GetPropertyChangedSignal("Visible"):Connect(function()
 	end
 end)
 
+-- Confetti out of a card's egg: squares in the rarity's colour that fly out, fall and fade. They look after
+-- themselves, and go with the overlay if it is closed first.
+local function confetti(card, color: Color3, tier: number)
+	local middle = card.egg.AbsolutePosition + card.egg.AbsoluteSize / 2 - overlay.AbsolutePosition
+	local palette = { color, color:Lerp(Color3.new(1, 1, 1), 0.45), Color3.new(1, 1, 1) }
+	local scale = UI.scale()
+	for piece = 1, math.min(CONFETTI_MOST, 3 + math.floor(tier * tier * 1.2)) do
+		local size = math.random(7, 15) * scale
+		local turn = math.random() * math.pi * 2
+		local reach = math.random(90, 180 + 45 * tier) * scale
+		local square = UI.make("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(middle.X, middle.Y),
+			Size = UDim2.fromOffset(size, size * (0.5 + math.random() * 0.7)),
+			Rotation = math.random(0, 180),
+			BackgroundColor3 = palette[piece % #palette + 1],
+			BorderSizePixel = 0,
+			ZIndex = 5,
+			Parent = overlay,
+		}, { UI.corner(2) })
+		local fly = TweenService:Create(square, TweenInfo.new(0.55 + math.random() * 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			-- Out, and a little down: they fall as they slow.
+			Position = UDim2.fromOffset(middle.X + math.cos(turn) * reach, middle.Y + math.sin(turn) * reach * 0.75 + 50 * scale),
+			Rotation = math.random(-300, 300),
+			BackgroundTransparency = 1,
+		})
+		fly.Completed:Connect(function()
+			square:Destroy()
+		end)
+		fly:Play()
+	end
+end
+
 local hatchToken = 0
 local rareUntil = 0 -- the os.clock() until which a Secret or Huge reveal cannot be taken off the screen
 overlay.Activated:Connect(function()
@@ -686,7 +751,8 @@ overlay.Activated:Connect(function()
 	overlay.Visible = false
 end)
 
--- results: a list of { pet = id, kept = boolean, chance = number }, one per egg hatched. chance is the
+-- results: a list of { pet = id, kept = boolean, chance = number, new = true? }, one per egg hatched (new: the
+-- first of its kind the player has had). chance is the
 -- percentage that mini cannon had for this player; without one, a result's `note` is its third line.
 -- gift: { name, color } to show in place of an egg (eggId is then ignored).
 function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, chance: number?, note: string? } }, gift: { name: string, color: Color3 }?)
@@ -697,7 +763,7 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 	for _, result in results do
 		local pet = Config.Pets[result.pet]
 		if pet and #reveals < MAX_REVEALS then
-			table.insert(reveals, { pet = pet, kept = result.kept, chance = result.chance, note = result.note })
+			table.insert(reveals, { pet = pet, kept = result.kept, chance = result.chance, note = result.note, new = result.new })
 			-- A Huge always gets the long reveal, the one from the game pass (which no egg hides) included.
 			if (pet.hidden or pet.huge) and (pet.huge or not rarest) then
 				rarest = pet.rarity
@@ -742,14 +808,23 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		card.egg.BackgroundTransparency = if eggModel then 1 else 0
 		card.outline.Transparency = if eggModel then 1 else 0
 		card.pop.Scale = 1
+		card.glow.Size = UDim2.fromOffset(150, 150)
+		card.glow.BackgroundColor3 = Color3.new(1, 1, 1)
+		card.glow.BackgroundTransparency = 1
+		card.titlePop.Scale = 1
+		card.tag.Visible = false
 		card.title.Text = egg.name
 		card.title.TextColor3 = Colors.white
 		card.detail.Text = ""
 		card.note.Text = ""
 		card.note.TextColor3 = Colors.text
 	end
+	eggRow.Position = EGG_ROW_AT
 	overlay.Visible = true
 	UI.gui:SetAttribute("Hatching", true)
+	local function tierOf(pet): number
+		return if pet.huge then 6 else TIER[pet.rarity] or 1
+	end
 
 	for swing = 1, SHAKES do
 		if token ~= hatchToken then
@@ -762,6 +837,18 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		for index in reveals do
 			tweens[index] = TweenService:Create(cards[index].egg, TweenInfo.new(SHAKE_SECONDS), goal)
 			tweens[index]:Play()
+		end
+		-- The glow behind each egg builds with the swings. On the last few it turns to the colour of what is
+		-- inside: the player sees what is coming a moment before it comes.
+		local tease = math.clamp((swing - (SHAKES - TEASE_SHAKES)) / TEASE_SHAKES, 0, 1)
+		for index, reveal in reveals do
+			local glow = cards[index].glow
+			local tint = Config.RarityColors[reveal.pet.rarity] or Color3.new(1, 1, 1)
+			TweenService:Create(glow, TweenInfo.new(SHAKE_SECONDS), {
+				Size = UDim2.fromOffset(150 + 16 * swing, 150 + 16 * swing),
+				BackgroundTransparency = 0.95 - 0.035 * swing,
+				BackgroundColor3 = Color3.new(1, 1, 1):Lerp(tint, tease),
+			}):Play()
 		end
 		-- A modelled egg hops with every swing, higher each time.
 		for index in reveals do
@@ -781,13 +868,45 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 	if token ~= hatchToken then
 		return
 	end
+	local loudest = 1
+	for _, reveal in reveals do
+		loudest = math.max(loudest, tierOf(reveal.pet))
+	end
 	UI.sound("crack")
-	UI.sound(if rarest then "reveal_rare" else "reveal")
+	-- The better it is, the higher the note; Epic and better get the stinger on top.
+	UI.sound(if rarest then "reveal_rare" else "reveal", 0.85 + 0.13 * loudest)
+	if loudest >= SHAKE_FROM then
+		UI.sound("clear", 1 + 0.12 * (loudest - SHAKE_FROM))
+		-- And the screen takes the hit: the row of eggs jolts, harder the rarer, and settles.
+		local jolt = 0.3 + 0.12 * (loudest - SHAKE_FROM)
+		local began = os.clock()
+		task.spawn(function()
+			while token == hatchToken and os.clock() - began < jolt do
+				local power = (1 - (os.clock() - began) / jolt) * (8 + 5 * (loudest - SHAKE_FROM))
+				eggRow.Position = EGG_ROW_AT + UDim2.fromOffset((math.random() - 0.5) * 2 * power, (math.random() - 0.5) * 2 * power)
+				task.wait()
+			end
+			if token == hatchToken then
+				eggRow.Position = EGG_ROW_AT
+			end
+		end)
+	end
 	for index, reveal in reveals do
 		local card, pet = cards[index], reveal.pet
 		local color = Config.RarityColors[pet.rarity]
+		local tier = tierOf(pet)
 		card.egg.Rotation = 0
 		card.egg.BackgroundColor3 = pet.color
+		confetti(card, color, tier)
+		-- The glow bursts in the rarity's colour, then fades: all the way for an ordinary one, to a halo behind
+		-- anything Epic or better.
+		card.glow.BackgroundColor3 = color
+		card.glow.Size = UDim2.fromOffset(220 + 34 * tier, 220 + 34 * tier)
+		card.glow.BackgroundTransparency = 0.3
+		TweenService:Create(card.glow, TweenInfo.new(0.7), { BackgroundTransparency = if tier >= SHAKE_FROM then 0.72 else 1 }):Play()
+		card.titlePop.Scale = 1.5 + 0.2 * tier
+		TweenService:Create(card.titlePop, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+		card.tag.Visible = reveal.new == true
 		-- The burst: what was inside pops out where the egg was.
 		local mini = Models.mini(pet, 1)
 		if mini then
@@ -796,7 +915,8 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		local stage = card.stage
 		if stage and mini then
 			-- The opening below brings it out of the egg.
-			stage.mini, stage.miniSize, stage.rare = mini, mini.Size, (pet.hidden or pet.huge) and color or nil
+			-- Rays behind a Legendary too, not only a Secret or a Huge.
+			stage.mini, stage.miniSize, stage.rare = mini, mini.Size, (pet.hidden or pet.huge or tier >= 5) and color or nil
 			card.flash.BackgroundTransparency = 0.05
 			TweenService:Create(card.flash, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
 		else
@@ -891,8 +1011,17 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 			task.wait()
 		end
 	else
-		-- More mini cannons take longer to read.
-		task.wait(1.4 + 0.4 * (#reveals - 1))
+		-- More mini cannons take longer to read, and a loud one is left up a little longer. A Legendary's rays turn.
+		local shownUntil = os.clock() + 1.4 + 0.4 * (#reveals - 1) + (if loudest >= SHAKE_FROM then 0.5 else 0)
+		while token == hatchToken and os.clock() < shownUntil do
+			for index in reveals do
+				local stage = cards[index].stage
+				if stage and stage.rays then
+					turnRays(stage, os.clock() * 0.9)
+				end
+			end
+			task.wait()
+		end
 	end
 	if token == hatchToken then
 		overlay.Visible = false
