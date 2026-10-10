@@ -31,7 +31,7 @@ function Codes.day(year: number, month: number, day: number): number
 end
 
 Codes.List = {
-	-- PLACEHOLDER (Yaani): the one launch code. Change the word and the reward before the group page names it.
+	-- The launch code (Victor, 10 Oct 2026): named in the game's description on Roblox. Do not change the word.
 	LAUNCH = { gems = 100 },
 	-- Examples of the other kinds:
 	-- WEEKEND = { clears = 3, expires = Codes.day(2026, 12, 31) },
