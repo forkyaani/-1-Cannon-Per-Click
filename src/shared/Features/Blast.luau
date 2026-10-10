@@ -74,9 +74,9 @@ function Blast.cost(level: number, currency: string): number?
 	return nil
 end
 
--- "4.1%": a shot's share at that level, as the window and the toast say it.
+-- "4.12%": a shot's share at that level, as the window and the toast say it. Two decimals: a level adds 0.12.
 function Blast.shareText(level: number): string
-	return `{math.floor(Blast.share(level) * 1000 + 0.5) / 10}%`
+	return `{math.floor(Blast.share(level) * 10000 + 0.5) / 100}%`
 end
 
 return Blast
