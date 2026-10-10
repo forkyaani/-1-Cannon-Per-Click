@@ -325,6 +325,7 @@ Small, safe fixes only: no new features, no balance changes, no redesigns. Every
   - **WORLDS:** taller rows, each world's rule line readable, nothing overlapping.
   - **Still not tested:** a real Robux purchase on a test server.
 - [x] S9. **[d1v]** (done 10 Oct 20:37, d1v; asked for by Victor: `src/client/Features/Crates.luau` draws `UI.icon(crate.id)` over the drawn crate, which stays as the stand-in until the picture loads; the script is in the place (15,985 bytes, equal to `src/`); seen in a play test on a desktop-sized screen: Wooden, Daily, Boss Chest, Gem, Pumpkin and Cursed each show their picture, the Royal Crate stays hidden; emulator tests pass. Not seen on the phone simulator) CRATES: each crate row shows its icon from sheet D in place of the box with a question mark (found in S8) **[S]** · **20 min**
+- [ ] S10. **[d1v]** (taken: d1v, 10 Oct 20:50; asked for by Victor) Small print found in S8, made readable on a phone: the two-line buttons in CRATES (OPEN 1 / BUY 1 and their price), the crate descriptions, and the ODDS lines at the bottom of ENCHANT **[S]** · **30 min**
 
 ## After launch
 
