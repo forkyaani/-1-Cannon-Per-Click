@@ -324,6 +324,7 @@ Small, safe fixes only: no new features, no balance changes, no redesigns. Every
   - **ENCHANT:** opens from its table, fits, no Robux Shiny key button. Found: the ODDS lines at the bottom are too small to read on a phone; from where the test character stood the table's prompt was half under the level panel.
   - **WORLDS:** taller rows, each world's rule line readable, nothing overlapping.
   - **Still not tested:** a real Robux purchase on a test server.
+- [ ] S9. **[d1v]** (taken: d1v, 10 Oct 20:45; asked for by Victor) CRATES: each crate row shows its icon from sheet D in place of the box with a question mark (found in S8) **[S]** · **20 min**
 
 ## After launch
 
