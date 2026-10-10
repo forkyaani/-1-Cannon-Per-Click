@@ -336,6 +336,20 @@ Small, safe fixes only: no new features, no balance changes, no redesigns. Every
   - **Thumbnails, 10 Oct 22:25 (Victor's pictures and order):** the three Studio screenshots are out (Victor does not like them). Four painted thumbnails from Victor, 1920 x 1080, in `assets/page/` in the order they go on the page: `thumbnail-1-noob-vs-pro.png`, `thumbnail-2-egg-thief.png`, `thumbnail-3-one-hp.png`, `thumbnail-4-giant-boss.png`. Scaled up from 1672 x 941.
   - **Thumbnails on Roblox, 10 Oct 22:35 (d1v, on Victor's say):** the four are uploaded to Astral Crafts (image ids 114395616463656, 104386026423562, 118194735741293, 129968597942038), approved by Roblox, and set as the place's thumbnails in that order (seen on the Experience Detail Page tab). The Home Page thumbnails tab is empty. The icon is not uploaded.
 
+
+## T. First-session and come-back hooks (asked for by Victor on 10 Oct, after the engagement audit; all d1v's)
+
+Small additions from the audit of 10 Oct. No balance redesign: every reward here is small beside what the game already pays (daily missions pay 60 gems a day). The tap action (a tap fires a bonus shot) is NOT in this group: Victor is taking it to Yaani first.
+
+- [ ] T1. **[d1v]** (taken: d1v, 10 Oct 22:50) A second redeem code for the Halloween event **[S]** · **10 min**
+- [ ] T2. **[d1v]** (taken: d1v, 10 Oct 22:50) Daily reward: one missed day does not reset the streak · **20 min**
+- [ ] T3. **[d1v]** (taken: d1v, 10 Oct 22:50) A new player's first hatch is at least Rare (the Basic Egg's own Rare, nothing stronger than the egg can give) · **30 min**
+- [ ] T4. **[d1v]** (taken: d1v, 10 Oct 22:50) One welcome card, not three; the like and favourite ask moves to the tutorial's last card · **30 min**
+- [ ] T5. **[d1v]** (taken: d1v, 10 Oct 22:50) Playtime gifts at 5, 10, 20 and 30 minutes a day · **1 h 00**
+- [ ] T6. **[d1v]** (taken: d1v, 10 Oct 22:50) Friend bonus: more coins while a Roblox friend is on the same server · **45 min**
+- [ ] T7. **[d1v]** (taken: d1v, 10 Oct 22:50) Badges (first hatch, first boss, first world, first rebirth) **[S]** · **45 min**
+- [ ] T8. **[d1v]** (taken: d1v, 10 Oct 22:50) Something to earn between Earth level 22 and 50, where only one egg and one tower unlock today · **45 min**
+
 ## After launch
 
 **Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
