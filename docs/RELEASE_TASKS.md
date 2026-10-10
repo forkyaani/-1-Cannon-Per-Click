@@ -297,7 +297,7 @@ final boss of world (rebirths + 1) is beaten. It resets the level, coins, pads a
 gems, items, mastery and enchantments are kept. It gives +5% tower damage for good and 100 gems. Twelve at
 most. Levels are replayed one by one at normal speed.
 
-- [ ] R1. **[open]** Yaani picks the fix (the options are in the chat of 9 Oct and below), then it is written here as jobs. Nothing is built before that.
+- [ ] R1. **[open]** (superseded 11 Oct by group V: rebirth is switched off for launch; this is the redesign for the update that brings it back) Yaani picks the fix (the options are in the chat of 9 Oct and below), then it is written here as jobs. Nothing is built before that.
 
 Options put to Yaani:
 - **A. Skip what you can one-shot.** After a rebirth the game starts the player at the highest level their kept mini cannons clear instantly (worked out from their damage), and pays the skipped levels' coins in one go. The replay shrinks from hundreds of levels to the ones that are a fight.
@@ -366,6 +366,14 @@ The game plays itself once the towers are up. A button of its own (not "tap anyw
 - [x] U2. **[d1v]** (done 10 Oct 23:55, in code: `src/client/Features/Blast.luau`: a round red FIRE! button, 116 px, bottom right and left of the jump button, shown on the player's own base only; F on a keyboard; its level bar over it; the damage floats up from it; presses are sent together every 0.4 s) The button on the base's HUD (phone: between the level panel and the jump button; F on a keyboard), its level and bar, the floating damage · **45 min**
 - [x] U3. **[d1v]** (done 11 Oct 00:05: the three scripts are in the place and a check found all 93 scripts under `src/` equal to the place's by length and checksum. Seen in play tests with no error in the output: on a desktop-sized screen the button sits bottom right with its `Lv 0` bar, each press floats `-12` (4% of the 318 damage per second) and the bar fills; on the iPhone XR simulator it sits between the level panel and the jump button, clear of both, and taps register. Not seen: the button gone in the marketplace (the test covers that the server ignores presses there), a level-up on screen, F on a keyboard. The floating numbers rise from a spot above and to the side of the button, not from it)
 - [x] U4. **[d1v]** (done 11 Oct 00:25; asked for by Victor) The button's effect on the pace, simulated: `python3 tools/balance/sim.py --seeds 4 --enchant X`, where X stands in for the damage a player adds by pressing (the simulator has no button; `--enchant` multiplies the player's power). Whole game, four seeds: **no pressing 6:54** (Earth 29.6 min); **x1.2**, a new player pressing flat out the whole time, **6:04** (Earth 23.7); **x1.35 5:40** (Earth 20.5); **x1.5**, the last level pressed flat out from the first second, which no player can have, **4:37** (Earth 19.0). So constant pressing makes the game 12% to about 20% shorter for a real player and a third shorter at the impossible extreme; nobody is stuck and no world vanishes. World times from The Sun on swing as widely as they did before the button (docs/BALANCE.md says why). Not simulated: the button levelling up during the run, and mini cannons' share of the damage. The floating numbers reported as a flaw in U3 are not one: they start at the top of the button and rise, and the screenshot caught them on the way up.
+
+
+## V. Rebirth is switched off for launch (Victor, 11 Oct; d1v's)
+
+Victor: "remove rebirth entirely". As it stands a rebirth sends a player back to Earth level 1 with mini cannons that one-shot everything (group R, never resolved). It is taken out of the game for players with one switch, `Config.Rebirth.enabled = false`, and its code stays so that it can come back redesigned in an update. Group R is superseded by this until then.
+
+- [ ] V1. **[d1v]** (taken: d1v, 11 Oct 01:10) With the switch off: no REBIRTH row in WORLDS, no "You can REBIRTH now" notice, the action does nothing, no REBIRTH buttons on the HUD, no Reborn badge awarded, MASTERY no longer says "kept through rebirths". The marketplace's MOST REBIRTHS board and the player list's Rebirths column become MOST LEVELS and Level (the best level cleared). A save that already has rebirths keeps their damage bonus. Tests · **1 h 00**
+- [ ] V2. **[d1v]** (taken: d1v, 11 Oct 01:10) In the place, seen **[S]** · **15 min**
 
 ## After launch
 
