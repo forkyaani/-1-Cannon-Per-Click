@@ -1623,6 +1623,12 @@ end
 -- saved (mastery, enchants, the story) and the Veteran level. There is no auto-rebirth.
 ----------------------------------------------------------------------------------------------------
 Config.Rebirth = {
+	-- Switched off for launch (Victor, 11 Oct 2026): a rebirth sent a player back to Earth level 1 with mini
+	-- cannons that one-shot everything, and hundreds of levels to sit through. With this false nobody can
+	-- rebirth and nothing in the game mentions it: no row in WORLDS, no notice, no badge, and the marketplace's
+	-- third board and the player list show the best level cleared instead. A save that has rebirths keeps
+	-- their damage. Everything else in this file and in Game.luau stays for the day it comes back.
+	enabled = false,
 	damage = 0.05, -- tower damage every rebirth adds, for good: +5%
 	gems = 100, -- paid by each rebirth
 }

@@ -27,6 +27,10 @@ function Feature.start(Game)
 		if typeof(save.given) ~= "table" then
 			save.given = {}
 		end
+		-- No Reborn badge while rebirth is switched off (Config.Rebirth.enabled).
+		if key == "rebirth" and not Config.Rebirth.enabled then
+			return
+		end
 		if not badge or badge.id == 0 or save.given[key] then
 			return
 		end

@@ -90,6 +90,8 @@ local REBIRTH_CONFIRM_SECONDS = 4 -- how long the button waits for the second pr
 local rebirthRow = UI.row(worldsList, REBIRTH_HEIGHT, 0)
 rebirthRow.icon.BackgroundColor3 = Colors.gold
 rebirthRow.setIcon("rebirth")
+-- Rebirth is switched off for launch (Config.Rebirth.enabled): the row is built and never shown.
+rebirthRow.frame.Visible = Config.Rebirth.enabled
 local rebirthGives = UI.text({
 	Size = UDim2.new(1, -212, 0, 20),
 	Position = UDim2.fromOffset(58, 33),
@@ -161,7 +163,8 @@ worldsWindow.frame:GetPropertyChangedSignal("Visible"):Connect(function()
 		local here = Config.worldOf(State.get("Wave", 1))
 		local above = worldRows[math.max(1, here - 1)].frame
 		local offset = above.AbsolutePosition.Y - worldsList.AbsolutePosition.Y + worldsList.CanvasPosition.Y
-		worldsList.CanvasPosition = Vector2.new(0, if rebirthState() or here <= 2 then 0 else math.max(0, offset))
+		local toTake = Config.Rebirth.enabled and rebirthState()
+		worldsList.CanvasPosition = Vector2.new(0, if toTake or here <= 2 then 0 else math.max(0, offset))
 	end
 end)
 
@@ -494,7 +497,7 @@ local topWindow = UI.window("TOP PLAYERS", 780, 430)
 -- Rebirths, Cannon Power. A board's place is its Order attribute and its heading its Title attribute, so a
 -- board can be renamed or replaced on the server without this window being touched; the headings listed here
 -- only stand in for a board that came without one.
-local BOARD_TITLES = { Gems = "MOST GEMS", Rebirths = "MOST REBIRTHS", Power = "MOST CANNON POWER" }
+local BOARD_TITLES = { Gems = "MOST GEMS", Rebirths = "MOST REBIRTHS", Levels = "MOST LEVELS", Power = "MOST CANNON POWER" }
 local BOARD_COLUMNS = 3 -- the boards that are always there
 local MAX_BOARD_COLUMNS = 4 -- with an event's board beside them (Features/Event.luau)
 local NOTE_HEIGHT = 74

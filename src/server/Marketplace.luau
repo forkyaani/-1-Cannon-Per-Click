@@ -771,7 +771,11 @@ function Marketplace.build()
 	local west = CFrame.Angles(0, math.rad(-90), 0) -- boards on the west side face east, into the square
 	-- Gems, Rebirths, Cannon Power: the ids and the order of Leaderboard.luau's boards.
 	buildLeaderboard(at(-58, 0, -10) * west, "Gems", "MOST GEMS")
-	buildLeaderboard(at(-58, 0, 10) * west, "Rebirths", "MOST REBIRTHS")
+	if Config.Rebirth.enabled then
+		buildLeaderboard(at(-58, 0, 10) * west, "Rebirths", "MOST REBIRTHS")
+	else
+		buildLeaderboard(at(-58, 0, 10) * west, "Levels", "MOST LEVELS")
+	end
 	buildLeaderboard(at(-58, 0, 30) * west, "Power", "MOST CANNON POWER")
 	local south = CFrame.Angles(0, math.pi, 0) -- things by the arrival pad face the players walking in
 	buildChest(at(14, 0, 42) * south)

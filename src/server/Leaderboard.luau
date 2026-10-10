@@ -38,17 +38,30 @@ local BOARDS = {
 			return Format.abbreviate(score) .. " gems"
 		end,
 	},
-	{
-		id = "Rebirths",
-		title = "MOST REBIRTHS",
-		storeName = "LB_Rebirths_v2", -- v1 was the clicker's
-		score = function(data): number
-			return math.clamp(math.floor(data.rebirths), 0, #Config.Worlds)
-		end,
-		format = function(score: number): string
-			return if score == 1 then "1 rebirth" else `{score} rebirths`
-		end,
-	},
+	-- The second board: rebirths, or the best level cleared while rebirth is switched off (Config.Rebirth.enabled).
+	if Config.Rebirth.enabled
+		then {
+			id = "Rebirths",
+			title = "MOST REBIRTHS",
+			storeName = "LB_Rebirths_v2", -- v1 was the clicker's
+			score = function(data): number
+				return math.clamp(math.floor(data.rebirths), 0, #Config.Worlds)
+			end,
+			format = function(score: number): string
+				return if score == 1 then "1 rebirth" else `{score} rebirths`
+			end,
+		}
+		else {
+			id = "Levels",
+			title = "MOST LEVELS",
+			storeName = "LB_Levels_v1",
+			score = function(data): number
+				return math.clamp(math.floor(data.bestCleared), 0, Config.TotalWaves)
+			end,
+			format = function(score: number): string
+				return if score < 1 then "no level yet" else Config.waveLabel(score)
+			end,
+		},
 	{
 		id = "Power",
 		title = "MOST CANNON POWER",

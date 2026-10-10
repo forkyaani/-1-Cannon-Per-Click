@@ -16,6 +16,8 @@ local TEXT_LEFT = 58 -- where a row's text starts (UI.row's own layout)
 
 local function start(ctx)
 	local Config, Format, State, UI = ctx.Config, ctx.Format, ctx.State, ctx.UI
+	-- Rebirth is switched off for launch (Config.Rebirth.enabled): then there is nothing to keep it through.
+	local KEPT = if Config.Rebirth.enabled then "kept through rebirths" else "kept for good"
 	local Colors = UI.Colors
 	local left = Enum.TextXAlignment.Left
 	local world = Config.Worlds[Mastery.ISLAND]
@@ -131,9 +133,9 @@ local function start(ctx)
 		if not unlocked then
 			headline.Text = `Reach {world.name} to unlock Mastery`
 		elseif not here then
-			headline.Text = `Buy at the Mastery Shrine on the {world.name} island  •  kept through rebirths`
+			headline.Text = `Buy at the Mastery Shrine on the {world.name} island  •  {KEPT}`
 		else
-			headline.Text = `💎 {Format.abbreviate(gems)} gems  •  Mastery is kept through rebirths`
+			headline.Text = `💎 {Format.abbreviate(gems)} gems  •  Mastery is {KEPT}`
 		end
 		for _, group in Mastery.Groups do
 			tabs[group.id].BackgroundColor3 = if group.id == selected then Colors.blue else Colors.grey

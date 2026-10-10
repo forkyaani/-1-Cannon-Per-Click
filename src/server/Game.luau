@@ -591,7 +591,12 @@ local function sync(player: Player)
 	-- The player list: the same three numbers as the boards.
 	local stats = state.leaderstats
 	stats.Gems.Value = data.diamonds
-	stats.Rebirths.Value = data.rebirths
+	-- With rebirth switched off the middle column is the best level cleared.
+	if stats.Rebirths then
+		stats.Rebirths.Value = data.rebirths
+	else
+		stats.Level.Value = data.bestCleared
+	end
 	stats["Cannon Power"].Value = Format.abbreviate(dps)
 end
 
@@ -841,7 +846,7 @@ local function levelCleared(player: Player, data, state)
 			if firstClear and nextWorld then
 				notify(player, `{nextWorld.name} unlocked! {nextWorld.twist}`, "good")
 			end
-			if wave >= Config.rebirthWave(data.rebirths) then
+			if Config.Rebirth.enabled and wave >= Config.rebirthWave(data.rebirths) then
 				notify(player, "You can REBIRTH now: open WORLDS to see what it gives and what it resets.", "good")
 			end
 		end
@@ -1741,7 +1746,7 @@ end
 -- story), the Veteran level and every unlock (bestCleared). It pays gems and adds tower damage for good.
 -- The argument must be `true`: the WORLDS window sends it on the second, confirming press.
 function actions.rebirth(player: Player, data, state, confirmed: unknown)
-	if confirmed ~= true then
+	if not Config.Rebirth.enabled or confirmed ~= true then
 		return
 	end
 	local need = Config.rebirthWave(data.rebirths)
@@ -1935,7 +1940,8 @@ local function newLeaderstats(player: Player)
 	folder.Name = "leaderstats"
 	local stats = {}
 	-- Cannon Power outgrows any number value the player list can show: it is written out ("1.25Qa").
-	for name, className in { Gems = "IntValue", Rebirths = "IntValue", ["Cannon Power"] = "StringValue" } do
+	local middle = if Config.Rebirth.enabled then "Rebirths" else "Level"
+	for name, className in { Gems = "IntValue", [middle] = "IntValue", ["Cannon Power"] = "StringValue" } do
 		local value = Instance.new(className)
 		value.Name = name
 		value.Parent = folder
