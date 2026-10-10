@@ -13,6 +13,11 @@ simulator's result, and section 5 lists what the simulator does not know.
 > then takes five minutes whatever it pays, so it is left at 1. The sections below still give 6 October's
 > numbers: the pace is the same, the shares of towers and mini cannons are not.
 
+> **11 October: the FIRE button** (`src/shared/Features/Blast.luau`). A press is 4% to 10% of the player's damage
+> per second, five a second at most, so pressing flat out is +20% (new) to +50% (level 50, after 52,000 shots).
+> Stood in for with `sim.py --seeds 4 --enchant X`: 6:54 for the whole game without it, 6:04 at x1.2, 5:40 at
+> x1.35, 4:37 at x1.5. To make pressing matter less or more, change `Blast.RATE`, `SHARE` or `SHARE_PER_LEVEL`.
+
 The 6 October retune, in one paragraph: towers deal 4x what they did (`Config.Towers`: the starter Cannon is
 36 damage a second at level 1, it was 9), mini cannons 5.25x (`Config.PetDps` = 525, it was 100), monster
 health grows 13.1% a level instead of 17.2% (`Config.Level.hpGrowth` = 1.131), and every world's coins were
