@@ -362,9 +362,9 @@ The game plays itself once the towers are up. A button of its own (not "tap anyw
 - **Progression:** every shot that had a target is 1 XP. Level L to L+1 takes 60 + 40 x L shots; 50 levels, 52,000 shots in all. The share is 4% of damage per second at level 0 and 10% at level 50. The level is kept through rebirths.
 - **Balance:** the server counts at most 5 shots a second, whatever is pressed (an auto-clicker gains nothing over a fast thumb). So pressing flat out adds 20% damage at level 0 and 50% at level 50; a 2x Power boost adds 100%. A shot is a share of damage per second, never of a monster's health, so it cannot carry a level the towers could not nearly clear. No coins, gems or drops come from a shot by itself.
 
-- [ ] U1. **[d1v]** (taken: d1v, 10 Oct 23:45) Shared numbers, server half (counts, pays damage, levels), a test · **45 min**
-- [ ] U2. **[d1v]** (taken: d1v, 10 Oct 23:45) The button on the base's HUD (phone: between the level panel and the jump button; F on a keyboard), its level and bar, the floating damage · **45 min**
-- [ ] U3. **[d1v]** (taken: d1v, 10 Oct 23:45) In the place, seen on a desktop and a phone-sized screen **[S]** · **20 min**
+- [x] U1. **[d1v]** (done 10 Oct 23:55: `src/shared/Features/Blast.luau` (the numbers and the balance note), `src/server/Features/Blast.luau` (action `blast`, an allowance that fills at 5 a second, damage through `Game.damage`, XP and levels in `data.features.blast`), `tools/emu/tests/blast.luau`; all 20 emulator tests pass) Shared numbers, server half (counts, pays damage, levels), a test · **45 min**
+- [x] U2. **[d1v]** (done 10 Oct 23:55, in code: `src/client/Features/Blast.luau`: a round red FIRE! button, 116 px, bottom right and left of the jump button, shown on the player's own base only; F on a keyboard; its level bar over it; the damage floats up from it; presses are sent together every 0.4 s) The button on the base's HUD (phone: between the level panel and the jump button; F on a keyboard), its level and bar, the floating damage · **45 min**
+- [ ] U3. **[d1v]** (taken: d1v, 10 Oct 23:45) **NOT DONE** (10 Oct 23:58): the three new scripts are not in the place yet (the screen-control prompt on the Mac was not answered), so the button has not been seen anywhere and the place is three scripts behind `src/`. Do not publish before this is done. In the place, seen on a desktop and a phone-sized screen **[S]** · **20 min**
 
 ## After launch
 
