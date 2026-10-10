@@ -850,6 +850,9 @@ debug("coins", 1e60)
 debug("diamonds", 1e6)
 debug("candy", 1e7)
 debug("wave", Config.TotalWaves)
+-- A save's first hatch is never below Rare (first_hatch.luau). This test was written on plain rolls and counts
+-- what they gave, so its player is somebody who has hatched before.
+data.totalHatches = 1
 for _, egg in Config.Eggs do
 	local prompt = T.Marketplace.promptFor[egg.id]
 	for _ = 1, 3 do

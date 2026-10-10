@@ -1351,6 +1351,20 @@ local function hatchOne(player: Player, data, state, egg)
 	-- resolves. The egg stands show each player the odds for this same luck (Config.eggOdds).
 	local roll = (rng:NextInteger(0, 9_999) + rng:NextNumber()) / 10_000
 	local petId, chance = Config.rollEgg(egg, roll, Game.luck(player, data, state))
+	-- A save's very first hatch is never a let-down: a Common or an Uncommon becomes the egg's own Rare. Only
+	-- that one hatch, only from an egg bought with coins, and never better than the egg could give anyway, so
+	-- nothing is worth more than a lucky first roll already was.
+	if data.totalHatches == 0 and not Config.PaidCurrencies[egg.currency] then
+		local rarity = Config.Pets[petId].rarity
+		if rarity == "Common" or rarity == "Uncommon" then
+			for _, odd in Config.eggOdds(egg, Game.luck(player, data, state)) do
+				if Config.Pets[odd.id].rarity == "Rare" and odd.chance > 0 then
+					petId, chance = odd.id, odd.chance
+					break
+				end
+			end
+		end
+	end
 	-- A Secret or a Huge is always kept: in a full storage it takes the place of the weakest mini cannon.
 	local kept = addPet(player, data, petId, Config.Pets[petId].hidden)
 	data.totalHatches += 1
