@@ -1,6 +1,6 @@
 # Idle defence: technical spec (the contract between the pieces)
 
-The game, **Cannon Tower Defence** (`Config.GameName`; "+1 Cannon Per Click" until 10 Oct 2026), changed from a tap clicker in a fixed lane to a
+The game, **Cannon Tower Defense** (`Config.GameName`; "+1 Cannon Per Click" until 10 Oct 2026), changed from a tap clicker in a fixed lane to a
 third-person idle defence. `docs/IDLE_DEFENSE.md` is
 the one-page design. This file is what the server core, the plot builder and the client must agree on. If you
 need to deviate, say so in your report: other people are coding against this text at the same time.

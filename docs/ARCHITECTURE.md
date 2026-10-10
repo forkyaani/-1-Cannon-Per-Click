@@ -17,7 +17,7 @@ Before either, the client runs `src/first/Loading.client.luau` from `ReplicatedF
 Require a shared feature module with `require(ReplicatedStorage.Shared.Features.<Name>)`
 (on the client use `WaitForChild` on the way down).
 
-The game is called **Cannon Tower Defence** (until 10 Oct 2026: "+1 Cannon Per Click") (`Config.GameName`: use it wherever the game names itself). It is an
+The game is called **Cannon Tower Defense** (until 10 Oct 2026: "+1 Cannon Per Click") (`Config.GameName`: use it wherever the game names itself). It is an
 idle defence: monsters walk a path on each player's plot and cannon towers on pads shoot them
 (`docs/IDLE_DEFENSE.md`; the contract between the pieces is `docs/DEFENSE_SPEC.md`, the numbers are explained
 in `docs/BALANCE.md`, what is built next in `docs/BUILD_QUEUE.md`).

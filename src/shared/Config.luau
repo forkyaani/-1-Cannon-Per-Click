@@ -8,7 +8,7 @@
 local Config = {}
 
 -- What the game is called, wherever it names itself.
-Config.GameName = "Cannon Tower Defence"
+Config.GameName = "Cannon Tower Defense"
 
 local rgb = Color3.fromRGB
 
