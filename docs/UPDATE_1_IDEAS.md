@@ -15,6 +15,7 @@ Still a MAYBE as an update, but if it happens these are settled:
 
 - **Gems are tradable** (Yaani, 11 Oct): a player can put gems into a trade, next to mini cannons, in the
   trading that exists.
+- **3 new islands** (Yaani, 11 Oct): three more worlds after the 12 that exist, so 15. Themes not chosen yet.
 
 Not answered yet: the open questions at the end.
 
