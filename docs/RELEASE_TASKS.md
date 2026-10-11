@@ -425,11 +425,13 @@ Yaani, with a screenshot from the marketplace: the menu behind MORE opens at the
 - [ ] Z2. **[d1v]** Put Z1's `Hud.luau` in the place, look at it on a desktop and a phone-sized screen in both views, publish · **15 min**
 
 
-## AA. The group reward has its own icon on the screen (Yaani, 11 Oct)
+## AA. A thumbs up + group rewards icon on the screen (Yaani, 11 Oct)
 
 Yaani: the group reward must be more apparent: an icon for it on the screen. Today it is only a page of the welcome cards (`Features/Tutorial.luau`): 250 gems once and +10% coins for good, for joining Astral Crafts. A player who clicks through the welcome never meets it again.
 
-- [ ] AA1. **[Yaani]** (not started: waits for Yaani's go) A button on the HUD while the bonus is unclaimed: an icon with "+250" and a gem on it, in the left stack at the cannon and in the marketplace. Pressing it opens the group card that exists (what the bonus is, the group's name, CHECK). It goes away for good once the bonus is paid; nothing opens by itself. Emulator test: shown before, gone after. · **45 min**
-- [ ] AA2. **[Yaani]** The icon's picture (a group badge with a gem), through the icon pipeline in `docs/ICONS.md`; until it is in, the button uses the gift icon · **20 min**
+Yaani, a minute later: make it thumbs up + group rewards, so people thumbs up the game. The game cannot see whether a player has liked it, and Roblox does not allow paying for a like, so the reward stays tied to the group (which the game can check) and the thumbs up is asked for on the same button and card, unpaid, as the welcome's like page does today.
+
+- [ ] AA1. **[Yaani]** (not started: waits for Yaani's go) A button on the HUD while the bonus is unclaimed: a thumbs up icon with "+250" and a gem on it, labelled LIKE + GROUP, in the left stack at the cannon and in the marketplace. Pressing it opens one card: thumbs up the game, join the group, the bonus (250 gems, +10% coins), CHECK. It goes away for good once the bonus is paid; nothing opens by itself. Emulator test: shown before, gone after. · **45 min**
+- [ ] AA2. **[Yaani]** The icon's picture (a thumbs up with a gem), through the icon pipeline in `docs/ICONS.md`; until it is in, the button uses the gift icon · **20 min**
 - [ ] AA3. **[d1v]** Put AA1 and AA2 in the place, see the button, the card and the button gone after CHECK with an account that is in the group, publish · **15 min**
 
