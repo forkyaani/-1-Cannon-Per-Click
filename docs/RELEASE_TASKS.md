@@ -184,7 +184,7 @@ needs a second pass doubles its job.
     - After buying a pad and building on it, the prompt on that pad still read BUY PAD.
     - "Played before? Skip tutorial" on the third welcome card is one small line of text: a small target for a thumb.
   - **Not done, and not doable by d1v in Studio:** trading (needs a second player), the frame rate, portrait, a real phone. Buying with Robux is not tested either.
-- [ ] I6. **[Yaani]** Publish **[S]** · **5 min**
+- [x] I6. **[Yaani]** (done by d1v on Victor's word, 11 Oct 01:09: a check found all 93 scripts under `src/` equal to the place's (commit 31e8e73), then File > Publish to Roblox; Studio's output: "Published new changes", version 85. The experience is still Private: the 1,000 Robux fee and Public are Victor's) Publish **[S]** · **5 min**
 
 ## J. Asked for on 7 Oct (Yaani)
 
