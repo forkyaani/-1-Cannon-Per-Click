@@ -377,7 +377,7 @@ Victor: "remove rebirth entirely". As it stands a rebirth sends a player back to
 
 ## After launch
 
-**Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Also (11 Oct): gems can be put into a trade, and 3 new islands. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
+**Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Also (11 Oct): gems can be put into a trade, 3 new islands, 3 new cannons and new weapons. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
 6 Oct), the remaining feature windows, Auto Hatch and Fast Hatch passes,
@@ -415,3 +415,11 @@ Victor: the FIRE button should not level up through use: its levels are bought w
 Yaani: CCU and visits alerts, "anything useful", sent to a webhook in the CTD Discord server regularly.
 
 - [ ] Y1. **[Yaani]** (taken: Yaani, 11 Oct 09:35; the script and installer are written, `tools/alerts/ctd_alerts.py` and `install.sh`, and a dry run reads the live numbers. Still to do: make the webhook in the CTD server, put its URL in `~/.ctd-alerts/webhook_url`, run `install.sh`) A script on Yaani's Mac (`tools/alerts/`, run by launchd) reads Roblox's public games API for the experience (10769534537) and posts to a Discord webhook: a regular stats post (playing, visits, favourites, likes, with the change since the last one), and alerts for a new CCU peak and for visit and CCU milestones. The webhook URL is kept out of git. Nothing in the game changes · **30 min**
+
+
+## Z. The MORE menu opens in the middle of the screen (Yaani, 11 Oct)
+
+Yaani, with a screenshot from the marketplace: the menu behind MORE opens at the side, seven rows tall, runs off the top of the screen (MARKET, MINIS and WORLDS are cut by the notification) and hides the game. It should open in the middle.
+
+- [ ] Z1. **[Yaani]** (not started: waits for Yaani's go) `src/client/Hud.luau`: the drawer is centred on the screen in both views instead of standing left of the menu column, and is wider than tall (up to 5 columns, so 19 buttons are 4 rows and fit a 720-high screen); a tap outside still closes it. Emulator smoke test. · **30 min**
+- [ ] Z2. **[d1v]** Put Z1's `Hud.luau` in the place, look at it on a desktop and a phone-sized screen in both views, publish · **15 min**
