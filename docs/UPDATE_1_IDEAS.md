@@ -13,6 +13,9 @@ Still a MAYBE as an update, but if it happens these are settled:
   existing enchanting table with a Combat Key; the mini cannons players already own; 1v1 before 2v2; a saved
   team to fight when nobody is online; no stakes and nothing lost on a defeat.
 
+- **Gems are tradable** (Yaani, 11 Oct): a player can put gems into a trade, next to mini cannons, in the
+  trading that exists.
+
 Not answered yet: the open questions at the end.
 
 ## The idea, in Yaani's words (tidied)

@@ -377,7 +377,7 @@ Victor: "remove rebirth entirely". As it stands a rebirth sends a player back to
 
 ## After launch
 
-**Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
+**Update 1 ideas (MAYBE, not decided, Yaani 9 Oct):** a portal on the base to a sky base or bunker with parkour, and mini cannon battles against other players (1v1, 2v2, combat enchantments and keys). Also (9 Oct): a moon over each island with its own, different mini-game. Also (11 Oct): gems can be put into a trade. Written up in `docs/UPDATE_1_IDEAS.md`. Not jobs yet: nobody starts any of it.
 
 Fight effects, tower and pad models, emoji to icons, MINI CANNONS and STORE windows (cut from launch on
 6 Oct), the remaining feature windows, Auto Hatch and Fast Hatch passes,
