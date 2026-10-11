@@ -9,6 +9,12 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Passes = {}
 
 local owned = {} -- [player] = { [pass key] = true }
+-- Accounts that have every game pass without buying it (Victor, 11 Oct 2026): [user id] = who. The game treats
+-- them as owners; on Roblox itself they do not own the passes, so the STORE's pass rows read as owned only here.
+local GIFTED = {
+	[7421324429] = "D1v991",
+	[4882659402] = "lil_w3lly619",
+}
 local changed = Instance.new("BindableEvent")
 
 -- Fires with the player whenever their passes change (a purchase, or the Studio override).
@@ -29,6 +35,13 @@ end
 function Passes.load(player: Player)
 	local set = {}
 	local failed = {} -- [pass key] = the error, for the checks Roblox did not answer
+	if GIFTED[player.UserId] then
+		for key in Config.Passes do
+			set[key] = true
+		end
+		owned[player] = set
+		return
+	end
 	for key, pass in Config.Passes do
 		if pass.id ~= 0 then
 			local ok, result = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, pass.id)
