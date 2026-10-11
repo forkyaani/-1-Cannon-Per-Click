@@ -884,7 +884,8 @@ eq(Config.HugeShot.shots, 5, "a Huge Shot is 5 hero shots")
 eq(Config.HugeShot.seconds, 2, "every 2 seconds")
 do
 	local Features = require(game:GetService("ReplicatedStorage").Shared.Features.Huge).Features
-	check(Features.hugetycoon.coins == 2 and Features.hugetycoon.autoUpgrade == true, "Tycoon: x2 coins, upgrades the cheapest tower")
+	check(Features.hugetycoon.coins == 1.5 and Features.hugetycoon.autoUpgrade == true, "Tycoon: x1.5 coins, upgrades the cheapest tower")
+	check(Config.Pets.hugetycoon.power == 2 and Config.Pets.hugestorm.power == 3, "the bought Huge is x2 tower damage, a hatched one x3")
 	check(Features.hugeslayer.bossDamage == 3 and Features.hugeclover.luck == 2 and Features.hugegatling.fireRate == 5, "Slayer, Clover, Gatling")
 	check(Features.hugestorm.multiHit.chance == 0.25 and Features.hugestorm.multiHit.hits == 2, "Storm")
 	check(Features.hugehex.heal == 0.5 and Features.hugegoldengoose.freeEgg == 4 and Features.hugeexecutioner.execute == 0.15, "Hex, Golden Goose, Executioner")
@@ -910,7 +911,7 @@ do
 			coinSource = entry
 		end
 	end
-	check(coinSource ~= nil and math.abs(coinSource.mult - 2) < 1e-9, "the Tycoon's coins are a labelled source")
+	check(coinSource ~= nil and math.abs(coinSource.mult - 1.5) < 1e-9, "the Tycoon's coins are a labelled source")
 	act("goMarket")
 end
 for name in { ["MINI CANNONS"] = true, INDEX = true } do

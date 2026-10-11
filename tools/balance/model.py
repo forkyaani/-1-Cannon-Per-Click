@@ -224,7 +224,7 @@ end
 if Huge then
 	out.passPet = Huge.PassPet
 	for id, f in Huge.Features do
-		out.huges[id] = { coins = f.coins, heal = f.heal, luck = f.luck, bossDamage = f.bossDamage, fireRate = f.fireRate,
+		out.huges[id] = { power = Config.Pets[id].power, coins = f.coins, heal = f.heal, luck = f.luck, bossDamage = f.bossDamage, fireRate = f.fireRate,
 			multiChance = f.multiHit and f.multiHit.chance, multiHits = f.multiHit and f.multiHit.hits, execute = f.execute,
 			freeEgg = f.freeEgg, bossGems = f.bossGems, gemsPerDay = f.gemsPerDay, crateDrops = f.crateDrops }
 	end

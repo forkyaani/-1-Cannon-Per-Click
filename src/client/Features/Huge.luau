@@ -105,7 +105,7 @@ function Huge.start(ctx)
 
 	-- Built the first time the window is opened: it is a few hundred labels nobody needs before then.
 	local function build()
-		local every = `each one: x{Config.HugePower} ALL tower damage and a Huge Shot`
+		local every = `each one: x{Config.TycoonPower} or x{Config.HugePower} ALL tower damage and a Huge Shot`
 		local frame = box(`HUGE CANNONS  •  {every}`, Config.Huges, #Config.Huges * HUGE_HEIGHT)
 		for index, id in Config.Huges do
 			local top = TITLE_HEIGHT + (index - 1) * HUGE_HEIGHT

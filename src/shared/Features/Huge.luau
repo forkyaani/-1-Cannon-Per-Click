@@ -43,7 +43,7 @@ Huge.Features = {
 	hugeexecutioner = { name = "Execute", execute = 0.15 },
 	hugegemstone = { name = "Gem Finder", bossGems = 1, gemsPerDay = 50 },
 	hugepumpkin = { name = "Trick or Treat", candy = 2, crateDrops = 2 },
-	hugetycoon = { name = "Tycoon", coins = 2, autoUpgrade = true },
+	hugetycoon = { name = "Tycoon", coins = 1.5, autoUpgrade = true }, -- 2 until 11 Oct 2026: see Config.TycoonPower
 	-- The Halloween leaderboard's prize (Features/Event.luau): in no egg.
 	hugespectre = { name = "Haunt", monsterSpeed = 0.8 },
 }

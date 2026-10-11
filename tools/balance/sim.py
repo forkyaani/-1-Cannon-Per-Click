@@ -482,7 +482,9 @@ class Player:
     def power(self):
         """The multiplier on tower damage. Mini cannons are not in it since 5 Oct: pet_dps()."""
         self.equipped()
-        value = self.f["hugePower"] ** len(self.huge_equipped)
+        value = 1.0
+        for feature in self.huge_features():
+            value *= feature.get("power") or self.f["hugePower"]  # each Huge its own (Config.hugeMult)
         value *= 1 + self.veteran() * self.model.mastery_bonus
         value *= 1 + self.rebirths * self.f["rebirth"]["damage"]
         if self.active("power2x"):

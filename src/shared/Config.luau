@@ -826,7 +826,14 @@ local COIN_HUGES = {
 local GEM_HUGE = defineHuge("Gemstone", rgb(90, 225, 255), rgb(255, 150, 255))
 local HALLOWEEN_HUGE = defineHuge("Pumpkin", rgb(255, 130, 30), rgb(70, 160, 60))
 -- The one Huge that is bought (the hugeStarter game pass) instead of hatched, so it cannot be traded.
-Config.Pets[defineHuge("Tycoon", rgb(235, 240, 250), rgb(255, 205, 60))].tradable = false
+-- It is weaker than a hatched Huge on purpose (Victor, 11 Oct 2026): at x3, with its x2 coins, the pass alone
+-- finished the whole game in under an hour (a free player takes eight). x2 and x1.5 coins: about 1 h 40.
+Config.TycoonPower = 2
+do
+	local tycoon = Config.Pets[defineHuge("Tycoon", rgb(235, 240, 250), rgb(255, 205, 60))]
+	tycoon.tradable = false
+	tycoon.power = Config.TycoonPower
+end
 -- The prize of the Halloween leaderboard (Features/Event.luau): no egg hides it and nothing sells it, so the
 -- only ones in the game are the top three's. It can be traded.
 defineHuge("Spectre", rgb(150, 255, 205), rgb(150, 80, 230))
