@@ -18,6 +18,10 @@ Still a MAYBE as an update, but if it happens these are settled:
 - **3 new islands** (Yaani, 11 Oct): three more worlds after the 12 that exist, so 15. Themes not chosen yet.
 - **3 new cannons and new weapons** (Yaani, 11 Oct). Not said yet: whether the cannons are towers for the
   pads or mini cannons, and what a "weapon" is (a new kind of tower, or something the player holds).
+- **An admin grant tool** (Yaani, 11 Oct): a way to give one named player things in the live game (gems,
+  coins, items, mini cannons), whether they are online or not. Only Yaani's and d1v's accounts can use it,
+  checked on the server, and every grant is logged. Today there are only redeem codes (anybody with the code)
+  and the Studio-only debug cheat.
 
 Not answered yet: the open questions at the end.
 
