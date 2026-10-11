@@ -21,5 +21,5 @@ end
 
 Analytics.logger = fake
 
-local store = game:GetService("DataStoreService"):GetDataStore("PlayerData_v4")
+local store = game:GetService("DataStoreService"):GetDataStore("PlayerData_v5")
 store:SetAsync("u_3", { lastSeen = os.time() - 3600, bestCleared = 12, cleared = 12, wave = 13, totalKills = 300, totalHatches = 2 })

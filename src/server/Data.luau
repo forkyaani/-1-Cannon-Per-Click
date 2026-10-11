@@ -7,7 +7,8 @@ local DataStoreService = game:GetService("DataStoreService")
 
 local Data = {}
 
-local STORE_NAME = "PlayerData_v4" -- v2 was the clicker; its saves (test saves only) are dropped
+local STORE_NAME = "PlayerData_v5" -- v2 was the clicker. v4 held the saves from before launch: everyone starts again at
+-- launch (Victor, 11 Oct 2026). Those saves are not deleted: they are still in v4
 local LOAD_ATTEMPTS = 3 -- tries at a load while the store itself is failing
 local RELEASE_ATTEMPTS = 3 -- the last save is worth retrying: it also frees the lock
 local LOCK_KEY = "_session" -- the lock inside the stored table: { job = server id, at = unix time }

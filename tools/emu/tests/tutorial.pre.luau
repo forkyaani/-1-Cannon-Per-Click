@@ -1,6 +1,6 @@
 -- Runs before the server starts: the save of a player who was far into the game before the first-join
 -- experience existed (user 3). The story is in chapter 2, so every tutorial quest was paid long ago.
-local store = game:GetService("DataStoreService"):GetDataStore("PlayerData_v4")
+local store = game:GetService("DataStoreService"):GetDataStore("PlayerData_v5")
 store:SetAsync("u_3", {
 	lastSeen = os.time() - 30,
 	bestCleared = 60,

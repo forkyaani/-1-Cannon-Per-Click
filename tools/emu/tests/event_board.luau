@@ -14,7 +14,7 @@ local Feature = require(Server.Features.Event)
 local Leaderboard = require(Server.Leaderboard)
 
 local event = Shared.ById.halloween2026
-local scores = DataStoreService:GetOrderedDataStore(`LB_Event_{event.id}_v1`)
+local scores = DataStoreService:GetOrderedDataStore(`LB_Event_{event.id}_v2`)
 local winners = DataStoreService:GetDataStore("EventWinners_v1")
 local function meta()
 	return HttpService:JSONDecode(player:GetAttribute("Meta_event"))

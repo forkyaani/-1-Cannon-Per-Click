@@ -1,6 +1,6 @@
 -- Runs before the server starts: a new player who has done every step of the walkthrough but the last card,
 -- and is not in the group. The group has an id, so its card has something to ask.
-local store = game:GetService("DataStoreService"):GetDataStore("PlayerData_v4")
+local store = game:GetService("DataStoreService"):GetDataStore("PlayerData_v5")
 store:SetAsync("u_1", {
 	lastSeen = os.time() - 30,
 	bestCleared = 6,

@@ -355,7 +355,7 @@ local function register(event, index: number)
 	Leaderboard.add({
 		id = event.board,
 		title = `MOST {string.upper(event.currencyName)} EARNED`,
-		storeName = `LB_Event_{event.id}_v1`,
+		storeName = `LB_Event_{event.id}_v2`,
 		-- Called with the save alone when a player has just left, so it reads the save and nothing else.
 		score = function(data): number
 			if os.time() >= event.endsAt + Shared.SUBMIT_GRACE then

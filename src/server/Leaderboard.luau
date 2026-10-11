@@ -30,7 +30,7 @@ local BOARDS = {
 	{
 		id = "Gems",
 		title = "MOST GEMS",
-		storeName = "LB_Gems_v1",
+		storeName = "LB_Gems_v2",
 		score = function(data): number
 			return math.max(0, math.floor(data.diamonds))
 		end,
@@ -43,7 +43,7 @@ local BOARDS = {
 		then {
 			id = "Rebirths",
 			title = "MOST REBIRTHS",
-			storeName = "LB_Rebirths_v2", -- v1 was the clicker's
+			storeName = "LB_Rebirths_v3", -- v1 was the clicker's, v2 from before launch
 			score = function(data): number
 				return math.clamp(math.floor(data.rebirths), 0, #Config.Worlds)
 			end,
@@ -54,7 +54,7 @@ local BOARDS = {
 		else {
 			id = "Levels",
 			title = "MOST LEVELS",
-			storeName = "LB_Levels_v1",
+			storeName = "LB_Levels_v2",
 			score = function(data): number
 				return math.clamp(math.floor(data.bestCleared), 0, Config.TotalWaves)
 			end,
@@ -65,7 +65,7 @@ local BOARDS = {
 	{
 		id = "Power",
 		title = "MOST CANNON POWER",
-		storeName = "LB_CannonPower_v1",
+		storeName = "LB_CannonPower_v2",
 		score = function(_data, stats): number
 			local power = if stats then stats.power else nil
 			if typeof(power) ~= "number" or power ~= power or power < 1 or power == math.huge then
