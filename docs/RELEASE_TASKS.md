@@ -408,3 +408,10 @@ Victor: the FIRE button should not level up through use: its levels are bought w
 - G6 (listening to the game): Victor says on 11 Oct that the sounds are checked.
 - [x] X5. **[d1v]** (done 11 Oct, Victor: "reset everyone to 0") Everyone starts again at launch: the game reads and writes new stores (`PlayerData_v5`; `LB_Gems_v2`, `LB_Rebirths_v3`, `LB_Levels_v2`, `LB_CannonPower_v2`, `LB_Event_<id>_v2`). Nothing is deleted: the saves and boards from before launch are still in the old stores, and putting the old names back brings them back. Game passes are Roblox's and are kept (the Tycoon pass gives its Huge again on the new save); `EventWinners_v1` is untouched (the Halloween board has not been frozen). 21 emulator tests pass. In the place (93 scripts equal) and published at 01:24; servers that were already running keep the old saves until they close
 - [x] X6. **[d1v]** (done 11 Oct, Victor: "give lil_w3lly619 all the game passes and give them to me too") `GIFTED` in `src/server/Passes.luau`: user ids 7421324429 (D1v991) and 4882659402 (lil_w3lly619) are treated as owning every pass in `Config.Passes`, the Tycoon Huge included. Only inside the game: on Roblox they do not own the passes. 21 emulator tests pass (none joins as a gifted account: not tested by a test). In the place (93 scripts equal) and published at 02:14; it applies in servers started after that
+
+
+## Y. Discord alerts (Yaani, 11 Oct)
+
+Yaani: CCU and visits alerts, "anything useful", sent to a webhook in the CTD Discord server regularly.
+
+- [ ] Y1. **[Yaani]** (taken: Yaani, 11 Oct 09:35) A script on Yaani's Mac (`tools/alerts/`, run by launchd) reads Roblox's public games API for the experience (10769534537) and posts to a Discord webhook: a regular stats post (playing, visits, favourites, likes, with the change since the last one), and alerts for a new CCU peak and for visit and CCU milestones. The webhook URL is kept out of git. Nothing in the game changes · **30 min**
