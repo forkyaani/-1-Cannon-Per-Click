@@ -421,7 +421,7 @@ Yaani: CCU and visits alerts, "anything useful", sent to a webhook in the CTD Di
 
 Yaani, with a screenshot from the marketplace: the menu behind MORE opens at the side, seven rows tall, runs off the top of the screen (MARKET, MINIS and WORLDS are cut by the notification) and hides the game. It should open in the middle.
 
-- [ ] Z1. **[Yaani]** (taken: Yaani, 12 Oct 06:40) `src/client/Hud.luau`: the drawer is centred on the screen in both views instead of standing left of the menu column, and is wider than tall (up to 5 columns, so 19 buttons are 4 rows and fit a 720-high screen); a tap outside still closes it. Emulator smoke test. · **30 min**
+- [x] Z1. **[Yaani]** (done 12 Oct, code: the drawer is anchored in the middle of the screen in both views, five columns wide, a sixth and more once it would pass five rows, fewer on a narrow screen; the backdrop behind it dims the game a little; `tools/emu/tests/more_menu.luau` (20 checks) and the smoke test pass. Not seen in Studio: Z2) The MORE drawer opens in the middle of the screen, wider than tall · **30 min**
 - [ ] Z2. **[d1v]** Put Z1's `Hud.luau` in the place, look at it on a desktop and a phone-sized screen in both views, publish · **15 min**
 
 

@@ -286,7 +286,7 @@ Hud.backButton = backButton
 
 ----------------------------------------------------------------------------------------------------
 -- Right: menu orbs, in a block above the action buttons. The top-right corner is left to Roblox's player list.
--- Five are pinned per view; the rest live in a drawer behind MORE.
+-- Five are pinned per view; the rest live in a drawer behind MORE, which opens in the middle of the screen.
 -- Buttons are added with Hud.addMenuButton: by init.client for the core windows, by features for their own.
 ----------------------------------------------------------------------------------------------------
 local CELL = Vector2.new(112, 104)
@@ -319,18 +319,25 @@ Hud.PINNED = {
 	cannon = { "STORE", "MINI CANNONS", "MISSIONS", "DAILY", "WORLDS" },
 	market = { "TRADE", "STORE" },
 }
-local DRAWER_COLUMNS = 3
+-- The drawer is wider than tall, so every button fits the screen: five columns, more once that would take
+-- more than DRAWER_ROWS rows, and never more than the screen has room for (drawerFit, set by relayout).
+local DRAWER_COLUMNS, DRAWER_ROWS = 5, 5
+local drawerFit = 8
 
 Hud.menu = {}
 local menuOrder: { [string]: number } = {}
 local badges: { [string]: Frame } = {}
 
 local menuGrid = UI.slot({ Name = "Menu", Size = UDim2.fromOffset(CELL.X * MENU_COLUMNS, CELL.Y * 2), ZIndex = 4 })
--- Catches the tap that closes the drawer, so it does not fire the cannon.
+-- Catches the tap that closes the drawer, so it does not fire the cannon. It dims the game a little, so the
+-- drawer reads over a busy scene.
 local drawerBackdrop = UI.make("TextButton", {
 	Name = "DrawerBackdrop",
 	Size = UDim2.fromScale(1, 1),
-	BackgroundTransparency = 1,
+	BackgroundColor3 = Colors.ink,
+	BackgroundTransparency = 0.55,
+	BorderSizePixel = 0,
+	AutoButtonColor = false,
 	Text = "",
 	Visible = false,
 	ZIndex = 2,
@@ -349,7 +356,7 @@ local capsule = UI.make("Frame", {
 	ZIndex = 0,
 	Parent = menuGrid,
 }, { UI.corner(54), capsuleLine })
-local drawer = UI.slot({ Name = "Drawer", Visible = false, ZIndex = 3 })
+local drawer = UI.slot({ Name = "Drawer", AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Visible = false, ZIndex = 3 })
 UI.sticker(drawer, { top = Colors.cream, bottom = Colors.cream, lip = Colors.creamShade }, { radius = 24, lip = 6, outline = 4, gloss = false })
 local drawerBody = UI.make("Frame", { Position = UDim2.fromOffset(10, 10), Size = UDim2.new(1, -20, 1, -26), BackgroundTransparency = 1, ZIndex = 2, Parent = drawer })
 
@@ -474,12 +481,15 @@ local function layoutMenu()
 	end)
 	cell = 0
 	local moreFlagged = false
+	local drawerColumns = math.clamp(math.ceil(#rest / DRAWER_ROWS), math.min(DRAWER_COLUMNS, drawerFit), drawerFit)
 	for _, name in rest do
-		place(Hud.menu[name], drawerBody, DRAWER_COLUMNS)
+		place(Hud.menu[name], drawerBody, drawerColumns)
 		moreFlagged = moreFlagged or flagged[name] == true
 	end
-	local rows = math.max(1, math.ceil(#rest / DRAWER_COLUMNS))
-	drawer.Size = UDim2.fromOffset(DRAWER_COLUMNS * CELL.X + 20, rows * CELL.Y + 26)
+	-- No wider than its buttons: three buttons make a drawer of three, not a row with two holes.
+	local columns = math.clamp(#rest, 1, drawerColumns)
+	local rows = math.max(1, math.ceil(#rest / drawerColumns))
+	drawer.Size = UDim2.fromOffset(columns * CELL.X + 20, rows * CELL.Y + 26)
 	badges.MORE.Visible = moreFlagged
 	moreButton.Visible = #rest > 0
 	if travelButton then
@@ -557,9 +567,15 @@ local function relayout()
 	local y = if inMarket then UDim.new(0.45, 0) else UDim.new(1, -(MARGIN + 190 + 10))
 	local right = if inMarket then MARGIN + 6 else MARGIN
 	local columns = if inMarket then 1 else MENU_COLUMNS
-	menuGrid.AnchorPoint, drawer.AnchorPoint = anchor, anchor
+	menuGrid.AnchorPoint = anchor
 	menuGrid.Position = UDim2.new(UDim.new(1, -right), y)
-	drawer.Position = UDim2.new(UDim.new(1, -right - CELL.X * columns - 18), y)
+	-- The drawer stands in the middle of the screen in both views (beside the menu it ran off the top and hid
+	-- the game: Yaani, 11 Oct). A narrow screen gets fewer columns.
+	local fits = math.clamp(math.floor((W - 2 * MARGIN - 20) / CELL.X), 3, 8)
+	if fits ~= drawerFit then
+		drawerFit = fits
+		layoutMenu()
+	end
 	slim.Position = UDim2.fromOffset(MARGIN, T + 8)
 	-- Notifications hang in the top-right corner, left of the menu column when that stands on the right edge.
 	layout.noteRight = if inMarket then right + CELL.X * columns + 18 else MARGIN
