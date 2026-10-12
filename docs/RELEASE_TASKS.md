@@ -421,7 +421,7 @@ Yaani: CCU and visits alerts, "anything useful", sent to a webhook in the CTD Di
 
 Yaani, with a screenshot from the marketplace: the menu behind MORE opens at the side, seven rows tall, runs off the top of the screen (MARKET, MINIS and WORLDS are cut by the notification) and hides the game. It should open in the middle.
 
-- [ ] Z1. **[Yaani]** (not started: waits for Yaani's go) `src/client/Hud.luau`: the drawer is centred on the screen in both views instead of standing left of the menu column, and is wider than tall (up to 5 columns, so 19 buttons are 4 rows and fit a 720-high screen); a tap outside still closes it. Emulator smoke test. · **30 min**
+- [ ] Z1. **[Yaani]** (taken: Yaani, 12 Oct 06:40) `src/client/Hud.luau`: the drawer is centred on the screen in both views instead of standing left of the menu column, and is wider than tall (up to 5 columns, so 19 buttons are 4 rows and fit a 720-high screen); a tap outside still closes it. Emulator smoke test. · **30 min**
 - [ ] Z2. **[d1v]** Put Z1's `Hud.luau` in the place, look at it on a desktop and a phone-sized screen in both views, publish · **15 min**
 
 
@@ -431,7 +431,29 @@ Yaani: the group reward must be more apparent: an icon for it on the screen. Tod
 
 Yaani, a minute later: make it thumbs up + group rewards, so people thumbs up the game. The game cannot see whether a player has liked it, and Roblox does not allow paying for a like, so the reward stays tied to the group (which the game can check) and the thumbs up is asked for on the same button and card, unpaid, as the welcome's like page does today.
 
-- [ ] AA1. **[Yaani]** (not started: waits for Yaani's go) A button on the HUD while the bonus is unclaimed: a thumbs up icon with "+250" and a gem on it, labelled LIKE + GROUP, in the left stack at the cannon and in the marketplace. Pressing it opens one card: thumbs up the game, join the group, the bonus (250 gems, +10% coins), CHECK. It goes away for good once the bonus is paid; nothing opens by itself. Emulator test: shown before, gone after. · **45 min**
+- [ ] AA1. **[Yaani]** (taken: Yaani, 12 Oct 06:40) A button on the HUD while the bonus is unclaimed: a thumbs up icon with "+250" and a gem on it, labelled LIKE + GROUP, in the left stack at the cannon and in the marketplace. Pressing it opens one card: thumbs up the game, join the group, the bonus (250 gems, +10% coins), CHECK. It goes away for good once the bonus is paid; nothing opens by itself. Emulator test: shown before, gone after. · **45 min**
 - [ ] AA2. **[Yaani]** The icon's picture (a thumbs up with a gem), through the icon pipeline in `docs/ICONS.md`; until it is in, the button uses the gift icon · **20 min**
 - [ ] AA3. **[d1v]** Put AA1 and AA2 in the place, see the button, the card and the button gone after CHECK with an account that is in the group, publish · **15 min**
+
+
+## AB. Update 1, to be released on 12 Oct (Yaani, 12 Oct 06:30)
+
+Yaani: "we need to release update 1 today". Asked what goes in, Yaani chose: the code pack (Z, AA, tradable gems, the admin grant tool), 3 new cannons and 3 new islands. NOT in today's update: the portal and parkour, battles, the moons (they stay in `docs/UPDATE_1_IDEAS.md`).
+
+Decided by Claude where Yaani had not said, to be changed on a word from Yaani:
+- **The 3 new cannons are 3 new tower kinds** for the pads ("new weapons"), numbers 15 to 17. One unlocks early, one in the middle and one in the new worlds, so every player gets something new. They wear the shape of the kind they are nearest to, as towers 9 to 14 do: no new models.
+- **The 3 new islands are worlds 13 to 15**, after The Big Bang: **Multiverse**, **Time Warp**, **Infinity**. 50 levels each (750 in all), each with its twist, 5 monsters, a mid boss and a final boss, 5 tower tier names, its egg and mini cannons, its story chapter, like the twelve before.
+- A world without its Blender models still plays: the game falls back to the part-built island, base and monsters. So the code can ship even if a model is late.
+
+One Claude agent per job, each in its own git worktree and branch; AB8 merges them. All **[Yaani]** jobs are taken by this session (12 Oct 06:40).
+
+- [ ] AB1. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Gems can be put into a trade: an amount of gems on either side of the trade that exists (`Features/Trading`), next to mini cannons; checked on the server at offer and again at the swap (no negative amounts, nobody trades more than they hold, both sides see the amounts before accepting, changing the gems un-readies both); the trade log records it. Emulator test with two players. · **1 h 30**
+- [ ] AB2. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Admin grant tool: Yaani's and d1v's accounts (user ids in the config, checked on the server) give one named player gems, coins, items, crates, keys or a mini cannon, online or offline (an offline grant waits in a store and is paid at the next join, once); every grant is logged. A small window for the two admins only. Emulator test: an admin can, anybody else cannot, an offline grant is paid once. · **2 h 00**
+- [ ] AB3. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Three new tower kinds in `Config.Towers` and `Config.TowerOrder`, their look in `Models.luau`, their place in the tower shop, `docs/BALANCE.md`; checked with `tools/balance` that none of them beats everything at its price. · **1 h 30**
+- [ ] AB4. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Worlds 13 to 15 in code: `Config.Worlds`, 15 tier styles, eggs and mini cannons, story chapters, everything that says "twelve" (`Plots`, `Islands`, WORLDS window, icons' fallbacks, number names past 1e36), part-built islands and bases as the fallback; `tools/balance` run to level 750; emulator tests. · **3 h 00**
+- [ ] AB5. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Blender: themes, islands and bases for Multiverse, Time Warp and Infinity (`themes.py`, `island.py`, `base.py`), renders looked at, colliders into `Islands.SOLIDS`. Clean floors: no scattered clutter. · **2 h 30**
+- [ ] AB6. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Blender: 5 monsters, a mid boss and a final boss for each of the three worlds (`tools/blender/creature_worlds/`), inside the triangle limits, renders looked at. · **3 h 30**
+- [ ] AB7. **[Yaani]** (taken: Yaani, 12 Oct 06:40) Blender: the three new eggs and their mini cannons in d1v's style (`tools/blender/minis.py`), renders looked at. · **2 h 00**
+- [ ] AB8. **[Yaani]** Merge AB1 to AB7, Z1 and AA1 into `main`; `luau_check`, `rojo build`, every emulator test; a list for d1v of the changed scripts and the model files to import. · **1 h 00**
+- [ ] AB9. **[d1v]** Studio: import the new model files and file them with `setup_models.luau`; put the changed scripts in the place; play test (a level in each new world, a new tower built, a trade with gems between two players, an admin grant, the MORE menu and the LIKE + GROUP button on a desktop and a phone-sized screen); publish. **Update 1 is not live until this is done.** · **2 h 00**
 
