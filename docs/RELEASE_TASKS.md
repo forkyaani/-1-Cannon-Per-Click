@@ -457,3 +457,12 @@ One Claude agent per job, each in its own git worktree and branch; AB8 merges th
 - [ ] AB8. **[Yaani]** Merge AB1 to AB7, Z1 and AA1 into `main`; `luau_check`, `rojo build`, every emulator test; a list for d1v of the changed scripts and the model files to import. · **1 h 00**
 - [ ] AB9. **[d1v]** Studio: import the new model files and file them with `setup_models.luau`; put the changed scripts in the place; play test (a level in each new world, a new tower built, a trade with gems between two players, an admin grant, the MORE menu and the LIKE + GROUP button on a desktop and a phone-sized screen); publish. **Update 1 is not live until this is done.** · **2 h 00**
 
+
+## AC. Game passes are way cheaper (Yaani, 12 Oct)
+
+Yaani, with a screenshot of the experience's Store tab: "these need to all be way cheaper". Today, in Robux: 3x Speed 99 · +500 Mini Cannon Storage 249 · +3 Mini Cannon Slots 299 · x3 Egg Opener 349 · x3 Luck 449 · +5 Mini Cannon Slots 549 · HUGE Tycoon Cannon 1,499. The passes also have no pictures (grey tickets): that is Q9.
+
+- [ ] AC1. **[Yaani]** Yaani says the seven new prices (not chosen yet: nobody changes a price before that) · **5 min**
+- [ ] AC2. **[open]** Creator Hub: set the new price on each of the seven passes (whoever has edit rights on the experience: Yaani's screenshot shows "Add Pass", d1v owns it) · **10 min**
+- [ ] AC3. **[open]** `Config.Passes` in `src/shared/Config.luau` (`price` on six passes) and the Tycoon pass's price where the STORE prints it, so the game shows what Roblox charges; anything in `docs/GEMS.md` or `docs/BALANCE.md` that quotes a pass price; into the place with AB9 · **15 min**
+
