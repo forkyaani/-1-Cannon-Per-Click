@@ -88,7 +88,8 @@ end
 for kind, tower in Config.Towers do
 	out.towers[kind] = { cost = tower.cost, damage = tower.damage, rate = tower.rate, range = tower.range,
 		unlock = tower.unlock, splash = tower.splash, slow = tower.slow, slowSeconds = tower.slowSeconds,
-		burn = tower.burn, burnSeconds = tower.burnSeconds, chain = tower.chain, boss = tower.boss }
+		burn = tower.burn, burnSeconds = tower.burnSeconds, chain = tower.chain, boss = tower.boss,
+		ramp = tower.ramp, rampMax = tower.rampMax }
 	local damage, upgrade = {}, {}
 	for level = 1, Config.TowerMaxLevel do
 		damage[level] = Config.towerDamage(kind, level)

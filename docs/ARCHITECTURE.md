@@ -208,7 +208,7 @@ button: the plot does not step; never saved), `state.away`
 `state.plan` (the level:
 `Config.levelPlan`), `state.lives`, `state.livesMax`, `state.phase` ("fight" or "break"), `state.monsters`
 (`{ id, d, hp, max, speed, slowUntil, slow, burnUntil, burn, boss, x, z }`, read only: hurt one with
-`Game.damage`), `state.towers[pad]` (`{ kind, level, def, base, cd }`). The saved towers are `data.towers`
+`Game.damage`), `state.towers[pad]` (`{ kind, level, def, base, cd, rampOn, rampHits }`; the last two are a ramping kind's monster and its shots in a row on it). The saved towers are `data.towers`
 (`["3"] = { kind, level }`) and `data.pads`.
 Write a mini cannon's strength with `Format.petPower(pet)` ("+129 DPS", or "x3" for a Huge: add "tower
 damage" after that one), never by hand: a Huge's `bonus` is infinite. `Format.dps(n)` writes a sum of them.

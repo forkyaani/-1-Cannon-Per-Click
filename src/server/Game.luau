@@ -726,6 +726,9 @@ local function refreshTowers(data, state)
 			base = Config.towerDamage(saved.kind, saved.level), -- one shot, before multipliers
 			interval = 1 / def.rate,
 			cd = if previous then previous.cd else 0,
+			-- A ramping kind (def.ramp): the monster it is working on and its hits in a row on it so far.
+			rampOn = if previous then previous.rampOn else nil,
+			rampHits = if previous then previous.rampHits else 0,
 			x = spot.X,
 			z = spot.Y,
 			range2 = def.range * def.range, -- before the `towerRange` modifiers
@@ -1198,6 +1201,15 @@ local function simulate(player: Player, data, state, dt: number)
 			local damage = tower.base * power
 			if bossLevel and tower.def.boss then
 				damage *= tower.def.boss
+			end
+			if tower.def.ramp then
+				-- Every shot in a row on the same monster is harder than the last; a new target starts over.
+				if tower.rampOn == target.id then
+					tower.rampHits += 1
+				else
+					tower.rampOn, tower.rampHits = target.id, 0
+				end
+				damage *= math.min(tower.def.rampMax or 2, 1 + tower.def.ramp * tower.rampHits)
 			end
 			shoot(player, data, state, target, damage, "tower", tower, rollCrit(towerCrit, Config.CritDamage))
 		end

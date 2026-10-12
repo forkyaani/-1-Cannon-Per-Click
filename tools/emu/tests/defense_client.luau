@@ -359,6 +359,12 @@ check(table.find(data.pads, 2) ~= nil, "BUY PAD buys it")
 print("    " .. string.gsub(textOf(window.frame), "\n", " "))
 check(buttonWith(window.frame, "BUILD") ~= nil, "an empty pad lists the towers")
 check(buttonWith(window.frame, "LOCKED") ~= nil, "a kind that is not unlocked yet is locked")
+-- The three kinds of 12 Oct (Update 1) have a row each, and the Drill's says what its new special does.
+local kindsListed = textOf(window.frame)
+for _, kind in { "drill", "wildfire", "quake" } do
+	check(string.find(kindsListed, Config.Towers[kind].name, 1, true) ~= nil, `the {Config.Towers[kind].name} is on the list`)
+end
+check(string.find(kindsListed, "+20% a hit on one monster, up to x4", 1, true) ~= nil, "the Drill's row says how it winds up")
 harness.advance(0.2)
 harness.click(buttonWith(window.frame, "BUILD"))
 frames(2)

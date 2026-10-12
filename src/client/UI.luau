@@ -762,6 +762,8 @@ local ICON_ALIASES = {
 	pumpkincrate = "crate_pumpkin", cursedcrate = "crate_cursed",
 	mission_upgrades = "upgrade", mission_kills = "monster", mission_bosses = "boss", mission_waves = "wave",
 	mission_hatches = "hatch",
+	-- The towers of 12 Oct have no picture of their own yet: each borrows the picture of a kind it is close to.
+	tower_drill = "tower_gatling", tower_wildfire = "tower_flame", tower_quake = "tower_mortar",
 }
 
 function UI.icon(name: string?, props, fallback: GuiObject?): ImageLabel?

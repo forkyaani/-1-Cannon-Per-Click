@@ -50,6 +50,8 @@ Nebula, Crystal Belt, Robot Factory, Alien Jungle, Black Hole, The Big Bang; isl
 
 **G. Towers (14) and missions (2):** Cannon, Gatling, Mortar, Sniper, Frost, Flame, Tesla, Rocket, Laser,
 Venom, Blizzard, Railgun, Storm, Meteor; upgrade, hatch
+(The Drill, the Wildfire and the Quake of 12 Oct have no cell yet: `ICON_ALIASES` in `src/client/UI.luau`
+shows the Gatling's, the Flame's and the Mortar's for them.)
 
 **H. Enchantments (19 of 16: two sheets or the 16 most used):** Sharp, Rapid, Reach, Giant Slayer,
 Splinter, Frostbite, Ember, Chain, Executioner, Greed, Treasure, Gem Finder, Lucky, Sweet Tooth, Bond, Long

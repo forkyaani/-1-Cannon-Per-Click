@@ -105,6 +105,9 @@ function Feature.start(ctx)
 		if def.boss then
 			table.insert(parts, `x{short(def.boss)} to bosses`)
 		end
+		if def.ramp then
+			table.insert(parts, `+{percent(def.ramp)} a hit on one monster, up to x{short(def.rampMax or 2)}`)
+		end
 		return table.concat(parts, "  •  ")
 	end
 

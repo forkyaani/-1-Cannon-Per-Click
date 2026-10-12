@@ -970,7 +970,7 @@ local function lookOf(def): string
 		elseif def.splash then "shell"
 		elseif def.slow then "shard"
 		elseif def.burn then "flame"
-		elseif def.boss then "tracer"
+		elseif def.boss or def.ramp then "tracer" -- the Drill: a thin line that stays on its monster
 		else "ball"
 end
 
