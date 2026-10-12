@@ -86,6 +86,19 @@ What each key is for (a world without the real thing has a stand-in under the sa
         rail), "pipe_rail" (Robot Factory: striped bollards and two pipes), "vine_post" (Alien Jungle:
         thorns with a glowing pod and hanging vines), "orbit_post" (Black Hole: posts with a ringed ball and
         a glowing chain), "spark_post" (The Big Bang: gold posts with a spark and a lightning rail)
+
+Worlds 13 to 15 (Update 1): "Multiverse", "Time Warp", "Infinity". What their kinds are is built in
+tools/blender/worlds_13_to_15.py, for island.py and base.py alike:
+  tree    "twin_ring" (Multiverse: a portal ring with a second one from another world overlapping it, or an
+          obelisk with its glowing double), "cog_tree" (Time Warp: a brass post with three gears, or a
+          metronome), "infinity_loop" (Infinity: a loop like an 8 on its side on a white column, or a stair
+          that winds up round a beam of light to a star)
+  liquid  "mirror" (Multiverse: a glowing glass pool, another world showing in its middle), "timepool" (Time
+          Warp: a glowing blue pool that is a clock's face, brass hands on it), "stillwater" (Infinity: a
+          still, pale pool, a gold loop over it; it falls as a rainbow; not emissive)
+  fence   "ring_post" (Multiverse: posts with a glowing ring, two beams of light), "cog_post" (Time Warp: brass
+          posts with a little clock, a chain with a pendulum's bob), "halo_post" (Infinity: white posts with a
+          gold ball and a halo, a rail that runs through the rainbow)
 """
 
 THEMES = {
@@ -268,6 +281,52 @@ THEMES = {
         "accent": "FFD83A", "accent_pale": "FFFBD0",
         "sky_top": "FF9EC4", "sky_horizon": "FFF4D8",
         "tree": "spark_burst", "liquid": "energy", "fence": "spark_post",
+    },
+    # Update 1 (12 Oct): worlds 13 to 15. Their props are in tools/blender/worlds_13_to_15.py.
+    "Multiverse": {  # a violet lawn where a pink and a teal world show through, a teal lip, pink earth on indigo rock, a teal dusk
+        "grass": "9468F8", "grass_light": "FF86D6", "grass_deep": "38D4CC", "grass_rim": "22C4C0",
+        "dirt": "FF6AC0", "dirt_dark": "E048A8",
+        "under": "4A3CC8", "under_dark": "3628A0", "under_light": "6C5CE8",
+        "rock": "3CD0C8", "rock_dark": "22A8AC", "rock_light": "8CF0E4",
+        "sand": "E4FFF8", "sand_dark": "FF8AD8", "cobble": "F4FFFC",
+        "stone": "E4D8FF", "stone_dark": "B8A4F0", "stone_pale": "F6F0FF",
+        "wood": "5A30C0", "wood_light": "8458E8", "wood_dark": "3C1C90",
+        "water": "7CF0F8", "water_light": "E4FFFF",
+        "leaves": ("FF5CC0", "2CD8D0", "B07CFF"),
+        "petals": ("FF5CC0", "FFFFFF", "2CD8D0", "B07CFF", "FFE27A"),
+        "accent": "5CF0E8", "accent_pale": "D0FFFA",
+        "sky_top": "3A28B0", "sky_horizon": "38D8D0",
+        "tree": "twin_ring", "liquid": "mirror", "fence": "ring_post",
+    },
+    "Time Warp": {  # warm sand with a brass lip on deep blue rock, brass and blue-steel clockwork, a blue pool, a deep blue night
+        "grass": "FBC65C", "grass_light": "FFDC8C", "grass_deep": "F0AC40", "grass_rim": "D88A26",
+        "dirt": "2C48B0", "dirt_dark": "1E3490",
+        "under": "1A2878", "under_dark": "121C5C", "under_light": "2C40A0",
+        "rock": "4468D0", "rock_dark": "2C4CB0", "rock_light": "7090EC",
+        "sand": "FFF2D0", "sand_dark": "D8922C", "cobble": "FFF8E4",
+        "stone": "3C54C0", "stone_dark": "2A3C9C", "stone_pale": "6C84E8",
+        "wood": "C8882C", "wood_light": "F0B84C", "wood_dark": "8C5A1C",
+        "water": "3C6CF0", "water_light": "A8D0FF",
+        "leaves": ("FFB428", "4C7CF0", "FFE08A"),
+        "petals": ("FFB428", "FFF8E4", "4C7CF0", "FF7A3C", "FFE08A"),
+        "accent": "FFA81E", "accent_pale": "FFE2A0",
+        "sky_top": "0E1648", "sky_horizon": "3A5CD0",
+        "tree": "cog_tree", "liquid": "timepool", "fence": "cog_post",
+    },
+    "Infinity": {  # pearl-white ground with a gold lip, the cliff under it running through a soft rainbow; white marble and gold, a still pool, a pale morning
+        "grass": "FFF4E0", "grass_light": "FFFFFF", "grass_deep": "FFE6B4", "grass_rim": "FFD05A",
+        "dirt": "FFA8C8", "dirt_dark": "C8B0FF",
+        "under": "9CD4FF", "under_dark": "7CB8F4", "under_light": "B8F0E0",
+        "rock": "FFF0D0", "rock_dark": "F4D898", "rock_light": "FFFFFF",
+        "sand": "FFE9A8", "sand_dark": "FFC83C", "cobble": "FFF6D8",
+        "stone": "FFFAF0", "stone_dark": "F0D8A0", "stone_pale": "FFFFFF",
+        "wood": "F0B030", "wood_light": "FFD868", "wood_dark": "C88818",
+        "water": "9CE4F8", "water_light": "E4FBFF",
+        "leaves": ("FFC83C", "FF9CC0", "8CCCFF"),
+        "petals": ("FF9CB4", "FFFFFF", "FFF0A0", "9CD8FF", "C8B4FF"),
+        "accent": "FFD23C", "accent_pale": "FFF6C8",
+        "sky_top": "7C9CF0", "sky_horizon": "FFF0D8",
+        "tree": "infinity_loop", "liquid": "stillwater", "fence": "halo_post",
     },
 }
 
