@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Plays the idle defence game as a typical free player and reports how long everything takes.
 
-    python3 sim.py                    the game in src/shared/Config.luau, all twelve worlds
+    python3 sim.py                    the game in src/shared/Config.luau, all fifteen worlds
     python3 sim.py --worlds 1         only Earth (fast)
     python3 sim.py --draft            the Python draft in model.py instead of Config.luau
     python3 sim.py --check            compare the draft with Config.luau, number by number
@@ -517,7 +517,10 @@ class Player:
         def farm(ammo):
             return (1 + (self.ammo_defs[ammo].get("coins") or 0), damage(ammo))
 
-        self.loadout = {"big": max(self.ammo, key=farm if farming else damage), "mini": max(self.ammo, key=damage)}
+        # In name order: of two ammo worth the same, the same one every run. A set's order changes from one
+        # process to the next, and past world 12 that made the same seed play out differently each time.
+        owned = sorted(self.ammo)
+        self.loadout = {"big": max(owned, key=farm if farming else damage), "mini": max(owned, key=damage)}
 
     def coin_mult(self):
         fuse = self.model.fuse
@@ -1471,7 +1474,7 @@ def contributions(draft, worlds, options):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--worlds", type=int, default=12)
+    parser.add_argument("--worlds", type=int, default=M.WORLDS)
     parser.add_argument("--draft", action="store_true")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--no-eggs", action="store_true")

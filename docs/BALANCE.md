@@ -20,6 +20,11 @@ simulator's result, and section 5 lists what the simulator does not know.
 > Stood in for with `sim.py --seeds 4 --enchant X`: 6:54 for the whole game without it, 6:04 at x1.2, 5:40 at
 > x1.35, 4:37 at x1.5. To make pressing matter less or more, change `Blast.RATE`, `SHARE` or `SHARE_PER_LEVEL`.
 
+> **12 October: worlds 13 to 15** (Multiverse, Time Warp, Infinity: 750 levels). Every curve carries on as it
+> was; only the three new coin anchors were fitted, to about an hour a world like worlds 10 to 12. Nothing a
+> player of the first twelve worlds meets has changed: `sim.py --worlds 12` gives the same times to the minute
+> as before. The numbers are in section 1b.
+
 The 6 October retune, in one paragraph: towers deal 4x what they did (`Config.Towers`: the starter Cannon is
 36 damage a second at level 1, it was 9), mini cannons 5.25x (`Config.PetDps` = 525, it was 100), monster
 health grows 13.1% a level instead of 17.2% (`Config.Level.hpGrowth` = 1.131), and every world's coins were
@@ -79,6 +84,102 @@ towers are 15% stronger, puts a fifth of their coins into the newest egg until t
 fuses everything once they reach The Sun's island, and uses what the game gives away: the daily reward,
 missions, crates, powerups, boosts, the island shops, ammo, mastery with the gems they earn, one rebirth. No
 passes and no Huge. 3x speed from level 10 on, 2 hours a day.
+
+## 1b. Worlds 13 to 15 (12 October)
+
+Three worlds after The Big Bang, 50 levels each: the game is 750 levels. Like everything above, this is the
+simulator's result and nobody has played it.
+
+| World | Twist (`rules`) | Coin anchor (`worldPay`) |
+|---|---|---|
+| 13 Multiverse | 6x HP, 12x coins, a giant every 3 levels (`hp = 6, coins = 12, bossEvery = 3`) | 1.15e35 |
+| 14 Time Warp | 40% faster, 3x HP, 15x coins, bosses heal 1.5% a second (`hp = 3, speed = 1.4, coins = 15, boss = { regen = 0.015 }`) | 3.16e37 |
+| 15 Infinity | 8x HP, 25% faster, everything heals 1% a second, 20x coins (`hp = 8, speed = 1.25, regen = 0.01, coins = 20`) | 1.4e41 |
+
+**What carries on unchanged:** monster health (`10 * L^0.5 * 1.131^(L-1)`), coins inside a world
+(`1.1455` a level), towers (x1.10 a level, x1.3 a tier, 1.15x the price), eggs (two a world, 22x the last
+egg, 2.5 clears of the level that unlocks them), pads, bosses. No new rule key: the three twists are made of
+the keys the first twelve worlds use, and healing stays at 1 to 1.5% a second (section 2).
+
+**What was pinned so that worlds 1 to 12 stay as they are:**
+
+- `Config.CrossWorlds = 12`. Monsters cross the path in 20 seconds on Earth and 10 on The Big Bang, a little
+  less each world. That ramp was written as a share of the number of worlds, so three more worlds would have
+  slowed every monster from the Moon on. It now ends at world 12, and worlds 13 to 15 walk at The Big Bang's
+  pace (10 seconds) times their own `speed` rule.
+- `launchBonus` in Config.luau. The crate jackpots that sit part of the way up the game (Candy Skull, Bone
+  Dragon, Mimic, Fortune, Jackpot: the top egg's Legendary to the power 0.25 to 0.75) are measured against
+  world 12's eggs as before; against world 15's they would have become 100 to a million times stronger
+  overnight. The two that sit past the top (Witching Hour x5, Motherlode x10) follow the real top, so they
+  are still the strongest mini cannons there are.
+- `python3 tools/balance/sim.py --worlds 12 --seeds 6` prints the same line before and after: 7:03 in all,
+  worlds 10 to 12 in 29 min, 1:07 and 1:08.
+
+**Time to clear, six seeds** (`sim.py`, real time played, 2 hours a day; average, and shortest to longest):
+
+| Player | World 10 | World 11 | World 12 | 13 Multiverse | 14 Time Warp | 15 Infinity | All fifteen |
+|---|---|---|---|---|---|---|---|
+| Free, 3x speed, no rebirth: the game as it ships | 47 min | 58 min | 1:03 | **42 min** (27 to 1:09) | **1:06** (35 to 1:26) | **51 min** (35 to 1:18) | 10:47 (10:27 to 11:09) |
+| The same with one rebirth (the simulator's default, as in section 1) | 29 min | 1:07 | 1:08 | 1:07 (31 to 1:27) | 1:10 (54 to 1:46) | 50 min (30 to 1:18) | 10:12 (9:36 to 10:43) |
+| Free at 2x: no 3x Speed pass | 1:05 | 1:43 | 1:44 | 1:20 (42 to 1:56) | 1:18 (37 to 1:55) | 52 min (31 to 1:24) | 16:27 (16:02 to 16:46) |
+| Every pass and the Huge Tycoon Cannon (`--payer`), 3x | 3.3 min | 3.6 min | 4.4 min | 4.3 min | 3.9 min | 4.4 min | 1:05 (1:04 to 1:08) |
+
+- The three new worlds take the ordinary player 2:39 together, against 2:48 for worlds 10 to 12. The first
+  twelve take 8:08 without a rebirth (rebirth is switched off for launch, `Config.Rebirth.enabled`; the
+  7:03 of the line above is the simulator's default player, who takes one).
+- **The 1:30 rule:** none of the 18 new worlds played at 3x without a rebirth passed 1:30 (the longest: 1:26),
+  and with a rebirth one of 18 did (world 14, 1:46). Worlds 10 to 12 do the same (1:36 and 1:48 in these
+  runs). At 2x a new world takes up to 1:56, as worlds 11 and 12 take up to 2:14: section 1 already says the
+  2x game was never fitted.
+- **A payer** runs through each new world in about four minutes, as through every world before it. That is
+  the Huge's x2 on all tower damage and its coins, not something the new worlds add.
+- **A world starts easy and ends hard.** A monster of level 601 has a tenth of the health of level 600's
+  boss, as every world's first level has; the walls are the mid boss and the world boss.
+
+**The numbers at the top:**
+
+| | Level 601 | Level 650 | Level 700 | Level 750 |
+|---|---|---|---|---|
+| Monster | Mirror Slime, 176Dc HP each | Multiverse Hydra, 1.07Dd | Father Time, 261Dd | The Last Titan, 339Td (3.4e44) |
+| The level pays | 13.8Ud | 42.1Dd | 14.5Td | 85.6Qad (8.6e46) |
+
+| Egg | Unlocks | Price | Common to Legendary | Forbidden Secret |
+|---|---|---|---|---|
+| Mirror Egg | 600 | 35.0Ud | +493No to +7.89Dc DPS | +1.97Ud |
+| Dimension Egg | 625 | 1.00Dd | +10.8Dc to +174Dc | +43.4Ud |
+| Clockwork Egg | 650 | 12.0Dd | +239Dc to +3.82Ud | +954Ud |
+| Hourglass Egg | 675 | 350Dd | +5.25Ud to +84.0Ud | +21.0Dd |
+| Infinity Egg | 700 | 70.0Td | +115Ud to +1.85Dd | +462Dd |
+| Eternity Egg | 725 | 2.10Qad | +2.54Dd to +40.6Dd | +10.2Td |
+
+The biggest numbers in the game are now a Meteor's last upgrade (6.30Qid coins, 6.3e48) and a Diamond
+Forbidden Eternity mini cannon (+510Td DPS, 5.1e44). `Format.abbreviate` has names up to 1e120 and a double
+holds 1.8e308, so nothing is near either; the leaderboards store levels as they are and Cannon Power as a
+logarithm, so an OrderedDataStore's whole numbers are enough. `tools/emu/tests/worlds15.luau` checks every
+level, egg, tower and mini cannon up to 750 for a finite number with a name.
+
+**The tower cap is reached at the very end.** `Config.TowerMaxLevel` is still 750. In three of the six runs
+the ordinary player's Cannons, Gatlings and Mortar stand at 750 when The Last Titan falls (in the other
+three they end at 732 to 750); with a cap of 900 they would end at 751 to 757. The cap costs those players
+the last few levels of their cheapest towers and about a minute of world 15 (51 minutes with it, 50
+without). It is not a wall today, but it is the first number to raise (to 800 or more) if a sixteenth world
+is ever added or if players get stuck in the last levels. Tier looks run out at level 741 (75 styles, five a
+world): a tower's last look is the Ultimate one.
+
+**How the anchors were fitted:** `python3 tools/balance/fit_new.py 13 58` (new, section 6): six seeds play
+worlds 1 to 12 on the real Config.luau, then each new world is played from those six players with a higher
+or lower anchor until its average is within 4% of 58 minutes. It gave 1.15e35, 3.16e37 and 1.33e41; world
+15's was then raised to 1.4e41 because one run of six took 1:37 at 1.33e41. The fit is as good as six seeds
+and one set of player rules: a late world's time swings by half an hour either way between two seeds
+(section 1). The Multiverse came out at 58 minutes in the fit and gives 42 in the table with the same
+anchor: see the next paragraph. Lower its anchor (fewer coins, a longer world) only with more seeds than six.
+
+**The simulator was not repeatable past world 12, and now is.** The same seed gave different late worlds from
+one run to the next (world 13, seed 5: 37 minutes once, 1:06 once): late in the game the player owns ammo
+that is worth the same for a level, and which of them was loaded followed the order of a Python set, which
+changes with every process. `sim.py` now takes them in name order, so a seed is one run
+again. Worlds 1 to 12 were never touched by it. The fit above was made before that fix, across both orders;
+the table was measured after it.
 
 ## 2. How the numbers are built
 
@@ -332,7 +433,10 @@ worlds that power back through tower damage and the coin anchors: they take 21 t
 ## 6. Changing it
 
 ```
-python3 tools/balance/sim.py                 # the game in Config.luau, all twelve worlds (1 to 3 minutes)
+python3 tools/balance/sim.py                 # the game in Config.luau, all fifteen worlds (1 to 3 minutes)
+python3 tools/balance/sim.py --worlds 12 --seeds 6   # the first twelve worlds, six seeds on one line
+python3 tools/balance/sim.py --rebirths 0    # no rebirth, as the game ships (the default player takes one)
+python3 tools/balance/fit_new.py 13 58       # fit the anchors of worlds 13 on to 58 minutes each, on the real Config.luau (section 1b)
 python3 tools/balance/sim.py --seed 4        # another player: run six and read the "world" lines
 python3 tools/balance/sim.py --worlds 1 --trace 40   # the first levels, run by run
 python3 tools/balance/sim.py --egg-limit 45  # other players: --egg-share, --presence, --no-eggs, --speed 2

@@ -16,7 +16,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 
 WAVES_PER_WORLD = 50
-WORLDS = 12
+WORLDS = 15
+CROSS_WORLDS = 12  # Config.CrossWorlds: the world on which monsters stop getting faster
 TOTAL = WAVES_PER_WORLD * WORLDS
 MAX_TOWER_LEVEL = 750
 
@@ -357,6 +358,9 @@ KNOBS = {
         {"boss": {"regen": 0.01, "coins": 5}},
         {"hp": 2, "speed": 1.4, "coins": 3},
         {"hp": 5, "regen": 0.01, "coins": 10, "speed": 1.2},
+        {"hp": 6, "coins": 12, "bossEvery": 3},
+        {"hp": 3, "speed": 1.4, "coins": 15, "boss": {"regen": 0.015}},
+        {"hp": 8, "speed": 1.25, "regen": 0.01, "coins": 20},
     ],
     # levels: an ordinary monster has hp * level^hpPower * hpGrowth^(level - 1) health
     "hp": 10.0, "hpPower": 0.5, "hpGrowth": 1.131,
@@ -368,7 +372,7 @@ KNOBS = {
     # coin multipliers of the very first levels (Config.Level.headStart): a new player's first minutes are quick
     "headStart": [4.83, 4.22, 3.68, 3.21, 2.81, 2.45, 2.14, 1.87, 1.63, 1.42, 1.24, 1.08],
     "speed": 18.0, "gap": 1.25, "count": 10,
-    # an ordinary monster crosses the path in crossSeconds[0] on the first world, down to [1] on the last
+    # an ordinary monster crosses the path in crossSeconds[0] on the first world, down to [1] on world CROSS_WORLDS
     # (Config.CrossSeconds): every world's monsters walk a little faster
     "crossSeconds": [20, 10],
     # HP multipliers of the very first levels (Config.Level.easeIn): the starter cannon alone clears up to level 4
@@ -436,7 +440,8 @@ def base_coins(level, knobs=KNOBS):
     first = (index - 1) * WAVES_PER_WORLD + 1
     start = knobs.get("headStart", [])
     head = start[level - 1] if level <= len(start) else 1
-    return knobs["worldPay"][index - 1] * (level / first) ** knobs["coinPower"] * knobs["coinGrowth"] ** (level - first) * head
+    pay = knobs["worldPay"]
+    return pay[min(index, len(pay)) - 1] * (level / first) ** knobs["coinPower"] * knobs["coinGrowth"] ** (level - first) * head
 
 
 def level_plan(level, knobs=KNOBS):
@@ -449,7 +454,7 @@ def level_plan(level, knobs=KNOBS):
     hp = base_hp(level, knobs) * k["hp"] * rules.get("hp", 1) * boss.get("hp", 1) * (ease[level - 1] if level <= len(ease) else 1)
     coins = base_coins(level, knobs) * k["coins"] * rules.get("coins", 1) * boss.get("coins", 1)
     first, last = knobs.get("crossSeconds", [1, 1])
-    cross = first + (last - first) * (index - 1) / max(1, WORLDS - 1)
+    cross = first + (last - first) * min(1, (index - 1) / max(1, CROSS_WORLDS - 1))
     speed = knobs["speed"] * k["speed"] * rules.get("speed", 1) * first / cross
     count, gap = knobs["count"], knobs["gap"]
     if kind == "normal":
