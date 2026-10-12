@@ -32,13 +32,13 @@ cannon towers on them. The towers shoot on their own. Beat a world's boss to ope
 | Mini cannons were the only extra guns | Towers on pads are the guns: Cannon, Gatling, Mortar, Sniper, Frost and more, each upgradable |
 | Equip slots | 16 pads, bought with coins one at a time, each dearer than the last |
 | Monsters heal, wave on a timer | Monsters walk; leaks cost lives |
-| Rebirth resets you for a multiplier | No rebirth. 12 worlds of 50 levels, power carries over |
+| Rebirth resets you for a multiplier | No rebirth. 15 worlds of 50 levels (12 until 12 Oct), power carries over |
 | "+1 Cannon Power Per Click" | Decided 4 Oct: the game is called "+1 Cannon Per Click" (`Config.GameName`) |
 
 ## What stays
 
 Eggs, fusing, Secrets and Huges, crates and the opening animation, the loot viewer, trading, ammo, powerups,
-the backpack, the story, the marketplace, the 12 worlds and their monsters, the Candy Arcade UI kit.
+the backpack, the story, the marketplace, the worlds and their monsters (15 since 12 Oct), the Candy Arcade UI kit.
 
 ## What goes or gets replaced
 

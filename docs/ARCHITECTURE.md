@@ -24,8 +24,34 @@ in `docs/BALANCE.md`, what is built next in `docs/BUILD_QUEUE.md`).
 
 Core files: `Config.luau` (numbers and content), `Game.luau` (all game logic: the simulation of every plot,
 towers, levels, rewards), `Plots.luau` (the twelve private bases with their pads and teleporters, tower and mini cannon models), `Marketplace.luau`
-(the town square), `Islands.luau` (the twelve world islands), `Data.luau` (saving), `Passes.luau`
+(the town square), `Islands.luau` (the fifteen world islands), `Data.luau` (saving), `Passes.luau`
 (game pass ownership), and on the client `Hud.luau`, `Windows.luau`, `Field.luau`, `Effects.luau`, `Market.luau`, `Loot.luau`, `UI.luau`, `State.luau`.
+
+**Worlds.** 15 worlds of 50 levels, 750 levels in all (`Config.Worlds`, `Config.TotalWaves`). Worlds 13 to 15
+(Multiverse, Time Warp, Infinity) were added on 12 Oct 2026, after The Big Bang. A save holds global level
+numbers, so a world only ever goes at the end, and adding one must not move anything of the worlds before it.
+What a new world needs, all of it keyed by the world's place in `Config.Worlds` or by its name:
+
+| Where | What |
+|---|---|
+| `Config.Worlds` | name, twist, `rules`, floor, backdrop, sky, 5 monsters, mid boss, world boss |
+| `Config.Level.worldPay` | its coin anchor: fit it on `tools/balance/sim.py` (`docs/BALANCE.md`, section 1b) |
+| `CANNON_STYLES` in Config | 5 tier names and colours. Each is also a mini cannon of the world's first egg, so none may be an existing mini cannon's name (Config asserts it) |
+| `WORLD_EGGS` in Config | its two egg names and the second egg's five mini cannons. Prices, unlock levels and strengths follow from the curve |
+| `Layout.ISLAND_COUNT` | one more island; rows of six, a new row goes south of the last |
+| `THEMES` in `Islands.luau` and `Plots.luau` | ground, road and props of the part-built island and base (a world without a line borrows one) |
+| `SOLIDS` in `Islands.luau` | colliders for its Blender island, once there is one |
+| `WRITTEN` in `Features/Story.luau` | its chapter's lines; `ending` on the last world (a world without lines gets generic ones) |
+| `IslandShop.Ammo` | the ammo its island sells |
+| `ICONS` or `ICON_ALIASES` in `UI.luau` | its picture in WORLDS, named `world_<name in small letters, no spaces>`; without one the row shows an oval in the world's floor colour |
+| `tools/balance/model.py` | `WORLDS`, and the draft's `rules` |
+
+Two things are pinned to the twelve launch worlds on purpose, so that a world added later changes nothing
+in them: `Config.CrossWorlds` (monsters get faster up to world 12 and no faster after it) and `launchBonus` in
+Config (the crate jackpots that sit part of the way up the game are measured against world 12's eggs).
+Models are found by the world's name: `multiverse_island.fbx` becomes `IslandModels.Multiverse`,
+`time_warp_base.fbx` becomes `BaseModels["Time Warp"]`, and a creature template is named like its monster
+(`tools/studio/setup_models.luau`). `tools/emu/tests/worlds15.luau` checks all of the above.
 
 ## Rules
 
@@ -629,7 +655,7 @@ the carriers of every prompt, sign and attribute; the lamps' bulbs, the teleport
 signs stay visible. Shells are placed on the game's own spots: `Pad` + `PadTrim` (tinted with the pad's state
 colour), `Gate` + `GateTrim` (the owner's colour), `Portal` + `PortalSheet`, `Teleporter` + `TeleporterTrim`,
 `Lamp`. `BASE_SOLIDS` adds unseen colliders for the model's solid pieces. Without the folder in the place, or
-on a plot nobody owns, the base looks as before. All twelve bases are in the place; those of worlds 1 to 5 were
+on a plot nobody owns, the base looks as before. The bases of worlds 1 to 12 are in the place (worlds 13 to 15 are built from parts until theirs are imported); those of worlds 1 to 5 were
 seen in a Studio play test on 6 Oct.
 
 ### The world islands
@@ -652,7 +678,7 @@ arrival pad, facing it, and the statues and the scenery stand at the rim.
 Require it with `require(script.Parent.Parent.Islands)` from a server feature. All return nil for an unknown
 island or spot.
 
-**A world with a Blender island** (all twelve have a model in the place; `tools/blender/island.py <World>` makes any of them, `earth_island.py` is its old name for Earth; imported into the place as
+**A world with a Blender island** (worlds 1 to 12 have a model in the place, worlds 13 to 15 not yet: their islands are the part-built ones; `tools/blender/island.py <World>` makes any of them, `earth_island.py` is its old name for Earth; imported into the place as
 `ReplicatedStorage.IslandModels`) wears it over the island built from parts. `IslandModels.<World>` is a model
 of scenery meshes whose pivot is the middle of the island on the ground, in island space;
 `IslandModels.<World>Shells` holds the landmark meshes (`EggPedestal`, `Stall`, `Portal`, `PortalSheet`,

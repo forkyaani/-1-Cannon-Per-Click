@@ -2,7 +2,7 @@
 
 A Roblox third-person idle defence game. Each player owns a private base: monsters walk a path across it, and
 cannon towers you buy and upgrade shoot them on their own. Mini cannons (pets hatched from eggs) follow you
-and add damage. Beat a world's boss to open the next of 12 worlds.
+and add damage. Beat a world's boss to open the next of 15 worlds (750 levels).
 
 The goal of the project: 100,000 Robux of revenue by 31 December 2026, on a $150 budget.
 
@@ -101,8 +101,8 @@ Then play it in Studio. The offline checks cannot judge how anything looks or fe
 
 ## 6. What is built
 
-Private bases with visits by invitation; 8 tower kinds on 16 pads; 12 worlds of 50 levels with bosses; lives,
-pause and a 1x to 3x speed pass; eggs, mini cannons, Secrets and Huge cannons; 12 world islands with eggs and
+Private bases with visits by invitation; 8 tower kinds on 16 pads; 15 worlds of 50 levels with bosses; lives,
+pause and a 1x to 3x speed pass; eggs, mini cannons, Secrets and Huge cannons; 15 world islands with eggs and
 shops; Mastery (island 3); Enchanting and the Fuse menu (island 5); crates with an opening animation; the loot
 viewer; trading; ammo and powerups; the STATS window; prestige rebirth; three leaderboards plus the Halloween
 candy leaderboard; offline earnings; the story and the first-join tutorial.
@@ -122,7 +122,8 @@ tick it there when it is done.
 5. **Loose ends in code:** dead clicker pieces still hidden in `Hud.luau`. (Mastery was reworked on 7 Oct:
    18 tracks, every one measured in `tools/emu/tests/mastery.luau`. "Rapid" is Mini Crit and the Silver fuse
    tier's "Rapid Fire" is Overcharge, +25% DPS. The pace has to be fitted again after it: `docs/BALANCE.md`, 5c.)
-6. **Visuals.** Blender models for all twelve worlds are in `assets/models`. `docs/VISUAL_AUDIT.md` and
+6. **Visuals.** Blender models for the first twelve worlds are in `assets/models`; worlds 13 to 15 (Multiverse,
+   Time Warp, Infinity: Update 1) are built from parts until theirs are imported. `docs/VISUAL_AUDIT.md` and
    `docs/RELEASE_TASKS.md` say what is imported and what is still placeholder.
 7. **Robux.** The six game passes, the six gem packs and the group id (`Config.Fan.groupId`) are set. Still
    at id 0: the Royal Crate, the powerup packs and `Enchant.ShinyProduct` (`docs/RELEASE_TASKS.md`, O2 and S3).

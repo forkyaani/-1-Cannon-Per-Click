@@ -13,7 +13,7 @@ need to deviate, say so in your report: other people are coding against this tex
 - A **level** (the code and the save still call it `wave`) spawns a group of monsters. All dead: level cleared.
   Every monster that reaches the gate costs **lives**; at zero the level is failed, the player drops back one
   level and auto-advance switches off (as a failed wave does today).
-- 50 levels per world, 12 worlds, bosses as today (every 5th level a giant, level 25 the mid boss, level 50 the
+- 50 levels per world, 12 worlds (15 since 12 Oct), bosses as today (every 5th level a giant, level 25 the mid boss, level 50 the
   world boss). Nothing resets when a new world opens. Rebirth exists as a rare prestige the player chooses
   after a world's final boss (section 8, "Build queue 0c").
 - The player walks freely in third person, on the plot and in the marketplace. Mini cannons (pets) follow
@@ -296,8 +296,8 @@ Instances, so the client can find things (all under `workspace.Plots`):
 
 **Build queue 2 (the islands), as built:**
 
-- **Geometry.** `Layout.ISLAND_COUNT` (12), `ISLAND_RADIUS` (58), `ISLAND_SPACING` (420), `ISLAND_ORIGIN`
-  (0, 0, 1200): two rows of six, more than 600 studs from the marketplace and more than 1,500 from every base.
+- **Geometry.** `Layout.ISLAND_COUNT` (15 since 12 Oct, it was 12), `ISLAND_RADIUS` (58), `ISLAND_SPACING` (420), `ISLAND_ORIGIN`
+  (0, 0, 1200): rows of six (worlds 13 to 15 start a third row, south of the first two), more than 600 studs from the marketplace and more than 1,500 from every base.
   `Layout.islandCFrame(index)`, `Layout.islandSpawn(index)`.
 - **`src/server/Islands.luau`** builds them (`Islands.build()`, called from `init.server.luau` after
   `Marketplace.build()`), registers `Game.places.island` and puts each portal's prompt in `Game.homePrompts`.

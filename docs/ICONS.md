@@ -46,7 +46,10 @@ ammo_boss, ammo_candy, ammo_void, ammo_rainbow; monster, boss, wave, shield (bas
 (the FOR SALE pad)
 
 **F. Worlds (12) and places (4):** one medallion per world: Earth, Moon, Mars, Neptune, The Sun, The Void,
-Nebula, Crystal Belt, Robot Factory, Alien Jungle, Black Hole, The Big Bang; island, base, portal, fusion
+Nebula, Crystal Belt, Robot Factory, Alien Jungle, Black Hole, The Big Bang; island, base, portal, fusion.
+Worlds 13 to 15 (Multiverse, Time Warp, Infinity, added 12 Oct) have no medallion yet: `ICON_ALIASES` in
+`src/client/UI.luau` shows `portal`, `clock` and `crown` for `world_multiverse`, `world_timewarp` and
+`world_infinity` until three are painted.
 
 **G. Towers (14) and missions (2):** Cannon, Gatling, Mortar, Sniper, Frost, Flame, Tesla, Rocket, Laser,
 Venom, Blizzard, Railgun, Storm, Meteor; upgrade, hatch
