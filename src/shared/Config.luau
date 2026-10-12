@@ -570,12 +570,13 @@ local CANNON_STYLES = {
 	{ "Cosmic", rgb(190, 110, 255) }, { "Big Bang", rgb(255, 235, 150) },
 	-- Multiverse, Time Warp, Infinity. Each name is a mini cannon's too (the world's first egg), so none may
 	-- be the name of a mini cannon there already is: Paradox, Infinity, Eternal and Sand are taken.
-	{ "Mirror", rgb(190, 235, 240) }, { "Prism", rgb(255, 130, 205) }, { "Portal", rgb(130, 80, 220) },
-	{ "Parallel", rgb(70, 225, 210) }, { "Multiverse", rgb(215, 120, 255) },
-	{ "Pendulum", rgb(225, 195, 135) }, { "Brass", rgb(200, 150, 60) }, { "Clockwork", rgb(150, 105, 60) },
+	-- The mini cannon models are filed under these names in small letters (mirror, glitch ... infinite).
+	{ "Mirror", rgb(190, 235, 240) }, { "Glitch", rgb(255, 130, 205) }, { "Prism", rgb(130, 80, 220) },
+	{ "Parallel", rgb(70, 225, 210) }, { "Paradoxical", rgb(215, 120, 255) },
+	{ "Hourglass", rgb(225, 195, 135) }, { "Brass", rgb(200, 150, 60) }, { "Clockwork", rgb(150, 105, 60) },
 	{ "Chrono", rgb(70, 110, 220) }, { "Timeless", rgb(255, 220, 130) },
 	{ "Halo", rgb(255, 245, 205) }, { "Loop", rgb(160, 225, 255) }, { "Zenith", rgb(255, 205, 80) },
-	{ "Boundless", rgb(255, 170, 225) }, { "Ultimate", rgb(255, 255, 255) },
+	{ "Boundless", rgb(255, 170, 225) }, { "Infinite", rgb(255, 255, 255) },
 }
 Config.CannonsPerWorld = 5
 Config.Cannons = {}
@@ -1026,7 +1027,7 @@ local WORLD_EGGS = {
 		{ "Twin", rgb(120, 230, 220) }, { "Shimmer", rgb(255, 170, 220) }, { "Kaleidoscope", rgb(255, 110, 190) },
 		{ "Doppel", rgb(110, 80, 200) }, { "Omniverse", rgb(200, 150, 255) },
 	} },
-	{ "Clockwork Egg", nil, "Hourglass Egg", {
+	{ "Clockwork Egg", nil, "Pendulum Egg", {
 		{ "Tick", rgb(215, 180, 110) }, { "Cuckoo", rgb(150, 100, 60) }, { "Sundial", rgb(245, 215, 130) },
 		{ "Epoch", rgb(60, 90, 190) }, { "Aeon", rgb(110, 200, 255) },
 	} },

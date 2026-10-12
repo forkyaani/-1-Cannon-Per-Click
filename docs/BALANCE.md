@@ -148,7 +148,7 @@ the keys the first twelve worlds use, and healing stays at 1 to 1.5% a second (s
 | Mirror Egg | 600 | 35.0Ud | +493No to +7.89Dc DPS | +1.97Ud |
 | Dimension Egg | 625 | 1.00Dd | +10.8Dc to +174Dc | +43.4Ud |
 | Clockwork Egg | 650 | 12.0Dd | +239Dc to +3.82Ud | +954Ud |
-| Hourglass Egg | 675 | 350Dd | +5.25Ud to +84.0Ud | +21.0Dd |
+| Pendulum Egg | 675 | 350Dd | +5.25Ud to +84.0Ud | +21.0Dd |
 | Infinity Egg | 700 | 70.0Td | +115Ud to +1.85Dd | +462Dd |
 | Eternity Egg | 725 | 2.10Qad | +2.54Dd to +40.6Dd | +10.2Td |
 
@@ -164,7 +164,7 @@ three they end at 732 to 750); with a cap of 900 they would end at 751 to 757. T
 the last few levels of their cheapest towers and about a minute of world 15 (51 minutes with it, 50
 without). It is not a wall today, but it is the first number to raise (to 800 or more) if a sixteenth world
 is ever added or if players get stuck in the last levels. Tier looks run out at level 741 (75 styles, five a
-world): a tower's last look is the Ultimate one.
+world): a tower's last look is the Infinite one.
 
 **How the anchors were fitted:** `python3 tools/balance/fit_new.py 13 58` (new, section 6): six seeds play
 worlds 1 to 12 on the real Config.luau, then each new world is played from those six players with a higher

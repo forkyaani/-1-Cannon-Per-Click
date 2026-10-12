@@ -246,8 +246,21 @@ for _, index in NEW do
 end
 do
 	local names = Config.towerNames({ { kind = "cannon", level = 745 } })
-	check(names.Ultimate == true, "a level 745 tower is an Ultimate one")
-	eq(Config.petDps("ultimate", names), Config.Pets.ultimate.dps * Config.SetBonus, "and the Mini Ultimate Cannon gets the set bonus beside it")
+	check(names.Infinite == true, "a level 745 tower is an Infinite one")
+	eq(Config.petDps("infinite", names), Config.Pets.infinite.dps * Config.SetBonus, "and the Mini Infinite Cannon gets the set bonus beside it")
+end
+-- The ids the mini cannon models are filed under (ReplicatedStorage.MiniCannons, by tools/blender): the first
+-- egg of each new world and its two Secrets. A rename in Config would leave those models unused.
+for eggId, ids in {
+	mirroregg = { "mirror", "glitch", "prism", "parallel", "paradoxical", "glitchedmirror", "forbiddenmirror" },
+	clockworkegg = { "hourglass", "brass", "clockwork", "chrono", "timeless", "glitchedclockwork", "forbiddenclockwork" },
+	infinityegg = { "halo", "loop", "zenith", "boundless", "infinite", "glitchedinfinity", "forbiddeninfinity" },
+} do
+	local egg = Config.EggById[eggId]
+	check(egg ~= nil, `the egg {eggId} exists`)
+	for slot, id in ids do
+		eq(egg.pets[slot].id, id, `{eggId} slot {slot}`)
+	end
 end
 noErrors("hatching the new eggs")
 
