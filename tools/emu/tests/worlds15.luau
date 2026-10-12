@@ -1,5 +1,6 @@
--- Worlds 13 to 15 (Multiverse, Time Warp, Infinity), on the real plots:
---   python3 run.py --all-features --real-plots tests/worlds15.luau
+-- Worlds 13 to 15 (Multiverse, Time Warp, Infinity):
+--   python3 run.py --all-features --real-plots tests/worlds15.luau     (with the real bases: the full test)
+--   python3 run.py --all-features tests/worlds15.luau                  (the same without the checks of the base)
 -- A save from the twelve-world game (worlds15.pre.luau: level 600 of 600, not cleared yet) loads, clearing
 -- it opens the Multiverse, a level of each new world is played, the last level of all is cleared and nothing
 -- offers a sixteenth world, every new egg hatches, and every number up there is finite and has a name.
@@ -62,9 +63,15 @@ local function clear(level: number)
 	check(finite(data.coins) and data.coins >= 0, `the coins are still a number ({Format.abbreviate(data.coins)})`)
 end
 
--- The player's own plot, as the real Plots.luau built it.
-local plot = workspace.Plots:FindFirstChild("Plot_" .. state.slot)
+-- The player's own plot, as the real Plots.luau built it. Without --real-plots there is none: the stand-in
+-- only remembers which world the core asked for, and the checks of the base itself are left out.
+local realPlots = workspace:FindFirstChild("Plots")
+local plot = realPlots and realPlots:FindFirstChild("Plot_" .. state.slot)
 local function plotSays(text: string): boolean
+	if not plot then
+		local world = Config.Worlds[T.Plots.worlds[state.slot]]
+		return world ~= nil and string.upper(world.name) == text
+	end
 	for _, item in plot:GetDescendants() do
 		if item:IsA("TextLabel") and item.Text == text then
 			return true
@@ -413,6 +420,9 @@ do
 		act("travel", index)
 		run(1)
 		check(plotSays(string.upper(NAMES[index])), `the base says {string.upper(NAMES[index])}`)
+		if not plot then
+			continue
+		end
 		local decor = plot:FindFirstChild("Decor")
 		check(decor ~= nil and #decor:GetChildren() > 0, "and has its props")
 		local ground = plot:FindFirstChild("Ground", true)

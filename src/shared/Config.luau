@@ -431,7 +431,7 @@ Config.Level = {
 	-- the three worlds before them, with the twelve anchors before them left as they were.
 	worldPay = {
 		0.2748, 151, 3.456e+05, 5.99e+08, 1.843e+11, 4.117e+14, 2.701e+17, 4.733e+20, 1.477e+23, 1.657e+26, 2.493e+29, 1.451e+32,
-		1.15e+35, 3.16e+37, 1.4e+41,
+		7.42e+34, 5.2e+37, 9e+40,
 	},
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
