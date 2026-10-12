@@ -129,6 +129,10 @@ def install_harness(world):
     def set_time(unix):
         world.clock = float(unix)
 
+    def set_user(name, user_id):
+        # An account that exists on Roblox without being online: what GetUserIdFromNameAsync finds.
+        world.user_ids[str(name).lower()] = user_id
+
     def fail_ordered(count):
         world.ordered_failures = int(count)
 
@@ -138,7 +142,7 @@ def install_harness(world):
         "errors": lambda: len(interp.errors), "flush": interp.flush, "advance": world.advance,
         "setStudio": set_studio, "setPolicy": set_policy, "setTradePolicy": set_trade_policy, "actAs": act_as, "setTime": set_time, "failOrdered": fail_ordered, "now": lambda: world.clock,
         "clearRandom": lambda: world.forced_random.clear(), "fire": fire, "load": load,
-        "randomLeft": lambda: len(world.forced_random),
+        "randomLeft": lambda: len(world.forced_random), "setUser": set_user,
     })
 
 
