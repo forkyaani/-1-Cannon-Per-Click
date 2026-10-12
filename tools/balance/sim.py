@@ -73,7 +73,8 @@ class Field:
 # One level
 # ---------------------------------------------------------------------------------------------------
 class Gun:
-    __slots__ = ("damage", "interval", "cover", "splash2", "slow", "slow_s", "burn", "burn_s", "chain", "cd")
+    __slots__ = ("damage", "interval", "cover", "splash2", "slow", "slow_s", "burn", "burn_s", "chain", "ramp", "ramp_max",
+                 "ramp_on", "ramp_hits", "cd")
 
 
 def fight(field, plan, guns, pet_rate, pet_damage, pet_cover, defense, lives=None, limit=900.0):
@@ -88,6 +89,7 @@ def fight(field, plan, guns, pet_rate, pet_damage, pet_cover, defense, lives=Non
     spawned, spawn_in, now, kills, pet_owed, share = 0, 0.0, 0.0, 0, 0.0, 0.0
     for gun in guns:
         gun.cd = 0.0
+        gun.ramp_on, gun.ramp_hits = None, 0
 
     def hit(m, damage, gun):
         m[1] -= damage
@@ -158,8 +160,16 @@ def fight(field, plan, guns, pet_rate, pet_damage, pet_cover, defense, lives=Non
                             i = int(m[0] * Q)
                             if (px[i] - tx) ** 2 + (pz[i] - tz) ** 2 <= gun.splash2:
                                 victims.append(m)
+                damage = gun.damage
+                if gun.ramp:
+                    # Every shot in a row on the same monster is harder than the last (Game.luau, def.ramp).
+                    if gun.ramp_on is target:
+                        gun.ramp_hits += 1
+                    else:
+                        gun.ramp_on, gun.ramp_hits = target, 0
+                    damage *= min(gun.ramp_max, 1 + gun.ramp * gun.ramp_hits)
                 for m in victims:
-                    hit(m, gun.damage, gun)
+                    hit(m, damage, gun)
             if gun.cd < 0:
                 gun.cd = 0.0
 
@@ -197,7 +207,7 @@ def fight(field, plan, guns, pet_rate, pet_damage, pet_cover, defense, lives=Non
 # The player
 # ---------------------------------------------------------------------------------------------------
 # How much more than its single-target damage a kind is taken to be worth, when the player compares towers.
-KIND_WORTH = {"splash": 1.8, "chain": 0.7, "slow": 2.0, "boss": 0.15}
+KIND_WORTH = {"splash": 1.8, "chain": 0.7, "slow": 2.0, "boss": 0.15, "ramp": 0.2}
 
 # The systems around the fight. A player has all of them; --off switches some away to see what each is worth.
 SYSTEMS = ("story", "daily", "gemegg", "slots", "boosts", "mastery", "powerups", "shop", "crates", "ammo", "rebirth")
@@ -563,6 +573,8 @@ class Player:
             dps *= KIND_WORTH["slow"]
         if tower.get("boss"):
             dps *= 1 + KIND_WORTH["boss"] * tower["boss"]
+        if tower.get("ramp"):
+            dps *= 1 + KIND_WORTH["ramp"] * ((tower.get("rampMax") or 2) - 1)
         reach = self.field.covered(self.model.pads[pad - 1], tower["range"])
         return dps * (reach / 100) ** 0.5
 
@@ -1150,6 +1162,7 @@ class Player:
                 gun.slow, gun.slow_s = tower.get("slow") or 0, tower.get("slowSeconds") or 0
                 gun.burn, gun.burn_s = tower.get("burn") or 0, tower.get("burnSeconds") or 0
                 gun.chain = tower.get("chain") or 0
+                gun.ramp, gun.ramp_max = tower.get("ramp") or 0, tower.get("rampMax") or 2
                 guns.append(gun)
             result = fight(self.field, plan, guns, pet_rate, pet_damage, self.everywhere, model.defense, lives)
             if len(self.cache) > 20000:
@@ -1366,7 +1379,8 @@ def check(config, draft):
     for kind in draft.tower_order:
         if kind not in config.towers:
             continue
-        for key in ("cost", "damage", "rate", "range", "unlock", "splash", "slow", "slowSeconds", "burn", "burnSeconds", "chain", "boss"):
+        for key in ("cost", "damage", "rate", "range", "unlock", "splash", "slow", "slowSeconds", "burn", "burnSeconds", "chain", "boss", "ramp",
+                    "rampMax"):
             differ("%s %s" % (kind, key), config.towers[kind].get(key), draft.towers[kind].get(key))
         for level in range(1, M.MAX_TOWER_LEVEL + 1):
             differ("%s damage L%d" % (kind, level), config.damage[kind][level], draft.damage[kind][level])
