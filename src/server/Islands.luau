@@ -443,6 +443,15 @@ local SOLIDS = {
 		{ -37.1, -12.1, 1.8, 8.8 }, -- spark
 		{ 37.2, 21.5, 3.7, 13.2 }, -- the bang
 	},
+	-- Worlds 13 to 15 (Update 1). Empty until their Blender islands are made: paste each world's
+	-- <world>_island_solids.txt between its braces. Without a model the island is built from parts, which
+	-- collide by themselves, and an empty list here does nothing.
+	["Multiverse"] = {
+	},
+	["Time Warp"] = {
+	},
+	["Infinity"] = {
+	},
 }
 
 -- The rest of a world's look: what its ground is made of and which prop stands around. A world added to
@@ -463,6 +472,9 @@ local THEMES = {
 	{ ground = M.Grass, prop = "tree", second = "spire" }, -- Alien Jungle
 	{ ground = M.Slate, prop = "orb", material = NEON, second = "spire" }, -- Black Hole
 	{ ground = M.Marble, prop = "orb", material = NEON, second = "rock" }, -- The Big Bang
+	{ ground = PLASTIC, prop = "spire", material = M.Glass, second = "orb" }, -- Multiverse: glassy shards and portals
+	{ ground = M.Sand, prop = "crate", second = "spire" }, -- Time Warp: clockwork in the sand
+	{ ground = M.Marble, prop = "orb", material = NEON, second = "spire" }, -- Infinity: white marble and light
 }
 
 local root: Folder

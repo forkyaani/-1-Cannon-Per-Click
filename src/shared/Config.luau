@@ -229,7 +229,7 @@ Config.Worlds = {
 	},
 	{
 		name = "The Big Bang",
-		twist = "The final test: 5x HP, 20% faster, healing 1% a second, 10x coins",
+		twist = "The great test: 5x HP, 20% faster, healing 1% a second, 10x coins",
 		rules = { hp = 5, speed = 1.2, regen = 0.01, coins = 10 },
 		floor = rgb(255, 214, 110),
 		backdrop = rgb(255, 250, 235),
@@ -244,12 +244,68 @@ Config.Worlds = {
 		midBoss = { name = "Chaos Herald", shape = "jelly", color = rgb(200, 50, 150), accent = rgb(70, 30, 110) },
 		finalBoss = { name = "Genesis Titan", shape = "biped", color = rgb(50, 30, 110), accent = rgb(255, 170, 30) },
 	},
+	-- Update 1 (12 Oct 2026): three worlds past The Big Bang. Their Blender models go by these names
+	-- (multiverse_island, time_warp_base, infinity_creatures ...), so a rename here is a rename there.
+	{
+		name = "Multiverse",
+		twist = "Doubled realities: 6x HP, 12x coins, and a giant every 3 levels",
+		rules = { hp = 6, coins = 12, bossEvery = 3 },
+		floor = rgb(226, 92, 176),
+		backdrop = rgb(52, 36, 128),
+		sky = { clock = 22, brightness = 1.6, ambient = rgb(150, 200, 215) },
+		monsters = {
+			{ name = "Mirror Slime", shape = "blob", color = rgb(190, 235, 240), accent = rgb(255, 120, 200) },
+			{ name = "Glitch Bat", shape = "floater", color = rgb(255, 90, 190), accent = rgb(60, 230, 210) },
+			{ name = "Portal Crab", shape = "crawler", color = rgb(130, 80, 220), accent = rgb(90, 240, 220) },
+			{ name = "Twin Wisp", shape = "floater", color = rgb(90, 235, 220), accent = rgb(255, 150, 215) },
+			{ name = "Rift Golem", shape = "biped", color = rgb(96, 60, 170), accent = rgb(255, 110, 200) },
+		},
+		midBoss = { name = "Paradox Knight", shape = "biped", color = rgb(60, 200, 200), accent = rgb(255, 80, 180) },
+		finalBoss = { name = "Multiverse Hydra", shape = "jelly", color = rgb(150, 70, 230), accent = rgb(110, 255, 230) },
+	},
+	{
+		name = "Time Warp",
+		twist = "Bent time: 40% faster, 3x HP, 15x coins, and bosses heal 1.5% a second",
+		rules = { hp = 3, speed = 1.4, coins = 15, boss = { regen = 0.015 } },
+		floor = rgb(214, 170, 96),
+		backdrop = rgb(28, 44, 96),
+		sky = { clock = 18.2, brightness = 2, ambient = rgb(190, 160, 120) },
+		monsters = {
+			{ name = "Tick Tock", shape = "biped", color = rgb(205, 160, 70), accent = rgb(250, 240, 215) },
+			{ name = "Sand Crawler", shape = "crawler", color = rgb(230, 200, 140), accent = rgb(150, 105, 60) },
+			{ name = "Clockwork Owl", shape = "floater", color = rgb(150, 105, 60), accent = rgb(255, 200, 80) },
+			{ name = "Hourglass Ghost", shape = "jelly", color = rgb(215, 235, 255), accent = rgb(240, 190, 90) },
+			{ name = "Gear Golem", shape = "biped", color = rgb(120, 95, 70), accent = rgb(230, 180, 70) },
+		},
+		midBoss = { name = "Pendulum Brute", shape = "biped", color = rgb(175, 125, 50), accent = rgb(60, 90, 180) },
+		finalBoss = { name = "Father Time", shape = "biped", color = rgb(40, 55, 120), accent = rgb(255, 215, 110) },
+	},
+	{
+		name = "Infinity",
+		twist = "The end of everything: 8x HP, 25% faster, healing 1% a second, 20x coins",
+		rules = { hp = 8, speed = 1.25, regen = 0.01, coins = 20 },
+		floor = rgb(246, 246, 252),
+		backdrop = rgb(255, 226, 150),
+		sky = { clock = 12, brightness = 3.5, ambient = rgb(225, 225, 235) },
+		monsters = {
+			{ name = "Loop Blob", shape = "blob", color = rgb(255, 255, 255), accent = rgb(255, 205, 80) },
+			{ name = "Zero Bat", shape = "floater", color = rgb(250, 225, 150), accent = rgb(120, 200, 255) },
+			{ name = "Endless Worm", shape = "crawler", color = rgb(255, 240, 200), accent = rgb(255, 150, 200) },
+			{ name = "Echo Ghost", shape = "floater", color = rgb(235, 245, 255), accent = rgb(170, 255, 200) },
+			{ name = "Omega Golem", shape = "biped", color = rgb(255, 215, 110), accent = rgb(255, 255, 255) },
+		},
+		midBoss = { name = "Infinity Guardian", shape = "spiker", color = rgb(255, 250, 235), accent = rgb(255, 190, 60) },
+		finalBoss = { name = "The Last Titan", shape = "biped", color = rgb(255, 255, 255), accent = rgb(255, 200, 60) },
+	},
 }
 Config.TotalWaves = #Config.Worlds * Config.WavesPerWorld
 
 -- Monsters get faster with every world: an ordinary monster crosses the path in CrossSeconds[1] on the
--- first world, a little less on each world after it, down to CrossSeconds[2] on the last.
+-- first world, a little less on each world after it, down to CrossSeconds[2] on world CrossWorlds (The Big
+-- Bang) and on every world after it. CrossWorlds is a number of its own and not the count of worlds: a world
+-- added at the end must not change how fast the monsters of the worlds before it walk.
 Config.CrossSeconds = { 20, 10 }
+Config.CrossWorlds = 12
 
 -- Per level kind: HP, coin and walking-speed multipliers, and the scale of the monster's model.
 -- A boss is slow: it is on the path for most of a minute, and what counts is whether the towers get through
@@ -371,7 +427,12 @@ Config.Level = {
 	-- player its target time (docs/BALANCE.md).
 	-- Fitted 7 Oct (after the towers' and mini cannons' buffs of that day) to Yaani's pace: about 30 minutes a world, the last four 40, 50, 60 and 70 on the average
 	-- of six seeds. One player's world can take twice its average, and none should pass 1:30.
-	worldPay = { 0.2748, 151, 3.456e+05, 5.99e+08, 1.843e+11, 4.117e+14, 2.701e+17, 4.733e+20, 1.477e+23, 1.657e+26, 2.493e+29, 1.451e+32 },
+	-- The last three (Multiverse, Time Warp, Infinity) were fitted on 12 Oct to about an hour each, the pace of
+	-- the three worlds before them, with the twelve anchors before them left as they were.
+	worldPay = {
+		0.2748, 151, 3.456e+05, 5.99e+08, 1.843e+11, 4.117e+14, 2.701e+17, 4.733e+20, 1.477e+23, 1.657e+26, 2.493e+29, 1.451e+32,
+		1.15e+35, 3.16e+37, 1.4e+41,
+	},
 	coinPower = -0.25, coinGrowth = 1.1455,
 	-- Coin multipliers of the very first levels: a new player's first minutes pay well, so the tutorial's
 	-- pads and towers come quickly, and the grind sets in as the head start runs out.
@@ -435,7 +496,7 @@ function Config.levelPlan(level: number)
 	local curve = Config.Level
 	local hp = baseHP(level) * kindDef.hp * (rules.hp or 1) * (boss.hp or 1) * (curve.easeIn[level] or 1)
 	local coins = baseCoins(level) * kindDef.coins * (rules.coins or 1) * (boss.coins or 1)
-	local worldShare = (Config.worldOf(level) - 1) / math.max(1, #Config.Worlds - 1)
+	local worldShare = math.min(1, (Config.worldOf(level) - 1) / math.max(1, Config.CrossWorlds - 1))
 	local cross = Config.CrossSeconds[1] + (Config.CrossSeconds[2] - Config.CrossSeconds[1]) * worldShare
 	local speed = curve.speed * kindDef.speed * (rules.speed or 1) * Config.CrossSeconds[1] / cross
 	local count, gap, leak, variantName = 1, curve.gap, Config.Defense.bossLives, nil
@@ -471,7 +532,8 @@ Config.MilestoneEvery = 25 -- first-ever clear of each 25th level pays diamonds
 Config.MilestoneDiamonds = 15
 -- The first-ever win over any other boss level (every 5th) pays a few gems too, so the long stretches between
 -- two unlocks (Earth 22 to 50 has one egg and one tower) have something to play for every five levels.
--- 96 such levels in the game: 480 gems over all twelve worlds.
+-- 8 such levels in most worlds (more where the world's rules send giants more often): about 700 gems over
+-- all fifteen worlds.
 Config.BossDiamonds = 5
 -- Game.damage (abilities, burns from features): damage left over from a kill carries into the next monster.
 -- One call kills at most this many, so the server's work per call stays bounded.
@@ -506,6 +568,14 @@ local CANNON_STYLES = {
 	{ "Neutron", rgb(190, 230, 255) }, { "Horizon", rgb(255, 120, 60) },
 	{ "Quark", rgb(255, 120, 110) }, { "Atom", rgb(110, 210, 255) }, { "Photon", rgb(255, 250, 190) },
 	{ "Cosmic", rgb(190, 110, 255) }, { "Big Bang", rgb(255, 235, 150) },
+	-- Multiverse, Time Warp, Infinity. Each name is a mini cannon's too (the world's first egg), so none may
+	-- be the name of a mini cannon there already is: Paradox, Infinity, Eternal and Sand are taken.
+	{ "Mirror", rgb(190, 235, 240) }, { "Prism", rgb(255, 130, 205) }, { "Portal", rgb(130, 80, 220) },
+	{ "Parallel", rgb(70, 225, 210) }, { "Multiverse", rgb(215, 120, 255) },
+	{ "Pendulum", rgb(225, 195, 135) }, { "Brass", rgb(200, 150, 60) }, { "Clockwork", rgb(150, 105, 60) },
+	{ "Chrono", rgb(70, 110, 220) }, { "Timeless", rgb(255, 220, 130) },
+	{ "Halo", rgb(255, 245, 205) }, { "Loop", rgb(160, 225, 255) }, { "Zenith", rgb(255, 205, 80) },
+	{ "Boundless", rgb(255, 170, 225) }, { "Ultimate", rgb(255, 255, 255) },
 }
 Config.CannonsPerWorld = 5
 Config.Cannons = {}
@@ -615,7 +685,7 @@ function Config.towerTier(level: number): number
 end
 
 -- Damage of one shot, before the player's multipliers. The tier bonus keeps coming every ten levels, also
--- past the last tier style (level 591): there the tower stops changing its look, not its strength.
+-- past the last tier style (level 741, with 75 styles): there the tower stops changing its look, not its strength.
 function Config.towerDamage(kind: string, level: number): number
 	local curve = Config.TowerCurve
 	return Config.Towers[kind].damage * curve.damage ^ (level - 1) * curve.tier ^ ((level - 1) // 10)
@@ -851,6 +921,11 @@ Config.HugeChance = 0.000001 -- per cent: 1 in 100,000,000 from any egg, whateve
 
 local coinEggs = 0
 local topBonus = 0 -- the strongest ordinary mini cannon a coin egg hatches
+-- The same, over the eggs of the first LAUNCH_WORLDS worlds only. The prizes that sit part of the way up the
+-- game are measured against this one: a new world at the end must not make a prize a player of the first
+-- twelve worlds already owns a hundred times stronger overnight.
+local LAUNCH_WORLDS = 12
+local launchBonus = 0
 
 -- pets: five { short name, color } entries, weakest first. bonuses: five numbers on the clicker's curve
 -- (onCurve moves them), or a base scaled by SLOT_BONUS.
@@ -867,6 +942,9 @@ local function defineEgg(egg, pets, bonuses)
 	end
 	if egg.currency == "coins" and not egg.event then
 		topBonus = math.max(topBonus, strongest)
+		if (egg.world or 1) <= LAUNCH_WORLDS then
+			launchBonus = math.max(launchBonus, strongest)
+		end
 	end
 
 	local hidden = {}
@@ -944,6 +1022,18 @@ local WORLD_EGGS = {
 		{ "Proton", rgb(255, 90, 90) }, { "Electron", rgb(90, 160, 255) }, { "Eternal", rgb(255, 200, 90) },
 		{ "Alpha", rgb(255, 255, 255) }, { "Genesis", rgb(255, 240, 200) },
 	} },
+	{ "Mirror Egg", nil, "Dimension Egg", {
+		{ "Twin", rgb(120, 230, 220) }, { "Shimmer", rgb(255, 170, 220) }, { "Kaleidoscope", rgb(255, 110, 190) },
+		{ "Doppel", rgb(110, 80, 200) }, { "Omniverse", rgb(200, 150, 255) },
+	} },
+	{ "Clockwork Egg", nil, "Hourglass Egg", {
+		{ "Tick", rgb(215, 180, 110) }, { "Cuckoo", rgb(150, 100, 60) }, { "Sundial", rgb(245, 215, 130) },
+		{ "Epoch", rgb(60, 90, 190) }, { "Aeon", rgb(110, 200, 255) },
+	} },
+	{ "Infinity Egg", nil, "Eternity Egg", {
+		{ "Zero", rgb(235, 240, 250) }, { "Mobius", rgb(150, 215, 255) }, { "Endless", rgb(255, 190, 225) },
+		{ "Destiny", rgb(255, 215, 100) }, { "Everything", rgb(255, 250, 235) },
+	} },
 }
 for worldIndex, def in WORLD_EGGS do
 	local world = Config.Worlds[worldIndex]
@@ -1018,9 +1108,11 @@ definePet("Pumpkin King", "Exclusive", onCurve(3_000), rgb(255, 110, 20))
 -- Halloween crate jackpots (src/shared/Features/Crates.luau): Secret, and a mystery until won, like the eggs' own.
 -- Their strength is measured against the whole game instead of being a fixed number, so they stay worth
 -- winning as worlds are added: a quarter of the way up the coin eggs, half way up, and past the top.
+-- (The two part-way ones are measured against the twelve launch worlds, see launchBonus; the one past the
+-- top follows the real top, so it is still past it.)
 for _, def in {
-	{ "Candy Skull", topBonus ^ 0.25, rgb(255, 235, 245) },
-	{ "Bone Dragon", topBonus ^ 0.5, rgb(235, 230, 210) },
+	{ "Candy Skull", launchBonus ^ 0.25, rgb(255, 235, 245) },
+	{ "Bone Dragon", launchBonus ^ 0.5, rgb(235, 230, 210) },
 	{ "Witching Hour", topBonus * 5, rgb(120, 40, 200) },
 } do
 	Config.Pets[definePet(def[1], "Secret", nice(def[2]), def[3])].hidden = true
@@ -1032,9 +1124,9 @@ definePet("Crate", "Exclusive", onCurve(150), rgb(176, 124, 76))
 definePet("Treasure", "Exclusive", onCurve(6_000), rgb(255, 205, 60))
 definePet("Vault", "Exclusive", onCurve(250_000), rgb(120, 200, 255))
 for _, def in {
-	{ "Mimic", topBonus ^ 0.3, rgb(170, 60, 70) },
-	{ "Fortune", topBonus ^ 0.5, rgb(90, 255, 170) },
-	{ "Jackpot", topBonus ^ 0.75, rgb(255, 215, 60) },
+	{ "Mimic", launchBonus ^ 0.3, rgb(170, 60, 70) },
+	{ "Fortune", launchBonus ^ 0.5, rgb(90, 255, 170) },
+	{ "Jackpot", launchBonus ^ 0.75, rgb(255, 215, 60) },
 	{ "Motherlode", topBonus * 10, rgb(255, 250, 235) },
 } do
 	Config.Pets[definePet(def[1], "Secret", nice(def[2]), def[3])].hidden = true

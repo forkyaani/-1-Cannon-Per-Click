@@ -165,6 +165,18 @@ local THEMES = {
 		ground = M.Sand, road = rgb(255, 248, 225), roadMaterial = M.Marble, kerb = rgb(235, 70, 80), kerbMaterial = PLASTIC,
 		glow = rgb(255, 240, 170), prop = "orbit", propGlow = true, colors = { rgb(255, 250, 200), rgb(50, 140, 235), rgb(235, 70, 80) },
 	},
+	{ -- Multiverse: glassy shards in pink, teal and violet
+		ground = PLASTIC, road = rgb(58, 40, 132), roadMaterial = PLASTIC, kerb = rgb(90, 240, 220), kerbMaterial = NEON,
+		glow = rgb(255, 110, 210), prop = "crystals", propMaterial = M.Glass, colors = { rgb(90, 235, 220), rgb(255, 150, 215), rgb(150, 90, 235) },
+	},
+	{ -- Time Warp: brass clockwork on sand
+		ground = M.Sand, road = rgb(34, 50, 104), roadMaterial = M.Slate, kerb = rgb(205, 160, 70), kerbMaterial = M.Metal,
+		glow = rgb(255, 200, 90), prop = "machine", colors = { rgb(205, 160, 70), rgb(70, 110, 220), rgb(120, 95, 70) },
+	},
+	{ -- Infinity: white marble, gold and light
+		ground = M.Marble, road = rgb(255, 214, 110), roadMaterial = M.Marble, kerb = rgb(255, 255, 255), kerbMaterial = NEON,
+		glow = rgb(255, 250, 220), prop = "orbit", propGlow = true, colors = { rgb(255, 255, 255), rgb(255, 205, 80), rgb(235, 225, 200) },
+	},
 }
 
 local function themeOf(worldIndex: number)

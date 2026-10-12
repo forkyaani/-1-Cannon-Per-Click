@@ -89,8 +89,9 @@ Story.LateTasks = {
 -- Fusing is done at the Fusion Machine on the island of world Config.FuseIsland (The Sun), so the story asks
 -- for none before that world is reached. From its chapter on, every `every`th chapter's late side quest is
 -- a fusing quest instead of one from the list above: the first asks for tier `n` (Silver) and each one after
--- it for one tier more (Gold, Diamond, then more than one Diamond).
-Story.FuseTask = { from = Config.FuseIsland, every = 2, n = 1, more = 1 }
+-- it for one tier more (Gold, Diamond, then more than one Diamond, `max` of them at most: a Diamond is 27
+-- hatches of the same mini cannon, so a count that grew with every new world would soon ask for hundreds).
+Story.FuseTask = { from = Config.FuseIsland, every = 2, n = 1, more = 1, max = 2 }
 -- A tower's level ends up close to the level being fought (docs/BALANCE.md). The goals sit under that, so they
 -- are met by playing on and never by pouring every coin into one tower. Rounded down to a multiple of `round`.
 Story.TowerGoal = { one = 0.8, all = 0.6, round = 5 }
@@ -320,7 +321,7 @@ local WRITTEN = {
 	["The Big Bang"] = {
 		title = "Where It All Began",
 		place = "the Big Bang",
-		blurb = "The Big Bang is where the very first Spark was born. <Final> guards it, and it is the final test.",
+		blurb = "The Big Bang is where the very first Spark was born. <Final> guards it, and it is the great test.",
 		intro = {
 			"The Big Bang. This is where the very first Spark was born.",
 			"Everything here is as strong as it gets. Luckily, so are you!",
@@ -330,16 +331,85 @@ local WRITTEN = {
 			{ boss = "mid", text = "ALL THINGS END!" },
 		},
 		final = {
-			"<Final> guards the first Spark. This is the final test!",
+			"<Final> guards the first Spark. This is the great test!",
 			{ boss = "final", text = "SHOW ME YOUR POWER, CANNONEER." },
 		},
 		outro = {
 			"YOU DID IT! The first Spark is safe, and <final> bows to you.",
-			"But I can see new lights out there. New worlds! Onward!",
+			"But the bang cracked the sky. I can see new lights through it. New worlds! Onward!",
 		},
 		ending = {
 			"YOU DID IT! The first Spark is safe and every world shines again!",
 			"You are the greatest Cannoneer ever. Nothing gets past your towers!",
+		},
+	},
+	-- Update 1: three worlds past the Big Bang. The crack it left in the sky leads to the Multiverse.
+	Multiverse = {
+		title = "Too Many Worlds",
+		place = "the Multiverse",
+		blurb = "Behind the crack in the sky are worlds on top of worlds. <Final> has a head in each one, and every head holds a Spark.",
+		intro = {
+			"Whoa! Worlds behind worlds behind worlds. Is that another me over there?",
+			"Monsters are extra tough here, and a giant steps out of a portal every 3 levels!",
+		},
+		mid = {
+			"<Mid> is fighting himself. Don't ask me who is winning!",
+			{ boss = "mid", text = "I already beat you. Tomorrow!" },
+		},
+		final = {
+			"<Final> has a head in every world. Blast them all!",
+			{ boss = "final", text = "WE ARE MANY. YOU ARE ONE." },
+		},
+		outro = {
+			"KABOOM, times a thousand! Every world in here has its Spark back.",
+			"Hold on. My watch is running backwards. Something is wrong with time!",
+		},
+	},
+	["Time Warp"] = {
+		title = "Running Out of Time",
+		place = "the Time Warp",
+		finalName = "Father Time",
+		blurb = "Somebody is winding the clocks the wrong way. <Final> keeps a Spark inside his hourglass, and he will not share.",
+		intro = {
+			"Tick, tock! In the Time Warp the clocks run any way they like.",
+			"The monsters are fast, and bosses rewind their own wounds. Hit them hard!",
+		},
+		mid = {
+			"<Mid> swings left, then right. Shoot him in the middle!",
+			{ boss = "mid", text = "TICK. TOCK. SMASH." },
+		},
+		final = {
+			"<Final> has the Spark in his hourglass. Time to break it!",
+			{ boss = "final", text = "I have all the time in the world, little cannon." },
+		},
+		outro = {
+			"DING DONG! The Spark is out and the clocks tick the right way again.",
+			"<Final> says one place is left, where time never ends. Infinity.",
+		},
+	},
+	Infinity = {
+		title = "To Infinity",
+		place = "Infinity",
+		blurb = "Infinity is where everything ends and starts again. <Final> waits at the top of the endless stairs with the last Spark there is.",
+		intro = {
+			"Infinity. The stairs go up forever, and so do the monsters.",
+			"Tough, fast and healing: this is as hard as it gets. You have come a long way!",
+		},
+		mid = {
+			"<Mid> never gets tired. Good thing your towers don't either!",
+			{ boss = "mid", text = "NOTHING PASSES. FOREVER." },
+		},
+		final = {
+			"<Final> holds the last Spark there is. One more big boom!",
+			{ boss = "final", text = "AT THE END OF EVERYTHING, THERE IS ME." },
+		},
+		outro = {
+			"YOU DID IT! The last Spark is free!",
+			"But forever is a long time. Who knows what comes next? Onward!",
+		},
+		ending = {
+			"YOU DID IT! The last Spark is free and every world, everywhere, shines again!",
+			"From one wooden cannon to the end of everything. You are the greatest Cannoneer ever!",
 		},
 	},
 }
@@ -472,7 +542,7 @@ local function fuseQuest(index: number)
 	-- Past the top tier there is nothing higher to ask for, so later ones ask for more of that tier.
 	local top = math.max(1, #Config.FuseTiers)
 	local tier = task.n + lap * task.more
-	local n = 1 + math.max(0, tier - top)
+	local n = math.min(1 + math.max(0, tier - top), task.max or math.huge)
 	tier = math.min(tier, top)
 	local title, line = fuseText(tier, n)
 	local say = { line }

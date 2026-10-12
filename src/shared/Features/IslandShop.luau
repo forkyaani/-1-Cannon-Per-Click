@@ -47,6 +47,9 @@ IslandShop.Ammo = {
 	"ammo_poison", -- Alien Jungle: its bosses heal
 	"ammo_void", -- Black Hole
 	"ammo_rainbow", -- The Big Bang
+	"ammo_void", -- Multiverse
+	"ammo_frost", -- Time Warp: its monsters are quick
+	"ammo_rainbow", -- Infinity
 }
 IslandShop.AmmoLevel = 15 -- the level of its world an ammo is priced at
 IslandShop.AmmoClears = { Uncommon = 20, Rare = 30, Epic = 40, Legendary = 150 }

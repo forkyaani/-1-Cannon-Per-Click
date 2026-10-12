@@ -762,6 +762,8 @@ local ICON_ALIASES = {
 	pumpkincrate = "crate_pumpkin", cursedcrate = "crate_cursed",
 	mission_upgrades = "upgrade", mission_kills = "monster", mission_bosses = "boss", mission_waves = "wave",
 	mission_hatches = "hatch",
+	-- Worlds 13 to 15 have no medallion on sheet F yet: the nearest picture stands in for each.
+	world_multiverse = "portal", world_timewarp = "clock", world_infinity = "crown",
 }
 
 function UI.icon(name: string?, props, fallback: GuiObject?): ImageLabel?

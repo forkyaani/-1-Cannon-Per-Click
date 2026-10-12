@@ -50,15 +50,17 @@ function Layout.miniFollow(index: number): Vector3
 end
 
 ----------------------------------------------------------------------------------------------------
--- World islands: one round island per world (Config.Worlds), in two rows of six far from every base, so
+-- World islands: one round island per world (Config.Worlds), in rows of six far from every base, so
 -- nothing of an island shows from a base or from the marketplace. src/server/Islands.luau builds them.
+-- The first twelve fill two rows; a world added later goes in the next row, south of them, so no island
+-- that is already there ever moves.
 -- Island space: the middle of the island is the origin, x east, z south, the ground's top at y = 0. Players
 -- arrive in the middle and look north, at the eggs; everything to use stands in a ring around them.
 ----------------------------------------------------------------------------------------------------
-Layout.ISLAND_COUNT = 12
+Layout.ISLAND_COUNT = 15
 Layout.ISLAND_RADIUS = 58
 Layout.ISLAND_SPACING = 420 -- from one island's middle to the next
-Layout.ISLAND_ORIGIN = Vector3.new(0, 0, 1200) -- the middle of the two rows
+Layout.ISLAND_ORIGIN = Vector3.new(0, 0, 1200) -- the middle of the first two rows
 
 -- The middle of a world's island, at ground level. An index past the end wraps around, so it is never nil.
 function Layout.islandCFrame(index: number): CFrame
