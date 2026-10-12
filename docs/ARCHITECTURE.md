@@ -537,6 +537,39 @@ The group's page promises codes; the CODES window (menu button CODES) is where o
 - **The window** is a text box and a REDEEM button, opened from its menu button only. `tests/codes.luau` covers
   all of the above and a rejoin.
 
+### The admin grant tool (`Features/Admin.luau` x3)
+
+A way for the team to give one named player things in the live game. The ADMIN window (menu button ADMIN,
+made for admins only) has a player name or user id, what to grant, an id where one is needed, an amount and
+GRANT, with a result line and the last grants under it.
+
+- **Admins** are `Admin.IDS` in `src/shared/Features/Admin.luau` (`[user id] = who`), and the owner of a place
+  that belongs to one user (`game.CreatorType` / `CreatorId`; a group-owned place has only the list). The
+  server checks it in every call. The client only learns whether to make the button
+  (`State.feature("admin").admin`); a call from anyone else pays nothing, answers nothing and is warned about
+  in the server log.
+- **What** (`Admin.KINDS`, each with its cap for one grant): gems 100,000, coins 1e15, candy 100,000, a
+  backpack item by id (crates, keys, powerups and ammo are all items; 100), a mini cannon by id (10). Nothing
+  else. Ids are checked against `Items.get` and `Config.Pets`; amounts are whole and from 1 to the cap.
+- **The action** `adminGrant` takes `{ target, kind, id?, amount }`. A target on this server is paid at once
+  (`data.diamonds`, `data.coins`, `Game.items.give`, `Game.pets.add`), synced and told with a toast, "A gift
+  from the team: +500 gems". Granted candy is not counted as earned for the event board. A mini cannon is
+  never forced into a full storage: it waits in `data.features.admin.queue` and arrives when there is room.
+- **Not here** (offline, on another server, or in a session whose save did not load): the name is looked up
+  with `GetUserIdFromNameAsync` and the grant is written to the store `AdminGrants_v1`, key `u_<user id>`,
+  `{ grants = { { id, kind, item?, amount, by, byName, at } } }`, at most `Admin.PENDING_MAX` (50) a player.
+  It is paid when that player's save next loads. Another player's save is never written.
+- **Paid once.** Paying a stored grant sets `data.features.admin.paid[grant id]` in the same step as the
+  reward, the save is written, and only then is the grant removed from the store and the mark dropped. A
+  crash before the save loses both (the grant still waits); a crash after it leaves a grant whose mark is in
+  the save, which the next join skips and removes. A stored grant that can no longer be paid (its item left
+  the game) is dropped with a warning.
+- **The log**: every grant is printed on the server, appended to `AdminLog_v1` (key `log`, the last
+  `Admin.LOG_KEPT`, 200: who, to whom, what, when, and `how`: online, pending, paid or dropped) and sent as
+  the analytics custom event `AdminGrant` through the Analytics feature's logger (nothing in Studio).
+- A player on another server is not paid until they next join: there is no message between servers.
+- `tests/admin.luau` covers all of the above (`admin.pre.luau` makes the test's player an admin).
+
 ### Analytics (`Features/Analytics.luau`, server only)
 
 What Creator Hub's Analytics pages are fed: the funnel of a new player's first ten minutes, and the Robux
@@ -844,7 +877,7 @@ enchanting with each key, the Shiny key's guarantee over many rolls, fusing and 
 and offline earnings (the same player leaving and coming back after a faked 30 seconds, 2 hours and 20 hours),
 pause (a level stops and resumes) and a visit with two players (invitation, expiry, JOIN, what a guest
 cannot do, BASE, SEND HOME, the host leaving).
-`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/codes.luau` redeems codes: once, twice, junk, too fast, expired, each kind of reward, from the window and after a rejoin. `tests/analytics.luau` checks the funnel and the purchase events against a fake logger (each step once, in any order, nothing after a rejoin, an older save, a logger that fails or is missing). `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
+`tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/codes.luau` redeems codes: once, twice, junk, too fast, expired, each kind of reward, from the window and after a rejoin. `tests/admin.luau` is the admin grant tool's: grants to a player who is online, a caller who is no admin, bad ids, amounts and names, a full storage, a grant stored for a player who is away and paid once at the next join (`harness.setUser(name, id)` makes an account known to `GetUserIdFromNameAsync`), a crash between the save and the removal, the log and the window. `tests/analytics.luau` checks the funnel and the purchase events against a fake logger (each step once, in any order, nothing after a rejoin, an older save, a logger that fails or is missing). `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
 against the real server and the real `Plots.luau` and checks the battlefield, the TOWER window, the level HUD
 and travel. `cd tools/emu2 && GAME_ROOT=<tree> python3 boot.py` boots the server with the real `Plots` and
 `Marketplace`, `play.py` there lets a player join, build, upgrade, sell, travel and leave, then plays a visit between two
