@@ -5,7 +5,7 @@ The emulator's CFrame keeps no rotation, so run.py cannot tell whether a tower s
 gives the emulator a real CFrame (position and rotation), builds the plots with the real Luau, and then
 measures the parts:
 
-  * nothing stands on the path or on a pad, in any of the twelve world themes
+  * nothing stands on the path or on a pad, in any world's theme (all of Config.Worlds)
   * every part of a base is inside its own base and surround
   * every base is private: no two bases are within Layout.PLOT_APART (1,500 studs or more) of each other, and
     none is that close to the marketplace, an island or the lobby

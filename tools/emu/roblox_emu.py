@@ -1295,7 +1295,20 @@ class World:
                 return Vector3(0, 0, 0)
             return Vector3(*(h - l for l, h in zip(lo, hi)))
 
+        def scale_to(inst, scale):
+            # Model:ScaleTo: every part's size, by the change from the scale the model has now (1 until scaled).
+            # Positions are left alone, like every rotation here: enough for code that sizes a template.
+            if not isinstance(scale, (int, float)) or not scale > 0 or scale == math.inf:
+                raise LuaError("ScaleTo: the scale must be a positive, finite number")
+            factor = scale / inst.props.get("_Scale", 1)
+            for part in descendants(inst):
+                size = part.props.get("Size")
+                if isinstance(size, Vector3):
+                    part.props["Size"] = Vector3(*(axis * factor for axis in size.v))
+            inst.props["_Scale"] = scale
+
         any_methods.update({
+            "ScaleTo": scale_to, "GetScale": lambda i: i.props.get("_Scale", 1),
             "FindFirstChild": find_first_child, "WaitForChild": wait_for_child,
             "FindFirstChildOfClass": find_of_class, "FindFirstChildWhichIsA": lambda i, c, deep=None: next((x for x in (descendants(i) if deep else i.children) if x.is_a(c)), None),
             "GetChildren": lambda i: array(i.children), "GetDescendants": lambda i: array(descendants(i)),

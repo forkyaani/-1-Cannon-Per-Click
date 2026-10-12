@@ -157,7 +157,8 @@ do
 			end
 		end
 	end
-	eq(table.concat(tiers, " "), "1x1 2x1 3x1 3x2", "fusing quests after The Sun: Silver, Gold, Diamond, two Diamonds")
+	-- Worlds 13 and 15 ask for two Diamonds again: the count stops at Story.FuseTask.max.
+	eq(table.concat(tiers, " "), "1x1 2x1 3x1 3x2 3x2 3x2", "fusing quests after The Sun: Silver, Gold, Diamond, then two Diamonds each time")
 	eq(Config.FuseIsland, 5, "the Fusion Machine is on The Sun's island")
 end
 debug("wave", Config.TotalWaves)
