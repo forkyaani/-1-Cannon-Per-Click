@@ -1,5 +1,5 @@
 -- Trading between two players standing in the marketplace.
--- One asks, the other accepts; each puts mini cannons and tradable items on the table and presses READY; after
+-- One asks, the other accepts; each puts mini cannons, tradable items and gems on the table and presses READY; after
 -- a short countdown everything is checked once more and swapped in one step, and both players are saved.
 -- The client only asks: every id, count and player it names is checked here. Limits are in the shared module.
 --
@@ -9,6 +9,8 @@
 --     READY only counts for the offers that player was looking at when they pressed it: no last-second swap
 --   * the swap has no yield in it and only runs after ownership, tradability and storage room were checked
 --     again, so either everything moves or nothing does
+--   * gems are one whole number per side, never more than the player holds: checked when it is set, watched
+--     while the trade is open and checked again at the swap, which moves them in the same step as the rest
 --   * both saves must be loaded and locked to this server (Data.luau); they are written while the countdown
 --     runs and again right after the swap, so one side is never left saved without the other for long
 local Players = game:GetService("Players")
@@ -32,6 +34,7 @@ local SAVE_WAIT_SECONDS = 8 -- how long a finished countdown waits for those sav
 local SAVE_ATTEMPTS = 3 -- tries at the save that follows a swap
 local MAX_CHANGE = 1e6 -- the most one request can add to or take from an offer (the client's "ALL")
 local MAX_USER_ID = 2 ^ 53 -- above this a number is no longer a whole user id
+local KINDS = { "pets", "items" } -- the halves of an offer that are counted per id (its gems are one number)
 
 local Game -- the core's plug-in API, handed to start
 
@@ -77,6 +80,15 @@ local function blocked(player: Player): string?
 		return "Could not check your Roblox trading settings. Try again in a moment."
 	end
 	return "Checking your Roblox trading settings..."
+end
+
+-- The whole gems the player holds right now (saved as `diamonds`): the most they can put in a trade.
+local function held(data): number
+	local gems = data.diamonds
+	if typeof(gems) ~= "number" or gems ~= gems then
+		return 0
+	end
+	return math.max(0, math.floor(gems))
 end
 
 -- How many more mini cannons fit in the player's storage. The limit is the same sum as petStorage in
@@ -202,8 +214,8 @@ local function record(player: Player, other: Player, gave, got)
 		user = other.Name,
 		id = other.UserId,
 		at = os.time(),
-		gave = { pets = table.clone(gave.pets), items = table.clone(gave.items) },
-		got = { pets = table.clone(got.pets), items = table.clone(got.items) },
+		gave = { pets = table.clone(gave.pets), items = table.clone(gave.items), gems = gave.gems },
+		got = { pets = table.clone(got.pets), items = table.clone(got.items), gems = got.gems },
 	}
 	table.insert(book.history, 1, entry)
 	while #book.history > Rules.HistorySize do
@@ -270,7 +282,7 @@ local function openTrade(a: Player, b: Player)
 	askAgain[`{a.UserId}:{b.UserId}`], askAgain[`{b.UserId}:{a.UserId}`] = nil, nil
 	local trade = {
 		players = { a, b },
-		offers = { [a] = { pets = {}, items = {} }, [b] = { pets = {}, items = {} } },
+		offers = { [a] = { pets = {}, items = {}, gems = 0 }, [b] = { pets = {}, items = {}, gems = 0 } },
 		ready = { [a] = false, [b] = false },
 		rooms = { [a] = room(a, Game.data(a)), [b] = room(b, Game.data(b)) }, -- as last sent to the clients
 		version = 1, -- goes up with every change to an offer
@@ -333,13 +345,18 @@ local function problem(trade): string?
 			return `{player.DisplayName} cannot trade right now`
 		end
 		local offer = trade.offers[player]
-		for kind, counts in offer do
-			for id, count in counts do
+		for _, kind in KINDS do
+			for id, count in offer[kind] do
 				local owned = if kind == "pets" then Game.pets.count(data, id) else Game.items.count(data, id)
 				if not Rules.canTrade(kind, id) or owned < count then
 					return `{player.DisplayName} no longer has everything they offered`
 				end
 			end
+		end
+		-- Gems may have been spent since they were offered. The amount itself is checked again as well: the
+		-- swap below must never run on anything but a whole number in range.
+		if Rules.gemAmount(offer.gems) == nil or offer.gems > held(data) then
+			return `{player.DisplayName} no longer has the gems they offered`
 		end
 		-- Mini cannons that arrive must fit: past the limit Game.pets.add pushes the weakest ones out.
 		local arriving = Rules.total(trade.offers[trade.players[3 - index]].pets)
@@ -362,6 +379,13 @@ end
 
 -- Moves everything on the table to the other side. Nothing in here yields, so nothing else runs in between.
 local function swap(trade)
+	-- Gems first: plain sums on the two saves, which cannot stop half way. What one side loses is exactly
+	-- what the other gains, so a swap never makes or loses a gem.
+	local a, b = trade.players[1], trade.players[2]
+	local dataA, dataB = Game.data(a), Game.data(b)
+	local fromA, fromB = trade.offers[a].gems, trade.offers[b].gems
+	dataA.diamonds += fromB - fromA
+	dataB.diamonds += fromA - fromB
 	for _, player in trade.players do
 		local offer = trade.offers[player]
 		for id, count in offer.pets do
@@ -632,6 +656,31 @@ local function offer(player: Player, data, _state, change: any)
 	publishBoth(trade)
 end
 
+-- amount: how many gems the player offers in all (not how many more). It replaces what they offered before.
+local function gems(player: Player, data, _state, amount: unknown)
+	local trade = trades[player]
+	if not trade then
+		return
+	end
+	local wanted = Rules.gemAmount(amount)
+	if not wanted then
+		Game.notify(player, `Offer a whole number of gems, up to {Rules.gemText(Rules.MaxGems)}`, "bad")
+		return
+	end
+	local mine = trade.offers[player]
+	if wanted == mine.gems then
+		return -- nothing changed, so nobody is un-readied
+	end
+	local have = held(data)
+	if wanted > have then
+		Game.notify(player, `You only have {Rules.gemText(have)}`, "bad")
+		return
+	end
+	mine.gems = wanted
+	changed(trade)
+	publishBoth(trade)
+end
+
 -- version: the offers' version the player was looking at when they pressed READY, or false to un-ready.
 local function ready(player: Player, _data, _state, version: unknown)
 	local trade = trades[player]
@@ -652,7 +701,7 @@ local function ready(player: Player, _data, _state, version: unknown)
 		return
 	end
 	local other = partner(trade, player)
-	if Rules.stacks(trade.offers[player]) + Rules.stacks(trade.offers[other]) == 0 then
+	if Rules.empty(trade.offers[player]) and Rules.empty(trade.offers[other]) then
 		Game.notify(player, "Add something to the trade first", "bad")
 		return
 	end
@@ -690,7 +739,9 @@ local function check(trade)
 	local short = nil
 	for _, player in trade.players do
 		local data = Game.data(player)
-		for kind, counts in trade.offers[player] do
+		local offer = trade.offers[player]
+		for _, kind in KINDS do
+			local counts = offer[kind]
 			for id, count in counts do
 				local owned = if kind == "pets" then Game.pets.count(data, id) else Game.items.count(data, id)
 				if not Rules.canTrade(kind, id) then
@@ -701,6 +752,12 @@ local function check(trade)
 					short = player
 				end
 			end
+		end
+		-- Gems spent while the trade is open (an egg, the store) come off the table in the same way.
+		local have = held(data)
+		if offer.gems > have then
+			offer.gems = have
+			short = player
 		end
 	end
 	if short then
@@ -780,6 +837,7 @@ function Trading.start(api)
 	Game.actions.tradeAccept = answer
 	Game.actions.tradeDecline = decline
 	Game.actions.tradeOffer = offer
+	Game.actions.tradeGems = gems
 	Game.actions.tradeReady = ready
 	Game.actions.tradeCancel = cancel
 

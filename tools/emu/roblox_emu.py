@@ -629,6 +629,8 @@ class World:
         # What PolicyService says about paid random items for whoever is asked next (harness.setPolicy):
         # True = restricted, False = allowed, None = the lookup fails.
         self.policy_restricted = False
+        # Whether PolicyService lets the next player asked trade paid items (harness.setTradePolicy).
+        self.policy_trading = True
         self.known_props = set()
         self.defaults = {
             "Visible": True, "Text": "", "Enabled": True, "LayoutOrder": 0, "Active": False,
@@ -1522,9 +1524,14 @@ class World:
         def policy_info(service, player):
             if world.policy_restricted is None:
                 raise LuaError("GetPolicyInfoForPlayerAsync: the policy service is unavailable")
-            return lua_value({"ArePaidRandomItemsRestricted": world.policy_restricted})
+            return lua_value({
+                "ArePaidRandomItemsRestricted": world.policy_restricted,
+                "IsPaidItemTradingAllowed": world.policy_trading,
+            })
 
         self.methods["PolicyService"] = {"GetPolicyInfoForPlayerAsync": policy_info}
+        # No keyboard here: a TextBox is never being typed in (a test sets Text and fires FocusLost).
+        self.methods["TextBox"] = {"IsFocused": lambda box: False, "CaptureFocus": lambda box: None, "ReleaseFocus": lambda box, *a: None}
         self.methods["UserInputService"] = {"GetMouseLocation": lambda u: Vector2(0, 0), "IsKeyDown": lambda u, k: False}
         def get_text_size(service, text=None, size=None, font=None, frame=None):
             """An estimate: no font metrics here, so a glyph is taken to be half the font size wide."""

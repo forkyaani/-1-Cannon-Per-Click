@@ -573,6 +573,40 @@ purchases a server sees. It changes nothing in the game and uses hooks only.
   logged, and tried again on the next join.
 - `tests/analytics.luau` puts a fake logger there before the server starts (`analytics.pre.luau`).
 
+### Trading (`Features/Trading.luau` x3)
+
+Two players in the marketplace swap mini cannons, tradable items and **gems**. The limits and the checks both
+sides read are in the shared file; the server file runs every trade; the client file is the TRADE window.
+
+- **An offer** (one side of a trade) is `{ pets = { [id] = count }, items = { [id] = count }, gems = n }`.
+  `Rules.canTrade(kind, id)` says what may go in the two lists; gems are one whole number, 0 to
+  `Rules.MaxGems` (1,000,000,000) and never more than the player holds (`data.diamonds`, rounded down).
+  `Rules.gemAmount(value)` is the one check of an amount a client sent (nil for anything that is not a whole
+  number in range: negative, fractional, NaN, infinite, not a number). `Rules.gems(offer)` reads them (0 for a
+  history entry from before 12 Oct), `Rules.empty(offer)` is "nothing on this side", `Rules.gemText(n)` writes
+  "1,250 gems" in full.
+- **Actions:** `tradeRequest`, `tradeAccept`, `tradeDecline` (a user id), `tradeOffer`
+  (`{ kind, id, add }`), `tradeGems` (the new total of gems on the player's side, not a difference),
+  `tradeReady` (the offers' version, or false), `tradeCancel`.
+- **Any change un-readies both**, gems included: the version goes up, a running countdown stops and READY is
+  locked for `ReadyLockSeconds`. Sending the amount that is already on the table changes nothing.
+- **The swap** runs when the countdown ends, with no yield between the last check (`problem`: both present,
+  both allowed, everything still owned, the gems still held, storage room) and the move. Gems move as one sum
+  (`a += fromB - fromA`, `b += fromA - fromB`), so a swap cannot make or lose one. If a check fails, both are
+  told, both are un-readied and nothing moves. The watch (every 0.25 s) also takes missing mini cannons, items
+  and gems off the table while a trade is open.
+- **Who may trade:** both saves loaded and locked to this server, and `PolicyService`'s
+  `IsPaidItemTradingAllowed` for each player (asked at join; no answer on a live server means no). Gems add
+  no gate of their own: a player who may not trade is in no trade, so they can offer none.
+- **One-sided trades are allowed** (a gift of mini cannons, items or gems); the window says "You get NOTHING
+  back" in red before READY and again in the summary. Only a trade with nothing on either side is refused.
+- **History:** `data.features.trading = { history = { { name, user, id, at, gave, got } }, total }`, the last
+  `HistorySize` (20) trades, `gave` and `got` being offers (with `gems`). Published as `tradeHistory`; the
+  open trade as `trade` (`give`, `get`, `ready`, `theirReady`, `version`, `readyAt`, `endsAt`, rooms).
+- **Test:** `tools/emu/tests/trading.luau` (two to four players; `harness.actAs(player)` picks who the remotes
+  fire as, `harness.setTradePolicy(false)` makes Roblox refuse trading to the next player who joins). The
+  emulator's `task.wait` ends a thread, so the 0.25 s watch never runs there: that part needs Studio.
+
 ### Robux
 
 - Game passes: add an entry to `Config.Passes` from your shared module
