@@ -356,6 +356,16 @@ numbers are `Config.Fan`.
   (`fanPaid`): the gems, and a labelled `coins` modifier, "Fan bonus", that STATS lists. **Nothing is paid
   for a like or a favourite and the card says so**: a game cannot see one, and Roblox does not allow rewarding
   ratings. Keep it that way: never put a reward, a countdown or the word "bonus" on that card.
+- **The LIKE + GROUP button** (client only; words in `Tutorial.FanButton` and `Tutorial.FanCard`): a HUD
+  button of the Tutorial feature's own, shown while `fanPaid ~= true` and a group exists (`group == true`),
+  at the base and in the marketplace, and gone for good once the bonus is paid. It stands against the left
+  edge under the stat pills, placed through `Hud.onLayout` (`fanSpot`: one line lower on a screen so narrow
+  that the walkthrough's banner would reach it). A press, and only a press, opens one more page of the
+  welcome card ("fan"): thumbs up the game, join the group, the bonus, the group card's status line and its
+  CHECK (`tutorialCheck`), and CLOSE. **The bonus is still the group's alone**: on that card it stands under
+  the group's line as "For joining the group:", and the thumbs up's own line says there is no reward for
+  it. The button's picture is the atlas icon `like`; until the sheet has one, a 👍 glyph stands in.
+  `tools/emu/tests/welcome_cards.luau` proves shown before, gone after, and the button's place.
 - **The walkthrough**, eleven steps (`Tutorial.Steps`): walk to the cannon, open it, upgrade it, watch a level
   clear, buy a second pad, build on it, read what lives are (GOT IT), travel to Earth's island, hatch the first
   egg, come home, and a last card that says where STORY, STORE and STATS are (LET'S GO). The client shows a
