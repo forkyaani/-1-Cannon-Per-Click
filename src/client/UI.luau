@@ -764,6 +764,8 @@ local ICON_ALIASES = {
 	mission_hatches = "hatch",
 	-- Worlds 13 to 15 have no medallion on sheet F yet: the nearest picture stands in for each.
 	world_multiverse = "portal", world_timewarp = "clock", world_infinity = "crown",
+	-- The towers of 12 Oct have no picture of their own yet: each borrows the picture of a kind it is close to.
+	tower_drill = "tower_gatling", tower_wildfire = "tower_flame", tower_quake = "tower_mortar",
 }
 
 function UI.icon(name: string?, props, fallback: GuiObject?): ImageLabel?

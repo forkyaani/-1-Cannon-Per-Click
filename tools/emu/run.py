@@ -117,8 +117,21 @@ def install_harness(world):
         # nil = the lookup fails. The game asks once per player, so set it before the player joins.
         world.policy_restricted = restricted if isinstance(restricted, bool) else None
 
+    def set_trade_policy(allowed=True):
+        # What PolicyService answers about trading paid items (IsPaidItemTradingAllowed), asked once per
+        # player by Features/Trading.luau: set it before the player joins.
+        world.policy_trading = allowed is True
+
+    def act_as(player):
+        # The player the remotes fire as from now on (addPlayer makes the newest one the local player).
+        players.props["LocalPlayer"] = player
+
     def set_time(unix):
         world.clock = float(unix)
+
+    def set_user(name, user_id):
+        # An account that exists on Roblox without being online: what GetUserIdFromNameAsync finds.
+        world.user_ids[str(name).lower()] = user_id
 
     def fail_ordered(count):
         world.ordered_failures = int(count)
@@ -127,9 +140,9 @@ def install_harness(world):
         "addPlayer": add_player, "removePlayer": remove_player, "runClient": run_client, "step": step,
         "click": click, "forceRandom": force_random, "prompts": prompts, "receipt": receipt,
         "errors": lambda: len(interp.errors), "flush": interp.flush, "advance": world.advance,
-        "setStudio": set_studio, "setPolicy": set_policy, "setTime": set_time, "failOrdered": fail_ordered, "now": lambda: world.clock,
+        "setStudio": set_studio, "setPolicy": set_policy, "setTradePolicy": set_trade_policy, "actAs": act_as, "setTime": set_time, "failOrdered": fail_ordered, "now": lambda: world.clock,
         "clearRandom": lambda: world.forced_random.clear(), "fire": fire, "load": load,
-        "randomLeft": lambda: len(world.forced_random),
+        "randomLeft": lambda: len(world.forced_random), "setUser": set_user,
     })
 
 

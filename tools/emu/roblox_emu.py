@@ -629,6 +629,9 @@ class World:
         # What PolicyService says about paid random items for whoever is asked next (harness.setPolicy):
         # True = restricted, False = allowed, None = the lookup fails.
         self.policy_restricted = False
+        # Whether PolicyService lets the next player asked trade paid items (harness.setTradePolicy).
+        self.policy_trading = True
+        self.user_ids = {}  # accounts that are not online, for Players:GetUserIdFromNameAsync: lower-case name -> id
         self.known_props = set()
         self.defaults = {
             "Visible": True, "Text": "", "Enabled": True, "LayoutOrder": 0, "Active": False,
@@ -637,7 +640,7 @@ class World:
             "CanvasPosition": lambda: Vector2(0, 0), "TextTransparency": 0, "Transparency": 0,
             "BackgroundTransparency": 0, "Character": None, "PrimaryPart": None, "Adornee": None,
             "CameraSubject": None, "Value": None, "Rotation": 0, "TextBounds": lambda: Vector2(50, 20),
-            "CameraType": None, "CFrame": lambda: CFrame(), "JobId": "", "PlaceId": 0, "GameId": 0,
+            "CameraType": None, "CFrame": lambda: CFrame(), "JobId": "", "PlaceId": 0, "GameId": 0, "CreatorId": 0, "CreatorType": None,
             "ClockTime": 14, "Brightness": 2, "Ambient": None, "OutdoorAmbient": None, "Size": None,
             "Position": None, "BackgroundColor3": None, "TextColor3": None, "AnchorPoint": None,
             "ZIndex": 1, "Scale": 1, "ProcessReceipt": None, "TextStrokeTransparency": 1,
@@ -1399,7 +1402,17 @@ class World:
             online = by_user_id(players, user_id)
             return online.props["Name"] if online is not None else f"User{fmt_num(user_id)}"
 
-        self.methods["Players"] = {"GetPlayers": get_players, "GetPlayerByUserId": by_user_id, "GetNameFromUserIdAsync": name_from_user_id}
+        def user_id_from_name(players, name):
+            # Whoever is online with that name, or an account a test made known (harness.setUser); else it fails.
+            for c in players.children:
+                if c.cls == "Player" and str(c.props.get("Name")).lower() == str(name).lower():
+                    return c.props.get("UserId")
+            known = world.user_ids.get(str(name).lower())
+            if known is None:
+                raise LuaError("Players:GetUserIdFromNameAsync() failed: Unknown user")
+            return known
+
+        self.methods["Players"] = {"GetPlayers": get_players, "GetPlayerByUserId": by_user_id, "GetNameFromUserIdAsync": name_from_user_id, "GetUserIdFromNameAsync": user_id_from_name}
         self.methods["Player"] = {
             "RequestStreamAroundAsync": lambda p, pos, t=None: None, "Kick": lambda p, msg=None: world.output.append(f"KICK {msg}"),
             "GetRankInGroup": lambda p, g: 0, "IsInGroup": lambda p, g: False, "LoadCharacter": lambda p: None,
@@ -1535,9 +1548,14 @@ class World:
         def policy_info(service, player):
             if world.policy_restricted is None:
                 raise LuaError("GetPolicyInfoForPlayerAsync: the policy service is unavailable")
-            return lua_value({"ArePaidRandomItemsRestricted": world.policy_restricted})
+            return lua_value({
+                "ArePaidRandomItemsRestricted": world.policy_restricted,
+                "IsPaidItemTradingAllowed": world.policy_trading,
+            })
 
         self.methods["PolicyService"] = {"GetPolicyInfoForPlayerAsync": policy_info}
+        # No keyboard here: a TextBox is never being typed in (a test sets Text and fires FocusLost).
+        self.methods["TextBox"] = {"IsFocused": lambda box: False, "CaptureFocus": lambda box: None, "ReleaseFocus": lambda box, *a: None}
         self.methods["UserInputService"] = {"GetMouseLocation": lambda u: Vector2(0, 0), "IsKeyDown": lambda u, k: False}
         def get_text_size(service, text=None, size=None, font=None, frame=None):
             """An estimate: no font metrics here, so a glyph is taken to be half the font size wide."""

@@ -286,10 +286,16 @@ local ACCENTS = {
 	railgun = rgb(90, 110, 255),
 	storm = rgb(190, 130, 255),
 	meteor = rgb(255, 150, 60),
+	drill = rgb(70, 200, 190),
+	wildfire = rgb(255, 90, 30),
+	quake = rgb(255, 210, 120),
 }
 -- A kind with no turret of its own wears the turret of the kind it is closest to (the rocket wears the
 -- cannon's, as it always did).
-local SHAPES = { laser = "gatling", venom = "flame", blizzard = "frost", railgun = "sniper", storm = "tesla", meteor = "mortar" }
+local SHAPES = {
+	laser = "gatling", venom = "flame", blizzard = "frost", railgun = "sniper", storm = "tesla", meteor = "mortar",
+	drill = "gatling", wildfire = "tesla", quake = "mortar",
+}
 
 function Models.towerTier(level: number): number
 	return Config.towerTier(math.max(1, math.floor(level)))

@@ -9,6 +9,9 @@ Run: blender --background --python tools/blender/base.py -- <World> <output fold
      Worlds 6 to 12 wear their island's own things (island.py): its tall prop on the hills, its fence, its
      liquid down the butte, one of its set pieces as the landmark. Everything made for them is in a branch
      of its own (NEW): the first five worlds come out exactly as they did before there were twelve.
+     Worlds 13 to 15 (Update 1: "Multiverse", "Time Warp", "Infinity") are NEW too; their props are in
+     tools/blender/worlds_13_to_15.py, shared with island.py, and each has a piece of its island's sky
+     over the monsters' rock (in Base_Backdrop): a rock upside down, a giant clock face, a rainbow.
 
 THE MAPPING. Plot space is the game's (Layout.luau): the origin is the middle of the base's edge of the
 ground, x runs across the plot, +z up the plot to the portal, y is up, the ground's top is y = 0 and the yard
@@ -59,6 +62,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit
 from kit import *
 from themes import THEMES
+import worlds_13_to_15 as w13  # Multiverse, Time Warp and Infinity: their props, for this file and island.py
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 WORLD = next((name for name in THEMES if ARGS and name.lower().replace(" ", "") == ARGS[0].lower().replace(" ", "").replace("_", "")), None)
@@ -150,19 +154,33 @@ LOOKS = {
     "The Big Bang": dict(road="sand_dark", road_edge="under_dark", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="FF3C6E", ember="3C9CFF", lair="under_dark",
                          roof="burst", knob="spark", window="accent", iron="wood_dark", board="8A3CC0", landmark="bang", cloud="FFFFFF", ambient=0.85, sun=2.5,
                          stone=("C9A0FF", "9A68E8", "EBD8FF"), crags=("8A3CC0", "B45CE0", "9858E8", "B478F4", "CC98FF"), lamp_glow=True, monsters=("FF4A5A", "3C9CFF", "FFD83A", "FFFFFF")),
+    # Worlds 13 to 15 (Update 1). Their props are in worlds_13_to_15.py.
+    "Multiverse": dict(road="wood_dark", road_edge="2A1270", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="FFB02A", ember="FF5C5C", lair="under_dark",
+                       roof="diamond", knob="ring", window="accent", iron="wood_dark", board="2A1470", landmark="twin_gate", cloud="FFB0E8", ambient=0.9, sun=2.7,
+                       hills=("8458E8", "7A4EDC", "7046D0", "663EC4"), stars=("FFB0E8", "D0FFFA", "FFFFFF"), lamp_glow=True, monsters=("FF5CC0", "2CD8D0", "FFE27A", "FFFFFF")),
+    "Time Warp": dict(road="2C3E9C", road_edge="1E2C7C", kerb="cobble", kerb_glow=0.0, band="sand_dark", hot="3CE0FF", ember="B06BFF", lair="2A3C9C",
+                      roof="bell", knob="cog", window="accent", iron="wood_dark", board="121C5C", landmark="hourglass", cloud="3450B0", ambient=1.0, fill=3.4, sun=3.0,
+                      stars=("FFFFFF", "FFE2A0", "A8D0FF"), lamp_glow=True,
+                      sky=((0.0, "24389C"), (0.36, "121C5C"), (0.47, "2C48B0"), (0.5, "3A5CD0"), (0.62, "24389C"), (0.8, "141E60"), (1.0, "0E1648")),
+                      monsters=("FFB428", "4C7CF0", "FF7A3C", "FFFFFF")),
+    "Infinity": dict(road="sand_dark", road_edge="F0A820", kerb="FFFFFF", kerb_glow=0.0, band="sand_dark", hot="FF7AC8", ember="8CD0FF", lair="B89CF0",
+                     roof="halo", knob="halo", window="accent", iron="wood_dark", board="B8780C", landmark="infinity_arch", cloud="FFFFFF", ambient=0.85, sun=2.2,
+                     stone=("FFE6A8", "F0C050", "FFF4D0"), crags=("B8A8FF", "C8B8FF", "FFA8C8", "FFC8A0", "B4F0C0"), lamp_glow=True, monsters=("FF9CC8", "8CD0FF", "FFD868", "C8A8FF")),
 }
 LOOK = {key: T.get(value, value) if isinstance(value, str) else value for key, value in LOOKS[WORLD].items()}
 ROAD, ROAD_EDGE, KERB_COLOUR = LOOK["road"], LOOK["road_edge"], LOOK["kerb"]
 IRON, BOARD = LOOK["iron"], LOOK["board"]  # metal, and what the game writes on in white
 if "stone" in LOOK:
     STONE, STONE_DARK, STONE_PALE = LOOK["stone"]
+w13.theme({**T, "stone": STONE, "stone_dark": STONE_DARK, "stone_pale": STONE_PALE})
 NAVY, HOLE, NEBULA_GOLD = "2C3870", "160A24", "FFC42E"  # island.py's: the Factory's dark paint, a black hole's heart, Nebula's stars
 # The hills round the plot: darker than the ground, four tones from its deep patch to its rim.
 HILLS = LOOK.get("hills") or (("55BE48", "4AB246", "3FA548", "369A4A") if WORLD == "Earth" else tuple(mix(GRASS_DEEP, GRASS_RIM, share) for share in (0.1, 0.4, 0.7, 1.0)))
 # The monsters' portal: dark stone and a hot glow, nothing like the island's friendly one.
 LAIR, LAIR_DARK, LAIR_DEEP = LOOK["lair"], shade(LOOK["lair"], -0.22), shade(LOOK["lair"], -0.4)
 HOT, HOT_DARK, HOT_DEEP, HOT_CORE, EMBER = LOOK["hot"], shade(LOOK["hot"], -0.25), shade(LOOK["hot"], -0.55), shade(LOOK["hot"], -0.82), LOOK["ember"]
-LIQUID_GLOW = {"rift": 1.4, "gas": 0.8, "coolant": 1.2, "acid": 1.2, "singularity": 1.5, "energy": 1.0}  # island.py's, for the new worlds' liquids
+LIQUID_GLOW = {"rift": 1.4, "gas": 0.8, "coolant": 1.2, "acid": 1.2, "singularity": 1.5, "energy": 1.0,
+               **{liquid: glow for liquid, glow in w13.LIQUIDS.items() if glow}}  # island.py's, for the new worlds' liquids
 GLOWS = T["liquid"] in ("stardust", "lava") or T["liquid"] in LIQUID_GLOW  # the world's liquid glows
 
 
@@ -650,7 +668,8 @@ def tree_spark_burst(tone=0, variant=0):
 
 TREE = {"round_tall": tree_round_tall, "crater_rock": tree_crater_rock, "mesa_spire": tree_mesa_spire, "ice_spike": tree_ice_spike, "lava_spire": tree_lava_spire,
         "void_shard": tree_void_shard, "gas_cloud": tree_gas_cloud, "crystal_cluster": tree_crystal_cluster, "factory_stack": tree_factory_stack,
-        "glow_shroom": tree_glow_shroom, "bent_rock": tree_bent_rock, "spark_burst": tree_spark_burst}[T["tree"]]
+        "glow_shroom": tree_glow_shroom, "bent_rock": tree_bent_rock, "spark_burst": tree_spark_burst,
+        **{kind: (lambda tone=0, variant=0, build=build: build(LEAVES[tone], "tall" if variant else "round")) for kind, build in w13.TREES.items()}}[T["tree"]]  # worlds 13 to 15
 
 
 def rocks(colour=ROCK):
@@ -667,6 +686,13 @@ def fence_new(kind, points, turn, first, last):
     post is where the game's two solid rails are (FENCE_RAILS), or sags between them."""
     low, high = FENCE_RAILS
     spin = (0, 0, turn)
+    if kind in w13.FENCES:  # worlds 13 to 15
+        for index, point in enumerate(points):
+            if not ((index == 0 and not first) or (index == len(points) - 1 and not last)):
+                w13.fence_post(kind, at(point.x, point.y), turn + math.pi / 2, index, size=1.2)
+        for index, (a, b) in enumerate(zip(points, points[1:])):
+            w13.fence_rail(kind, at(a.x, a.y), at(b.x, b.y), index, low, high, size=1.15)
+        return
     for index, point in enumerate(points):
         if (index == 0 and not first) or (index == len(points) - 1 and not last):
             continue
@@ -1058,7 +1084,8 @@ def grown(build, size):
 
 LANDMARK = {"windmill": windmill, "rocket": rocket, "arch": arch, "igloo": igloo, "volcano": volcano,
             "rift": grown(rift, 1.35), "telescope": grown(telescope, 1.45), "geode": grown(geode, 1.8), "robot_arm": grown(robot_arm, 1.85),
-            "snap_pod": grown(snap_pod, 1.45), "black_hole": grown(black_hole, 1.6), "bang": grown(bang, 1.6)}[LOOK["landmark"]]
+            "snap_pod": grown(snap_pod, 1.45), "black_hole": grown(black_hole, 1.6), "bang": grown(bang, 1.6),
+            "twin_gate": grown(w13.twin_gate, 1.55), "hourglass": grown(w13.hourglass, 1.5), "infinity_arch": grown(w13.infinity_arch, 1.7)}[LOOK["landmark"]]
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -1130,6 +1157,8 @@ def liquid_dressing(fall, pool, reach):
     """Worlds 6 to 12: what island.py's pond has on it, at the waterfall: at its top (where it comes out from
     under the butte's cap), down its sides and round its pool. In the waterfall's own space, front -Y."""
     liquid = T["liquid"]
+    if liquid in w13.LIQUIDS:  # worlds 13 to 15
+        return w13.fall_dressing(liquid, fall, pool, reach)
     out, top = fall[0]
     foot = Vector((0, -reach, 0))
     if liquid == "rift":  # shards of rock hanging over the tear, and the dark in the middle of it
@@ -1277,6 +1306,10 @@ ROOFS = {
     "cap": ([(0, 25.2), (2.3, 24.6), (4.3, 22.9), (5.4, 20.6), (5.1, 19.7), (3.5, 19.2), (3.5, 17.7), (0, 17.7)], 14, True),  # Alien Jungle: a mushroom's cap over the parapet
     "claw": ([(0, 29.0), (0.9, 26.2), (1.5, 23.6), (2.9, 21.2), (4.3, 19.4), (4.2, 18.4), (3.7, 17.7), (0, 17.7)], 5, False),  # Black Hole: rock pulled to a point
     "burst": ([(0, 28.4), (1.0, 24.6), (2.3, 22.2), (4.7, 20.2), (3.1, 18.9), (3.7, 17.7), (0, 17.7)], 8, False),  # The Big Bang: a spark's point over a ring of them
+    # worlds 13 to 15
+    "diamond": ([(0, 29.6), (3.4, 24.0), (4.4, 19.4), (3.7, 17.7), (0, 17.7)], 4, False),  # Multiverse: a four-sided shard of glass
+    "bell": ([(0, 27.0), (0.45, 26.2), (0.9, 24.8), (2.4, 23.6), (3.5, 21.8), (3.9, 19.8), (4.8, 18.4), (3.7, 17.7), (0, 17.7)], 16, True),  # Time Warp: a clock tower's bell
+    "halo": ([(0, 27.6), (0.7, 25.6), (1.7, 23.8), (3.1, 22.2), (4.2, 20.4), (4.5, 18.7), (3.7, 17.7), (0, 17.7)], 16, True),  # Infinity: a soft dome drawn to a point
 }
 
 
@@ -1310,6 +1343,17 @@ def knob(x, y, z):
         tube(1.4, 0.14, (x, y, z + 0.53), (0.35, 0.3, 1), ACCENT, vertices=8, emission=1.4)
     elif kind == "spark":  # The Big Bang: a spark
         gem(0.8, 2.2, (x, y, z + 0.6), T["accent"], emission=1.2)
+    # worlds 13 to 15
+    elif kind == "ring":  # Multiverse: a little portal ring, a shard of light in it
+        hoop(0.85, 0.2, (x, y, z + 1.05), LEAVES[round(abs(x)) % 3], rotation=(math.pi / 2, 0, 0), segments=8, roughness=0.3)
+        gem(0.34, 1.1, (x, y, z + 1.0), ACCENT_PALE, emission=1.2)
+    elif kind == "cog":  # Time Warp: a little clock
+        tube(0.3, 0.6, (x, y, z - 0.2), UP, IRON, vertices=5)
+        tube(1.05, 0.34, (x, y + 0.17, z + 1.3), (0, -1, 0), WOOD_LIGHT, vertices=8, roughness=0.3)
+        tube(0.78, 0.5, (x, y + 0.25, z + 1.3), (0, -1, 0), "FFF4D8", vertices=8)
+    elif kind == "halo":  # Infinity: a gold ball under a halo
+        ball(0.7, (x, y, z + 0.45), GOLD, segments=8, roughness=0.3)
+        tube(1.0, 0.1, (x, y, z + 1.5), UP, ACCENT_PALE, vertices=8, emission=1.0)
     else:  # ember
         ball(0.8, (x, y, z + 0.45), ACCENT, scale=(1, 1, 1.2), segments=8, emission=1.0)
 
@@ -1667,6 +1711,18 @@ place(waterfall, (22, 164), face=180, fall=[(5.2, 27.6), (6.5, 26.9), (7.3, 25.0
 place(monolith, (0, BEHIND + 15 * 0.85), radius=15, height=45, colour=FAR, stretch=0.85)
 if WORLD == "Black Hole":
     black_hole_backdrop([(x, max(z, BEHIND + radius * SQUASH), radius, height) for x, z, radius, height, colour, kind in CRAGS if kind is butte], (0, BEHIND + 15 * 0.85, 15, 45, 0.85))
+# Worlds 13 to 15: what hangs in the sky over the monsters' rock, the island's own (worlds_13_to_15.py)
+if WORLD == "Multiverse":  # another world's rock, upside down over this one's, their tops a few studs apart; shards of glass round both
+    first = len(made)
+    lathe([(0, 22.0), (5.5, 21.6), (8.4, 18.4), (10.2, 9.8), (11.4, 0.0), (11.6, -1.5), (0, -1.5)], CRAG, segments=9, rough=0.55, smooth=False, stretch=SQUASH)
+    lathe([(0, -1.4), (11.8, -1.4), (12.2, -2.3), (11.2, -3.2), (0, -3.2)], GRASS, segments=14, stretch=SQUASH, roughness=0.9)
+    ball(7.3, (0, 0, 21.3), GRASS_LIGHT, scale=(1, SQUASH, 0.3), segments=12, roughness=0.9)
+    moved(first, Matrix.Translation(at(0, BEHIND + 15 * 0.85, 73.0)) @ Matrix.Rotation(math.pi, 4, "X"))
+    w13.sky_shards([at(x, z, y) for x, z, y in ((-22, 168, 52), (20, 170, 58), (-34, 172, 40), (36, 168, 46), (-8, 160, 64), (12, 162, 50), (-48, 170, 30), (50, 172, 34))])
+elif WORLD == "Time Warp":  # a giant clock face over the crags, looking down the road
+    place(w13.sky_clock, (-34, 178, 46), face=180, radius=13.0, hour=10.0, minute=2.0)
+elif WORLD == "Infinity":  # a soft rainbow standing behind the rock
+    place(w13.rainbow, (0, 180, -4), face=180, radius=64.0, band=3.0, steps=20)
 for x, z, size in ((-15.5, 153.8, 1.5), (14.6, 153.8, 1.1)):  # a boulder at its foot on each side of the portal
     place(rocks, (x, z), face=rng.uniform(0, 360), scale=size, colour=ROCK_LIGHT)
 for x, z, radius, length, lean, colour in ((-13.0, 151.6, 0.9, 4.6, -0.3, HOT), (-14.6, 151.2, 0.6, 2.8, -0.6, EMBER), (13.4, 151.5, 0.95, 5.0, 0.3, HOT), (15.0, 151.1, 0.6, 3.0, 0.6, EMBER),

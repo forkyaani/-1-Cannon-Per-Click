@@ -15,3 +15,9 @@ is the game's monster name (`Config.Worlds` in `src/shared/Config.luau`) with un
 Floaters (Lunar Bat, Astro Ghost, Dust Devil, Ice Wraith, Blizzard Wraith, Flare Spirit) hover 0.6 over a thin
 puddle of light that is part of the mesh: the setup script puts the pivot at the mesh's lowest point, so the
 puddle is what keeps the hover.
+
+Worlds 13 to 15 (Update 1, AB6; scripts in `tools/blender/creature_worlds/`). Not in the place until someone imports the three `.fbx` files in Studio and runs `tools/studio/setup_models.luau`.
+
+- **Multiverse** (`multiverse_creatures.fbx`): `Mirror_Slime`, `Glitch_Bat` (floater), `Portal_Crab`, `Twin_Wisp` (floater), `Rift_Golem`, `Paradox_Knight` (mid boss), `Multiverse_Hydra` (world boss).
+- **Time Warp** (`time_warp_creatures.fbx`): `Tick_Tock`, `Sand_Crawler`, `Clockwork_Owl` (floater), `Hourglass_Ghost` (floater), `Gear_Golem`, `Pendulum_Brute` (mid boss), `Father_Time` (world boss).
+- **Infinity** (`infinity_creatures.fbx`): `Loop_Blob`, `Zero_Bat` (floater), `Endless_Worm`, `Echo_Ghost` (floater), `Omega_Golem`, `Infinity_Guardian` (mid boss), `The_Last_Titan` (world boss).

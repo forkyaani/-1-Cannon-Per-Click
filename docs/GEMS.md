@@ -244,6 +244,14 @@ Gems are the one currency that survives everything. Rebirths wipe coins. Events 
 - Hard caps: upgrade levels, 3 gem slots, 3 copies a week, Second Wind doubling per use, Time Warp 3 a day, gems to candy 2,000 a day.
 - The Halloween candy board counts earned candy only.
 
+**Gems can be traded (12 Oct, AB1).** In a marketplace trade each side may add gems to its offer
+(`docs/ARCHITECTURE.md`, Trading): whole gems, never more than held, up to 1,000,000,000 a side, moved in the
+same step as the mini cannons. A trade moves gems between two players and makes none, so the totals above are
+unchanged for the game as a whole. What changes: the per-player caps on free gems (daily rewards, codes, the fan
+bonus, achievements) no longer bind one player, because a second account's free gems can be handed over. The
+gate is the one trading already had (Roblox's `IsPaidItemTradingAllowed`, per player); there is no fee and no
+daily limit on traded gems.
+
 ## 9. Build order
 
 | # | Item | Size | Extends | Roblox item |

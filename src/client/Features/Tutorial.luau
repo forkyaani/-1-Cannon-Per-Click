@@ -1,7 +1,8 @@
--- The first-join experience, client half. Three things are drawn here, all from what the server says
+-- The first-join experience, client half. Four things are drawn here, all from what the server says
 -- (State.feature("tutorial"): welcomed, step, fanPaid, paid, group, member, hint):
 --   * the welcome cards: a full-screen card with one page each for the game, the group's fan bonus and a like,
 --     and later the "you are on your own" card that ends the walkthrough;
+--   * the LIKE + GROUP button on the HUD, while the fan bonus is unclaimed, and the card a press on it opens;
 --   * the walkthrough's banner at the top middle: what to do now, one short line more, and what it pays;
 --   * the marker: a bouncing arrow and a beam of light over the place to walk to, or an arrow beside the
 --     menu button to press.
@@ -202,6 +203,40 @@ function Feature.start(ctx)
 	end
 	local groupStatus = line(pages.group, 160, 80, 20, "", Colors.cream)
 
+	-- The LIKE + GROUP button's card: the two things asked for, each on its own line. The bonus is on a cream
+	-- note under the group's line and says whose it is; the thumbs up says that it pays nothing.
+	local fanCard = Tutorial.FanCard
+	pages.fan = newPage("fan")
+	line(pages.fan, 0, 32, 26, fanCard.like)
+	line(pages.fan, 32, 24, 18, fanCard.likeNote, Colors.cream)
+	line(pages.fan, 62, 32, 26, fanCard.join)
+	do
+		local note = UI.chip({ Position = UDim2.fromOffset(20, 98), Size = UDim2.new(1, -40, 0, 58), ZIndex = 2, Parent = pages.fan })
+		UI.label({
+			Position = UDim2.fromOffset(8, 3),
+			Size = UDim2.new(1, -16, 0, 18),
+			Text = fanCard.bonusTitle,
+			TextSize = 16,
+			TextColor3 = Colors.ink,
+			Stroke = 0,
+			ZIndex = 2,
+			Parent = note,
+		})
+		for index, text in fanCard.bonus do
+			UI.label({
+				Position = UDim2.new((index - 1) / #fanCard.bonus, 4, 0, 21),
+				Size = UDim2.new(1 / #fanCard.bonus, -8, 0, 32),
+				Text = text,
+				TextSize = 24,
+				TextColor3 = Colors.ink,
+				Stroke = 0,
+				ZIndex = 2,
+				Parent = note,
+			})
+		end
+	end
+	local fanStatus = line(pages.fan, 160, 80, 20, "", Colors.cream)
+
 	-- The last step: where things are from here on.
 	pages.finish = newPage("finish")
 	for index, row in Tutorial.Finish.lines do
@@ -270,6 +305,7 @@ function Feature.start(ctx)
 	local WELCOME_PAGES, OUTRO_PAGES = Tutorial.Welcome, Tutorial.Outro
 	local page = 1 -- which welcome page is up
 	local outro = 0 -- which of the cards after the walkthrough is up (0: none)
+	local fanOpen = false -- the LIKE + GROUP button was pressed: its card is up until CLOSE
 	local shownPage: string? = nil -- the page on screen
 	local pageAt = 0 -- os.clock() when it came up
 	local cardUp = false
@@ -315,7 +351,23 @@ function Feature.start(ctx)
 			outro += 1
 		end
 		outro = 0
-		return nil
+		-- Last, and only after a press on its button: every card above comes first.
+		return if fanOpen then "fan" else nil
+	end
+
+	-- The buttons under a page that can check the group: CHECK beside the main button, or the main one alone.
+	local function layButtons(checkable: boolean, checkText: string)
+		checkButton.Visible = checkable
+		if checkable then
+			local checking = meta().checking == true or waiting("check")
+			checkButton.Text = if checking then "..." else checkText
+			checkButton.BackgroundColor3 = if checking then Colors.grey else Colors.blue
+			mainButton.Position = UDim2.new(0.5, 135, 0, BUTTON_Y)
+			mainButton.Size = UDim2.fromOffset(250, 84)
+		else
+			mainButton.Position = UDim2.new(0.5, 0, 0, BUTTON_Y)
+			mainButton.Size = UDim2.fromOffset(320, 84)
+		end
 	end
 
 	local function refreshCard()
@@ -324,6 +376,10 @@ function Feature.start(ctx)
 			-- The walkthrough just ended on this screen: the two cards that waited for it.
 			outro = 1
 			name = wantedPage()
+		end
+		if name ~= "fan" then
+			-- Another card took the screen: the fan card must not come up by itself once that one closes.
+			fanOpen = false
 		end
 		if not name then
 			cardUp, shownPage = false, nil
@@ -364,6 +420,18 @@ function Feature.start(ctx)
 			skipLink.Visible = false
 			return
 		end
+		if name == "fan" then
+			titleLabel.Text = fanCard.title
+			pageLabel.Text = ""
+			mainButton.Text = fanCard.close
+			mainButton.BackgroundColor3 = Colors.green
+			-- Once the bonus is paid the card stays up to say so, with CLOSE alone.
+			layButtons(now.group == true and now.fanPaid ~= true, fanCard.check)
+			fanStatus.Text = groupText()
+			fanStatus.TextColor3 = if now.fanPaid == true then Colors.power else Colors.cream
+			skipLink.Visible = false
+			return
+		end
 
 		local def = cards[name]
 		titleLabel.Text = def.title
@@ -374,18 +442,7 @@ function Feature.start(ctx)
 		mainButton.Text = if busy then "..." else def.next
 		mainButton.BackgroundColor3 = if busy then Colors.grey else Colors.green
 		-- CHECK only where there is something to check: a group, and a bonus that is not paid yet.
-		local checkable = name == "group" and now.group == true and now.fanPaid ~= true
-		checkButton.Visible = checkable
-		if checkable then
-			local checking = now.checking == true or waiting("check")
-			checkButton.Text = if checking then "..." else def.check
-			checkButton.BackgroundColor3 = if checking then Colors.grey else Colors.blue
-			mainButton.Position = UDim2.new(0.5, 135, 0, BUTTON_Y)
-			mainButton.Size = UDim2.fromOffset(250, 84)
-		else
-			mainButton.Position = UDim2.new(0.5, 0, 0, BUTTON_Y)
-			mainButton.Size = UDim2.fromOffset(320, 84)
-		end
+		layButtons(name == "group" and now.group == true and now.fanPaid ~= true, def.check or "")
 		if name == "group" then
 			groupStatus.Text = groupText()
 			groupStatus.TextColor3 = if now.fanPaid == true then Colors.power else Colors.cream
@@ -413,6 +470,9 @@ function Feature.start(ctx)
 		end
 		if shownPage == "finish" then
 			ask("finish", "tutorialAck", "finish")
+		elseif shownPage == "fan" then
+			fanOpen = false
+			refreshCard()
 		elseif outro > 0 then
 			outro += 1
 			refreshCard()
@@ -424,7 +484,7 @@ function Feature.start(ctx)
 		end
 	end)
 	checkButton.Activated:Connect(function()
-		if cardUp and shownPage == "group" then
+		if cardUp and (shownPage == "group" or shownPage == "fan") then
 			ask("check", "tutorialCheck")
 		end
 	end)
@@ -840,9 +900,104 @@ function Feature.start(ctx)
 		Hud.keepNoticesBelow(if inTheWay then bannerY + BANNER.Y + 12 else 0)
 	end
 
+	------------------------------------------------------------------------------------------------
+	-- The fan button: LIKE + GROUP, on the left under the stat pills, at the base and in the marketplace alike.
+	-- It is there while the fan bonus is unclaimed and a group exists, and a press opens the fan card above.
+	-- Nothing here opens by itself, and once the bonus is paid the button is gone for good.
+	------------------------------------------------------------------------------------------------
+	local FAN = Vector2.new(150, 104) -- design px: an orb with its reward tag, and the name plate under it
+	local FAN_LEFT = 16 -- the HUD's margin
+	local fanLook = Tutorial.FanButton
+	local fanSlot = UI.slot({ Name = "FanButton", Size = UDim2.fromOffset(FAN.X, FAN.Y), Visible = false })
+	local fanButton = UI.make("TextButton", {
+		Name = "Button",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		Text = "",
+		AutoButtonColor = false,
+		Parent = fanSlot,
+	})
+	local fanSquash
+	do
+		local orb = UI.make("Frame", { Position = UDim2.fromOffset(4, 2), Size = UDim2.fromOffset(70, 70), BackgroundTransparency = 1, Parent = fanButton })
+		fanSquash = UI.make("UIScale", { Parent = orb })
+		local sticker = UI.sticker(orb, UI.shade(Colors.blue), { radius = 70, lip = 5, outline = 4 })
+		local glyph = UI.text({ Position = UDim2.fromScale(0.2, 0.17), Size = UDim2.fromScale(0.6, 0.6), Text = fanLook.glyph, Parent = sticker.face })
+		UI.icon(fanLook.icon, { Position = UDim2.fromScale(0.11, 0.07), Size = UDim2.fromScale(0.78, 0.78), Parent = sticker.face }, glyph)
+
+		-- What the group's bonus pays, on a tag at the orb's shoulder: "+250" and a gem.
+		local tag = UI.chip({ Position = UDim2.fromOffset(66, 14), Size = UDim2.fromOffset(82, 32), ZIndex = 2, Parent = fanButton })
+		UI.label({
+			Position = UDim2.fromOffset(4, 0),
+			Size = UDim2.new(1, -34, 1, 0),
+			Text = fanLook.amount,
+			TextSize = 20,
+			TextColor3 = Colors.ink,
+			Stroke = 0,
+			Parent = tag,
+		})
+		local gem = UI.text({ Position = UDim2.new(1, -30, 0, 4), Size = UDim2.fromOffset(24, 24), Text = "💎", Parent = tag })
+		UI.icon("gem", { Position = UDim2.new(1, -32, 0, 2), Size = UDim2.fromOffset(28, 28), Parent = tag }, gem)
+
+		local outline = UI.stroke(3)
+		outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		UI.make("Frame", {
+			Name = "Plate",
+			AnchorPoint = Vector2.new(0.5, 0),
+			Position = UDim2.new(0.5, 0, 0, 70),
+			Size = UDim2.fromOffset(FAN.X - 4, 30),
+			BackgroundColor3 = Colors.dark,
+			BorderSizePixel = 0,
+			ZIndex = 2,
+			Parent = fanButton,
+		}, {
+			UI.make("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
+			outline,
+			UI.text({ Position = UDim2.fromOffset(8, 3), Size = UDim2.new(1, -16, 1, -6), Text = fanLook.label, MaxSize = 20 }),
+		})
+	end
+	fanButton.MouseButton1Down:Connect(function()
+		TweenService:Create(fanSquash, UI.Motion.press, { Scale = 0.92 }):Play()
+	end)
+	local function fanRelease()
+		TweenService:Create(fanSquash, UI.Motion.release, { Scale = 1 }):Play()
+	end
+	fanButton.MouseButton1Up:Connect(fanRelease)
+	fanButton.MouseLeave:Connect(fanRelease)
+
+	-- Where it goes, in design px: against the left edge, under the stat pills' row. The walkthrough's banner
+	-- can stand in that same line (placeBanner, "under the pills"): on a screen so narrow that the banner would
+	-- reach the button, the button goes one line further down.
+	local function fanSpot(layout): Vector2
+		local y = layout.T + 8 + STAT_ROW.Y + 6
+		if layout.W / 2 - BANNER.X / 2 < FAN_LEFT + FAN.X + 8 then
+			y += BANNER.Y + 6
+		end
+		return Vector2.new(FAN_LEFT, y)
+	end
+	Hud.onLayout(function(layout)
+		local spot = fanSpot(layout)
+		fanSlot.Position = UDim2.fromOffset(spot.X, spot.Y)
+	end)
+
+	local function refreshFan()
+		local now = meta()
+		fanSlot.Visible = now.group == true and now.fanPaid ~= true
+	end
+	fanButton.Activated:Connect(function()
+		local now = meta()
+		if cardUp or now.group ~= true or now.fanPaid == true then
+			return
+		end
+		fanOpen = true
+		refreshCard()
+		refreshGuide()
+	end)
+
 	local function refresh()
 		refreshCard()
 		refreshGuide()
+		refreshFan()
 	end
 
 	-- Whether a HUD button can be seen: it and everything it sits in (a button in the closed MORE drawer cannot).
@@ -909,6 +1064,7 @@ function Feature.start(ctx)
 	Feature.cardGui, Feature.banner, Feature.pages = cardGui, banner, pages
 	Feature.mainButton, Feature.checkButton, Feature.skipLink, Feature.ackButton = mainButton, checkButton, skipLink, ackButton
 	Feature.arrow, Feature.beam, Feature.pointer = arrow, beam, pointer
+	Feature.fanSlot, Feature.fanButton, Feature.fanSpot, Feature.FAN = fanSlot, fanButton, fanSpot, FAN
 	function Feature.pointing(): (Vector3?, string?)
 		return target, pointAt
 	end

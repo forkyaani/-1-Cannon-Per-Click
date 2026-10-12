@@ -64,6 +64,7 @@ Config.Towers[kind] = {
 	burn = number?, burnSeconds = number?,   -- share of the shot's damage dealt again every second for that long
 	chain = number?,      -- the shot jumps to this many more monsters
 	boss = number?,       -- damage multiplier against single-monster (boss) levels
+	ramp = number?, rampMax = number?,       -- 0.2 = each shot in a row on the same monster deals 20% of the first more, up to rampMax x (12 Oct)
 }
 Config.towerDamage(kind, level) -> number
 Config.towerUpgradeCost(kind, level) -> number   -- coins to go from `level` to `level + 1`

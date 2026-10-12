@@ -603,6 +603,9 @@ end
 --   burn, burnSeconds     share of the shot's damage dealt again every second for that long
 --   chain                 the shot jumps to this many more monsters (each within Defense.chainRange of the last)
 --   boss                  damage multiplier on single-monster (boss) levels
+--   ramp, rampMax         0.2 = every shot in a row on the same monster deals 20% of the first one more, up to
+--                         rampMax times the first; a new target starts over. Not in Cannon Power, STATS or
+--                         offline earnings, which count the first shot (as they count no splash or burn)
 -- Every level multiplies damage by TowerCurve.damage, every tenth level (a new tier) by TowerCurve.tier as
 -- well; an upgrade costs TowerCurve.cost times the one before. Cost outgrows damage, so spreading coins over
 -- many towers beats pouring them into one.
@@ -674,10 +677,25 @@ Config.Towers = {
 		name = "Meteor", desc = "A huge slow blast that leaves a wide patch burning", color = rgb(255, 150, 60),
 		cost = 5000, damage = 16000, rate = 0.08, range = 80, unlock = 320, splash = 22, burn = 0.3, burnSeconds = 4,
 	},
+	-- Three more (12 Oct, Update 1), one for the early game, one for the middle and one for worlds 13 to 15.
+	-- The Drill brought `ramp` into the core; the other two are mixes no kind had (chain with burn; splash
+	-- with slow and boss). Sized with tools/balance: docs/BALANCE.md, section 5e.
+	drill = {
+		name = "Drill", desc = "Drills into one monster: every hit is harder, up to 4x", color = rgb(70, 200, 190),
+		cost = 375, damage = 80, rate = 3, range = 26, unlock = 45, ramp = 0.2, rampMax = 4,
+	},
+	wildfire = {
+		name = "Wildfire", desc = "Fire that jumps to 4 more monsters and leaves them all burning", color = rgb(255, 90, 30),
+		cost = 2000, damage = 1800, rate = 0.8, range = 34, unlock = 230, chain = 4, burn = 0.25, burnSeconds = 3,
+	},
+	quake = {
+		name = "Quake", desc = "Shakes a whole crowd slow and hits bosses 2x as hard", color = rgb(200, 150, 90),
+		cost = 10000, damage = 5500, rate = 0.4, range = 60, unlock = 610, splash = 14, slow = 0.35, slowSeconds = 3, boss = 2,
+	},
 }
 Config.TowerOrder = {
-	"cannon", "gatling", "mortar", "sniper", "frost", "laser", "flame", "venom", "tesla", "blizzard", "rocket", "railgun",
-	"storm", "meteor",
+	"cannon", "gatling", "mortar", "sniper", "frost", "laser", "drill", "flame", "venom", "tesla", "blizzard", "rocket",
+	"railgun", "wildfire", "storm", "meteor", "quake",
 }
 
 -- The look and the name of a tower of this level: an index into Config.Cannons. A new one every ten levels.

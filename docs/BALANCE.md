@@ -430,6 +430,67 @@ instead of 7 min), and the whole game 6 h 38 min instead of 2 h 41 min; from wor
 before. Fused mini cannons (x3.5, x12, x40) were most of the early power. The 6 Oct retune gave the first four
 worlds that power back through tower damage and the coin anchors: they take 21 to 35 minutes each (section 1).
 
+## 5e. Three more towers (12 Oct, Update 1)
+
+| Kind | Unlock | Cost | Shot | What is new |
+|---|---|---|---|---|
+| Drill | level 45 | 375 | 80 damage, 3 a second, range 26 | `ramp`: every shot in a row on the same monster deals 20% of the first one more, up to 4x (15 shots, 5 seconds). A new target starts over. The only new special in the core |
+| Wildfire | level 230 | 2,000 | 1,800 damage, 0.8 a second, range 34 | Chain with burn: jumps to 4 more monsters and every one burns for 25% a second, 3 seconds |
+| Quake | level 610 (worlds 13 to 15) | 10,000 | 5,500 damage, 0.4 a second, range 60 | Splash 14 with a 35% slow for 3 seconds and 2x on boss levels |
+
+**How they were sized.** Not with whole games (one tower in sixteen drowns in the seeds' noise) but with
+the fight alone (`fight` in `sim.py`, no mini cannons, no bonuses): every pad gets the same coins, and the
+number is how many coins per tower a team needs to clear a level, as a multiple of the best kind's. 1.00 is
+the best buy for that level; coins buy damage to the power 0.87, so 2.00 is about 1.8x short on damage. The
+script was a throwaway of the session, like the 6 Oct fit's.
+
+One kind on every pad:
+
+| Kind | L46 | L48 swarm | L49 tanks | L50 boss | L231 | L233 swarm | L234 tanks | L235 boss | L591 | L593 swarm | L594 tanks | L595 boss | L600 boss |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Gatling | 1.00 | 1.00 | 1.00 | 1.89 | 1.41 | 1.00 | 1.41 | 3.81 | 1.00 | 1.00 | 1.64 | 5.80 | 4.44 |
+| Sniper | 3.85 | 6.78 | 3.82 | 1.00 | 4.71 | 4.44 | 4.69 | 2.37 | 4.34 | 7.61 | 5.43 | 2.36 | 2.38 |
+| Laser | 1.66 | 1.93 | 1.95 | 2.15 | 2.15 | 2.33 | 2.84 | 4.37 | 1.99 | 2.64 | 2.16 | 7.65 | 5.83 |
+| **Drill** | 1.78 | 2.80 | 1.56 | 1.31 | 2.31 | 2.87 | 2.30 | 3.54 | 2.46 | 3.76 | 2.33 | 8.18 | 6.21 |
+| Tesla | | | | | 2.12 | 1.50 | 2.42 | 5.71 | 1.70 | 2.25 | 2.43 | 5.68 | 4.94 |
+| Rocket | | | | | 1.00 | 1.25 | 1.00 | 1.54 | 1.22 | 1.62 | 1.00 | 1.78 | 1.17 |
+| Railgun | | | | | 2.63 | 2.83 | 3.00 | 1.00 | 3.22 | 4.23 | 1.73 | 1.00 | 1.00 |
+| **Wildfire** | | | | | 1.51 | 1.07 | 1.14 | 2.02 | 1.22 | 1.40 | 1.00 | 3.56 | 2.33 |
+| Storm | | | | | | | | | 4.03 | 4.63 | 3.78 | 11.69 | 10.29 |
+| Meteor | | | | | | | | | 1.74 | 2.30 | 1.24 | 1.90 | 1.09 |
+| Blizzard | | | | | 1.41 | 1.32 | 3.22 | 7.57 | 3.00 | 3.45 | 4.31 | 10.04 | 8.71 |
+| **Quake** | | | | | | | | | 1.99 | 2.29 | 2.84 | 1.89 | 1.44 |
+
+- **Drill**: at its unlock the second best against a boss (1.31; the Sniper is the best and useless
+  elsewhere) and middling on ordinary levels, the worst but the Sniper and Frost on a swarm, where it never
+  gets to wind up. It fades like the Laser does: by level 231 it is nobody's first choice.
+- **Wildfire**: within 7 to 51% of the best on every crowd at its unlock, and it needs twice the best kind's coins on bosses. The Rocket
+  stays the better all-rounder. At level 591 it still ties for the best on tanks.
+- **Quake**: measured on levels 591 to 600, the nearest there are to 610. On its own it is mid-table
+  everywhere (1.4 to 2.8). As the sixteenth tower beside fifteen mixed ones it is the best buy on 6 levels
+  of 8, by 0 to 8% of the coins over a second Blizzard, and by 0 to 16% when the fifteen hold no slow at all.
+  Its slow is 35% on purpose: at 50% with 6,000 damage it won every column. The Blizzard keeps the strongest
+  slow, and the stronger slow on a monster counts.
+- **Storm was already the worst buy of the late game by this measure** (4x to 12x). Not touched: only the
+  three new kinds were in this job.
+
+**The whole game** (`sim.py`'s ordinary player, seeds 1 to 4, the same seeds with the three kinds taken out):
+6:39 to 7:11 without, 6:00 to 6:23 with. Earth 25 to 32 minutes (27 to 32 without); worlds 2 to 4 are 25 to
+38 minutes (26 to 32). The player builds two Drills in the second world, in place of a Gatling and a Laser,
+and one Wildfire in the sixth in place of the Storm. **World 12 took 1:34, 1:39 and 1:42 in three of the four
+runs** (53 minutes in the other; 50 minutes to 1:15 without): over the 1:30 rule. Section 1 says a late world
+is close to a coin toss and four seeds cannot tell that from one, but it was not looked into. The Quake is
+never built here: the simulator's game ends at level 600, and it knows nothing of worlds 13 to 15.
+
+**What the estimates do with `ramp`.** Cannon Power, STATS and offline earnings count a Drill's first shot
+(damage x rate), as they count no splash, burn or chain: a Drill is worth more in a fight than its line says,
+never less. The simulator's player takes a ramping kind to be worth 1 + 0.2 x (rampMax - 1) times its damage
+per second (`KIND_WORTH` in `sim.py`); at 0.3 they built four Drills.
+
+**Not judged**: how any of the three looks or sounds (they wear the Gatling's, the Tesla's and the Mortar's
+turret and borrow the Gatling's, the Flame's and the Mortar's shop picture), and whether a child reads "every
+hit is harder" off the damage numbers.
+
 ## 6. Changing it
 
 ```
