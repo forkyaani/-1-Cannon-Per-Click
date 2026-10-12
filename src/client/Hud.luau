@@ -121,6 +121,8 @@ local slimCandy = slimPill(4, PILL_LOOK, "candy", "🍬", Colors.witch)
 ----------------------------------------------------------------------------------------------------
 -- One accent per world; worlds past the list take their floor colour.
 local WORLD_ACCENTS = { hex("#6BD63A"), hex("#B9A8FF"), hex("#FF6A3D"), hex("#35D8F0"), hex("#FFB01F"), hex("#9B3DFF") }
+-- Infinity's floor is white, and so is the tab's text: the three worlds of Update 1 get accents of their own.
+WORLD_ACCENTS[13], WORLD_ACCENTS[14], WORLD_ACCENTS[15] = hex("#C34DFF"), hex("#E0962A"), hex("#F2B705")
 local PIPS = 5
 
 local wave = UI.slot({ Name = "Wave", AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(584, 206) })
