@@ -17,6 +17,8 @@ local AMOUNTS = {
 	{ pick = "x10", take = "-10", value = 10 },
 	{ pick = "ALL", take = "-ALL", value = 1e6 },
 }
+-- The quick buttons beside the gem box: each adds to the gems on offer. MAX and CLEAR sit after them.
+local GEM_STEPS = { { text = "+10", value = 10 }, { text = "+100", value = 100 }, { text = "+1K", value = 1_000 } }
 local GIVE_COLOR = Color3.fromRGB(255, 150, 140)
 local GET_COLOR = Color3.fromRGB(140, 235, 150)
 local BLACK = Color3.new(0, 0, 0)
@@ -119,9 +121,14 @@ function Trading.start(ctx)
 		return things
 	end
 
-	-- An offer in words: "Mini Gold Cannon x2, 2x Power x5".
+	-- An offer in words: "💎 1,250 gems, Mini Gold Cannon x2, 2x Power x5". Gems come first and in full: they
+	-- are what is easiest to get wrong by a zero.
 	local function sentence(offer): string
 		local parts = {}
+		local gems = Rules.gems(offer)
+		if gems > 0 then
+			table.insert(parts, `💎 {Rules.gemText(gems)}`)
+		end
 		for _, thing in listed(offer) do
 			table.insert(parts, `{thing.info.name}{thing.info.magic or ""} x{thing.count}`)
 		end
@@ -163,7 +170,7 @@ function Trading.start(ctx)
 	------------------------------------------------------------------------------------------------
 	-- The window: two tabs outside a trade, the trade screen during one, the result right after one
 	------------------------------------------------------------------------------------------------
-	local window = UI.window("TRADE", 800, 560)
+	local window = UI.window("TRADE", 800, 600)
 	local body = window.body
 
 	local function pane(top: number): Frame
@@ -383,11 +390,14 @@ function Trading.start(ctx)
 	end
 
 	------------------------------------------------------------------------------------------------
-	-- The trade: both offers side by side, under them the backpack to pick from (or, once this player is
+	-- The trade: both offers side by side (their gems pinned under each list), under them the gem box and the
+	-- backpack to pick from (or, once this player is
 	-- ready, the summary and the countdown), and CANCEL and READY at the bottom
 	------------------------------------------------------------------------------------------------
-	local PANEL_TOP, PANEL_HEIGHT = 30, 190 -- three rows of an offer show without scrolling
-	local LOWER_TOP, LOWER_HEIGHT = 250, 184
+	local GEM_LINE = 28 -- the gems of an offer, pinned under its list so they never scroll out of sight
+	local PANEL_TOP, PANEL_HEIGHT = 30, 190 + GEM_LINE -- three rows of an offer show without scrolling
+	local LOWER_TOP, LOWER_HEIGHT = 250 + GEM_LINE, 198
+	local GEM_ROW_TOP, GEM_ROW_HEIGHT = 32, 36 -- the backpack's row for offering gems
 	local amount = AMOUNTS[1]
 
 	local tradeTitle = UI.text({
@@ -422,9 +432,17 @@ function Trading.start(ctx)
 				MaxSize = 16,
 				Parent = frame,
 			}),
-			list = UI.scroll(frame, { Position = UDim2.fromOffset(6, 32), Size = UDim2.new(1, -12, 1, -38) }),
+			list = UI.scroll(frame, { Position = UDim2.fromOffset(6, 32), Size = UDim2.new(1, -12, 1, -38 - GEM_LINE) }),
+			gems = UI.text({
+				AnchorPoint = Vector2.new(0, 1),
+				Position = UDim2.new(0, 10, 1, -4),
+				Size = UDim2.new(1, -20, 0, GEM_LINE - 4),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				MaxSize = 20,
+				Parent = frame,
+			}),
 			empty = UI.text({
-				Position = UDim2.new(0, 0, 0.5, 0),
+				Position = UDim2.new(0, 0, 0.5, -GEM_LINE),
 				Size = UDim2.new(1, 0, 0, 22),
 				TextColor3 = Colors.text,
 				MaxSize = 16,
@@ -503,7 +521,10 @@ function Trading.start(ctx)
 				huges += thing.count
 			end
 		end)
-		panel.empty.Visible = #things == 0
+		local gems = Rules.gems(offer)
+		panel.empty.Visible = #things == 0 and gems == 0
+		panel.gems.Text = `💎 {Rules.gemText(gems)}`
+		panel.gems.TextColor3 = if gems > 0 then Colors.gold else Colors.text
 		local header = { panel.title }
 		if worth > 0 then
 			table.insert(header, Format.dps(worth))
@@ -530,7 +551,7 @@ function Trading.start(ctx)
 			return `Your storage is full: make room for {gets - gives - trade.room} more mini cannons`, Colors.red
 		elseif gives > 0 and gives - gets > trade.theirRoom then
 			return `{trade.partner.name} has no room for all of these mini cannons`, Colors.red
-		elseif Rules.stacks(trade.give) > 0 and Rules.stacks(trade.get) == 0 then
+		elseif not Rules.empty(trade.give) and Rules.empty(trade.get) then
 			return "You get NOTHING back for this. Only go on if it is a gift!", Colors.red
 		elseif trade.theirReady and not trade.ready then
 			return `{trade.partner.name} is ready. Check both sides, then press READY.`, Colors.gold
@@ -554,9 +575,107 @@ function Trading.start(ctx)
 		Parent = backpack,
 	})
 	local amountButtons = {}
+
+	-- Gems: typed into the box, or tapped together with the buttons beside it (a phone's keyboard covers half
+	-- the window). Every button sends the new total; the server has the last word on it.
+	local gemRow = UI.make("Frame", {
+		Position = UDim2.fromOffset(0, GEM_ROW_TOP),
+		Size = UDim2.new(1, 0, 0, GEM_ROW_HEIGHT),
+		BackgroundTransparency = 1,
+		Parent = backpack,
+	})
+	local gemLabel = UI.text({
+		Size = UDim2.new(0, 196, 1, 0),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Colors.gold,
+		MaxSize = 17,
+		Parent = gemRow,
+	})
+	local gemOutline = UI.stroke(3)
+	gemOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	local gemBox: TextBox = UI.make("TextBox", {
+		Name = "Gems",
+		Position = UDim2.fromOffset(202, 2),
+		Size = UDim2.fromOffset(150, GEM_ROW_HEIGHT - 4),
+		BackgroundColor3 = Colors.cream,
+		BorderSizePixel = 0,
+		Font = UI.FONT,
+		Text = "0",
+		PlaceholderText = "0",
+		PlaceholderColor3 = Colors.grey,
+		TextColor3 = Colors.ink,
+		TextSize = 20,
+		ClearTextOnFocus = true,
+		Parent = gemRow,
+	}, { UI.corner(10), gemOutline })
+	local gemTarget = nil -- the total last asked for, until the server answers: quick taps add up from it
+
+	local function gemsOwned(): number
+		return math.max(0, math.floor(State.get("Diamonds", 0)))
+	end
+
+	-- Asks for `total` gems on this player's side, trimmed to what they hold and to the limit.
+	local function offerGems(total: number)
+		local trade = State.feature("trade").trade
+		if not trade then
+			return
+		end
+		local wanted = math.clamp(math.floor(total), 0, math.min(gemsOwned(), Rules.MaxGems))
+		gemTarget = wanted
+		gemBox.Text = tostring(wanted)
+		if wanted ~= Rules.gems(trade.give) then
+			act("tradeGems", wanted)
+		end
+	end
+
+	local function gemButton(order: number, text: string, color: Color3, total: (number) -> number)
+		local button = UI.button({
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -(5 - order) * 84, 0, 0),
+			Size = UDim2.fromOffset(78, GEM_ROW_HEIGHT),
+			Text = text,
+			BackgroundColor3 = color,
+			Parent = gemRow,
+		})
+		button.Activated:Connect(function()
+			local trade = State.feature("trade").trade
+			if trade then
+				offerGems(total(gemTarget or Rules.gems(trade.give)))
+			end
+		end)
+	end
+	for order, entry in GEM_STEPS do
+		gemButton(order, entry.text, Colors.blue, function(now: number): number
+			return now + entry.value
+		end)
+	end
+	gemButton(4, "MAX", Colors.orange, function(): number
+		return Rules.MaxGems
+	end)
+	gemButton(5, "CLEAR", Colors.red, function(): number
+		return 0
+	end)
+	-- A number far too long is cut as it is typed (a paste).
+	gemBox:GetPropertyChangedSignal("Text"):Connect(function()
+		if #gemBox.Text > 13 then
+			gemBox.Text = string.sub(gemBox.Text, 1, 13)
+		end
+	end)
+	gemBox.FocusLost:Connect(function()
+		local trade = State.feature("trade").trade
+		-- Only digits count: "1,250" and "1 250" are 1250.
+		local digits = string.gsub(gemBox.Text, "%D", "")
+		if digits == "" then
+			-- Nothing typed (the box clears when it is tapped): the offer stays as it was.
+			gemBox.Text = tostring(if trade then Rules.gems(trade.give) else 0)
+			return
+		end
+		offerGems(tonumber(digits) or 0)
+	end)
+
 	local grid = UI.make("ScrollingFrame", {
-		Position = UDim2.fromOffset(0, 34),
-		Size = UDim2.new(1, 0, 1, -34),
+		Position = UDim2.fromOffset(0, GEM_ROW_TOP + GEM_ROW_HEIGHT + 6),
+		Size = UDim2.new(1, 0, 1, -(GEM_ROW_TOP + GEM_ROW_HEIGHT + 6)),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ScrollBarThickness = 6,
@@ -572,12 +691,12 @@ function Trading.start(ctx)
 		}),
 	})
 	local emptyBackpack = UI.text({
-		Position = UDim2.fromOffset(0, 70),
+		Position = UDim2.fromOffset(0, GEM_ROW_TOP + GEM_ROW_HEIGHT + 30),
 		Size = UDim2.new(1, 0, 0, 44),
 		TextColor3 = Colors.text,
 		TextWrapped = true,
 		MaxSize = 18,
-		Text = "Nothing you own can be traded yet.\nHatch eggs here in the marketplace to get mini cannons.",
+		Text = "No mini cannons or items to trade yet.\nHatch eggs here in the marketplace to get mini cannons.",
 		Parent = backpack,
 	})
 	local cells = {}
@@ -678,14 +797,14 @@ function Trading.start(ctx)
 	local function summaryLine(top: number): TextLabel
 		return UI.text({
 			Position = UDim2.fromOffset(14, top),
-			Size = UDim2.new(1, -28, 0, 58),
+			Size = UDim2.new(1, -28, 0, 64),
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextWrapped = true,
 			MaxSize = 20,
 			Parent = summary,
 		})
 	end
-	local summaryGive, summaryGet = summaryLine(54), summaryLine(118)
+	local summaryGive, summaryGet = summaryLine(54), summaryLine(126)
 	summaryGive.TextColor3 = GIVE_COLOR
 
 	local cancelButton = UI.button({
@@ -726,10 +845,15 @@ function Trading.start(ctx)
 		fillOffer(givePanel, trade.give, true, trade.ready)
 		fillOffer(getPanel, trade.get, false, trade.theirReady)
 		noteLabel.Text, noteLabel.TextColor3 = note(trade)
+		-- The server has answered: the box shows what is really on the table, unless it is being typed in.
+		gemTarget = nil
+		if not gemBox:IsFocused() then
+			gemBox.Text = tostring(Rules.gems(trade.give))
+		end
 		backpack.Visible = not trade.ready
 		summary.Visible = trade.ready
 		if trade.ready then
-			local gift = Rules.stacks(trade.get) == 0
+			local gift = Rules.empty(trade.get)
 			summaryGive.Text = `YOU GIVE:  {sentence(trade.give)}`
 			summaryGet.Text = if gift then "YOU GET:  NOTHING" else `YOU GET:  {sentence(trade.get)}`
 			summaryGet.TextColor3 = if gift then Colors.red else GET_COLOR
@@ -744,13 +868,15 @@ function Trading.start(ctx)
 		local locked = trade.readyAt + CLOCK_SLACK - time
 		if trade.ready then
 			setButton(readyButton, "NOT READY", Colors.orange)
-		elseif Rules.stacks(trade.give) + Rules.stacks(trade.get) == 0 then
+		elseif Rules.empty(trade.give) and Rules.empty(trade.get) then
 			setButton(readyButton, "ADD SOMETHING FIRST", Colors.grey)
 		elseif locked > 0 then
 			setButton(readyButton, `READY IN {math.max(1, math.ceil(trade.readyAt - time))}`, Colors.grey)
 		else
 			setButton(readyButton, "READY", Colors.green)
 		end
+		-- Gems come and go while a trade is open (a boss, an egg), with no change to the trade itself.
+		gemLabel.Text = `💎 GEMS  •  you have {Format.abbreviate(gemsOwned())}`
 		if trade.endsAt > 0 then
 			local left = trade.endsAt - time
 			countdownLabel.Text = if left > 0 then `TRADING IN {math.ceil(left)}` else "TRADING..."
