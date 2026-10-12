@@ -167,7 +167,8 @@ end
 ----------------------------------------------------------------------------------------------------
 -- The welcome cards' words. Keep every line short enough to read on a phone at a glance.
 -- The fan bonus is for the group only. A game cannot check a like, and Roblox does not allow rewarding one:
--- the like card must never promise, hint at or stand next to a reward.
+-- the like card must never promise, hint at or stand next to a reward. (The LIKE + GROUP card further down
+-- asks for both on one card: there the bonus is written under the group, and the like says "no reward".)
 ----------------------------------------------------------------------------------------------------
 local fan = Config.Fan
 Tutorial.Cards = {
@@ -212,6 +213,29 @@ Tutorial.Cards = {
 -- left out where there is nothing to ask (no group, or the bonus already paid).
 Tutorial.Welcome = { "welcome" }
 Tutorial.Outro = { "group", "like" }
+
+-- The LIKE + GROUP button on the HUD and the one card it opens (client: "The fan button"). The button is there
+-- while the fan bonus is unclaimed and a group exists, and never again once it is paid.
+-- The card asks for two things and pays for one: the bonus stands under the group's line and is named as the
+-- group's, and the thumbs up has a line of its own that says it pays nothing. Keep both when changing a word.
+-- The status line and CHECK are the group card's (Tutorial.Cards, "group").
+Tutorial.FanButton = {
+	label = "LIKE + GROUP",
+	amount = `+{fan.gems}`,
+	icon = "like", -- the atlas picture (docs/ICONS.md); until the sheet has it, the glyph stands in
+	glyph = "👍",
+}
+Tutorial.FanCard = {
+	id = "fan",
+	title = "LIKE + GROUP",
+	like = "👍 Thumbs up the game",
+	likeNote = "It helps the game grow. There is no reward for it.",
+	join = `👥 Join the group {fan.groupName}`,
+	bonusTitle = "For joining the group:",
+	bonus = { `+{fan.gems} gems`, `+{math.floor(fan.coins * 100 + 0.5)}% coins, forever` },
+	check = "CHECK",
+	close = "CLOSE",
+}
 
 -- The last step's card: where things are from here on.
 Tutorial.Finish = {
