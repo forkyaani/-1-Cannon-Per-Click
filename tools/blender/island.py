@@ -27,6 +27,14 @@ with the same footprints:
     Robot Factory  a robot arm and a conveyor belt  Alien Jungle   a snapping plant and a crashed saucer
     Black Hole     a black hole in a ring of fire and a clock tower bent by time
     The Big Bang   an atom and the bang itself, stopped mid-burst
+Worlds 13 to 15 (Update 1: "Multiverse", "Time Warp", "Infinity"; multiverse, time_warp, infinity work too)
+are built the same way; their props are in tools/blender/worlds_13_to_15.py, shared with base.py:
+    Multiverse     two portal rings standing through one another, and a tower with its twin upside down on it
+    Time Warp      an hourglass as big as a house, and an alarm clock on a stand with a pendulum
+    Infinity       the sign itself in gold on two columns, and a tower with a stair that winds up to a ring of light
+Each also has big pieces in its sky, in <Prefix>_FloatingRocks (so they are in the game, not only in the
+photos): the Multiverse an island upside down and shards of glass, the Time Warp two giant clock faces and
+gears, Infinity a rainbow and lengths of stair. The Time Warp's plaza has a clock's twelve marks in its band.
 The floor stays clean: only Earth has bushes, rocks by the fence and stepping stones (as it always had),
 and `clutter` (Earth's small ground dressing) is off unless asked for. The other worlds have no scatter.
 
@@ -70,6 +78,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit
 from kit import *
 from themes import THEMES
+import worlds_13_to_15 as w13  # Multiverse, Time Warp and Infinity: their props, for this file and base.py
 
 GIVEN = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 WORLD = next((name for name in THEMES if GIVEN and name.lower().replace(" ", "") == GIVEN[0].lower().replace(" ", "").replace("_", "")), None)
@@ -77,6 +86,7 @@ if WORLD is None or len(GIVEN) < 2:
     raise SystemExit(f"island.py -- <World> <output folder> [draft] [clutter]   worlds: {', '.join(THEMES)}")
 OUT, ARGS = GIVEN[1], GIVEN[2:]
 THEME = THEMES[WORLD]
+w13.theme(THEME)
 EARTH = WORLD == "Earth"
 SLUG = WORLD.lower().replace(" ", "_") + "_island"  # the files' name
 DRAFT = "draft" in ARGS
@@ -110,13 +120,17 @@ POST = IRON if EARTH else WOOD_DARK  # a lamp's post
 LAMP_GLOW = "FFE9A8" if EARTH else ACCENT_PALE
 FLAME = {"Moon": ("7FB4FF", "D2E4FF"), "Neptune": ("6EE6FF", "D0F8FF"), "The Sun": ("FF5A1A", "FFD23A"),
          "The Void": ("E05CFF", "F6C2FF"), "Nebula": ("FF7AD0", "FFE27A"), "Crystal Belt": ("8CF0E6", "E4FFF8"), "Robot Factory": ("50FFAA", "C8FFE4"),
-         "Alien Jungle": ("B4FF2A", "F0FF9A"), "The Big Bang": ("FFD83A", "FFFFFF")}.get(WORLD, ("FF8A1F", "FFD83A"))  # a fire's body and its tip
+         "Alien Jungle": ("B4FF2A", "F0FF9A"), "The Big Bang": ("FFD83A", "FFFFFF"),
+         "Multiverse": ("FF5CC0", "D0FFFA"), "Time Warp": ("FFA81E", "FFE2A0"), "Infinity": ("FFD23C", "FFFFFF")}.get(WORLD, ("FF8A1F", "FFD83A"))  # a fire's body and its tip
 AWNING = {"Moon": "FF7AB8", "Mars": "35D6C4", "Neptune": "FF5A7A", "The Sun": "E0407A",
-          "The Void": "FF3C8C", "Nebula": "5CD8E0", "Crystal Belt": "FF7AD0", "Robot Factory": "20C8A0", "Alien Jungle": "FF5AB4", "Black Hole": "FF8A1E", "The Big Bang": "B45CFF"}.get(WORLD, RED)  # the stall's stripes
+          "The Void": "FF3C8C", "Nebula": "5CD8E0", "Crystal Belt": "FF7AD0", "Robot Factory": "20C8A0", "Alien Jungle": "FF5AB4", "Black Hole": "FF8A1E", "The Big Bang": "B45CFF",
+          "Multiverse": "2CD8D0", "Time Warp": "3C6CF0", "Infinity": "9CD8FF"}.get(WORLD, RED)  # the stall's stripes
 PAD = ("35CFFF", "8DE8FF") if EARTH else (ACCENT, ACCENT_PALE)  # the arrival pad's light
 CLOUD = {"Moon": "B7AEF0", "Mars": "FFE9D0", "The Sun": "FFF3B0",
-         "The Void": "5A34B8", "Nebula": "FFC2EE", "Crystal Belt": "3C78B8", "Robot Factory": "FFF6D0", "Alien Jungle": "E8FFB0", "Black Hole": "A02848"}.get(WORLD, WHITE)
-GLOWING = {"stardust": 1.0, "lava": 1.6, "rift": 1.4, "gas": 0.8, "coolant": 1.2, "acid": 1.2, "singularity": 1.5, "energy": 1.0}  # the liquids that glow, and how much
+         "The Void": "5A34B8", "Nebula": "FFC2EE", "Crystal Belt": "3C78B8", "Robot Factory": "FFF6D0", "Alien Jungle": "E8FFB0", "Black Hole": "A02848",
+         "Multiverse": "FFB0E8", "Time Warp": "3450B0"}.get(WORLD, WHITE)
+GLOWING = {"stardust": 1.0, "lava": 1.6, "rift": 1.4, "gas": 0.8, "coolant": 1.2, "acid": 1.2, "singularity": 1.5, "energy": 1.0,
+           **{liquid: glow for liquid, glow in w13.LIQUIDS.items() if glow}}  # the liquids that glow, and how much
 WET = {"roughness": 0.15, **({"emission": GLOWING[LIQUID]} if LIQUID in GLOWING else {})}  # how the liquid looks; glowing, it lands in "Glow"
 NAVY, HOLE = "2C3870", "160A24"  # the Robot Factory's dark paint (no black, no grey); a black hole's heart
 
@@ -549,6 +563,8 @@ TREE_SOLID = {"round_tall": {"round": ("tree", 1.0, 6.92), "tall": ("tree", 1.0,
               "spark_burst": {"round": ("spark", 1.8, 9.0), "tall": ("beam", 1.6, 13.0)}}
 TREES_BY_KIND = {"crater_rock": crater_rock, "mesa_spire": mesa_spire, "ice_spike": ice_spike, "lava_spire": lava_spire, "void_shard": void_shard, "gas_cloud": gas_cloud,
                  "crystal_cluster": crystal_cluster, "factory_stack": factory_stack, "glow_shroom": glow_shroom, "bent_rock": bent_rock, "spark_burst": spark_burst}
+TREE_SOLID.update(w13.TREE_SOLID)  # worlds 13 to 15
+TREES_BY_KIND.update(w13.TREES)
 
 
 def tree(leaf=LEAVES[0], kind="round", fruit=None):
@@ -635,6 +651,14 @@ def sag(a, b, height, drop, radius, colour, **look):
 def themed_fence(step):
     """The other worlds' fences, on the same posts' spots as Earth's."""
     posts = []
+    if FENCING in w13.FENCES:  # worlds 13 to 15
+        for index in range(round(360 / step)):
+            x, y = ring(index * step, FENCE)
+            posts.append(Vector((x, y, ground(x, y))))
+            w13.fence_post(FENCING, posts[-1], -math.radians(index * step), index)
+        for index, (a, b) in enumerate(zip(posts, posts[1:] + posts[:1])):
+            w13.fence_rail(FENCING, a, b, index)
+        return
     for index in range(round(360 / step)):
         x, y = ring(index * step, FENCE)
         z = ground(x, y)
@@ -1303,6 +1327,7 @@ SET_PIECES = {
     "Neptune": ((snowman, (("snowman", 0, 0, 3.0, 11.0),)), (igloo, (("igloo", 0, 0, 5.0, 5.1), ("igloo door", 0, -4.9, 2.4, 3.3), ("snow blocks", 5.1, -2.0, 1.6, 1.4)))),
     "The Sun": ((forge, (("forge", 0, 1.2, 4.2, 5.6), ("anvil", -3.3, -4.0, 1.5, 2.9), ("lava bucket", 3.5, -3.7, 1.4, 1.7))), (vent, (("volcano vent", 0, 0, 4.8, 6.0),))),
 }
+SET_PIECES.update(w13.SET_PIECES)  # worlds 13 to 15
 
 
 def pumpkins():
@@ -1613,6 +1638,8 @@ def pond(reach, fall, bridge):
             hoop(radius, 0.16, (1.0, 0.8, 0.34), WHITE, segments=20, emission=1.6)
         for x, y, z, size in ((-4.0, 2.5, 2.6, 0.9), (3.2, 4.2, 3.3, 0.75), (4.6, -1.5, 2.3, 0.8)):
             gem(size, size * 3.2, (x, y, z), LEAVES[int(z * 10) % 3], roughness=0.25)
+    elif LIQUID in w13.LIQUIDS:  # worlds 13 to 15
+        w13.pond_dressing(LIQUID)
     for x, y, height in ((-7.2, 5.2, 3.6), (-6.2, 6.3, 4.4), (-7.9, 4.2, 3.0), (7.3, 5.0, 4.0), (6.4, 6.0, 3.2)) if CLUTTER else ():  # reeds
         tube(0.16, height, (x, y, 0), (rng.uniform(-0.1, 0.1), 0, 1), GRASS_RIM, vertices=5)
         tube(0.36, 1.3, (x, y, height - 0.3), UP, WOOD_DARK, vertices=6)
@@ -1636,6 +1663,9 @@ def pond(reach, fall, bridge):
             tube(radius, 0.5, (0.4, 0.3, -0.2 + lift), UP, colour, vertices=6, roughness=0.1).rotation_euler = (0, 0, math.radians(turn))
         for shift, colour, skip in ((-1.85, PETALS[0], 2), (1.7, PETALS[2], 1), (-0.55, PETALS[3], 3)):
             ribbon(path[skip:], 0.45, colour, thickness=0.3, shift=shift, lift=0.5, roughness=0.15)
+    if LIQUID == "stillwater":  # Infinity: still in the pond, and a rainbow from where it starts to fall
+        for index, colour in enumerate(w13.RAINBOW):
+            ribbon(path[1:], 0.74, colour, thickness=0.3, shift=(index - 2.5) * 0.72, lift=0.5, roughness=0.3)
     if LIQUID in ("ice", "prism"):  # frozen: icicles where it would tip over, no foam
         for x, radius, length in ((-1.7, 0.6, 3.4), (-0.5, 0.45, 2.4), (0.8, 0.7, 4.2), (1.8, 0.4, 2.0)):
             tube(radius, length, (x, -drop[0] - 0.9, drop[1] - 0.2), (0, 0, -1), WATER_LIGHT, tip=0.0, vertices=5, roughness=0.15)
@@ -1696,6 +1726,10 @@ lathe([(6.6, 0.08), (6.8, 0.19), (8.4, 0.19), (8.6, 0.08)], SAND_DARK, segments=
 box((5.0, 13.0, 0.3), (0, 30.0, -0.03), SAND, bevel=0.1, segments=1, roughness=0.9)  # north, to the boss
 for side in (-1, 1):
     box((21.0, 4.4, 0.3), (side * 34.0, 0, -0.03), SAND, bevel=0.1, segments=1, roughness=0.9)  # east and west, to the monsters
+if WORLD == "Time Warp":  # the plaza is a clock's face: twelve marks lying flat in its brass band
+    for hour in range(12):
+        x, y = ring(hour * 30, 23.6)
+        slab((1.3, 2.0, 0.1) if hour % 3 == 0 else (0.8, 1.6, 0.1), (x, y, 0.2), STONE, rotation=(0, 0, -math.radians(hour * 30)), roughness=0.9)
 place(arrival_pad, (0, 0))
 place(spot_pad, ring(ENCHANT, SPOT_RING), kind="enchant")
 place(spot_pad, ring(MASTERY, SPOT_RING), kind="mastery")
@@ -1855,6 +1889,30 @@ kit.use("FloatingRocks")
 for x, y, z, size, leaf in ((-80, 14, 2, 7.0, LEAVES[0]), (86, 8, 0, 6.5, LEAVES[1]), (74, -38, -22, 4.5, None), (-72, 50, 8, 4.5, None), (82, -14, -12, 2.6, None), (-82, -4, -30, 2.8, None), (-62, -52, -36, 3.4, None)):
     place(floating_rock, (x, y, z), face=rng.uniform(0, 360), size=size, leaf=leaf)
 place(floating_rock, TARGET, face=math.degrees(math.atan2(CANNON[0] - TARGET[0], CANNON[1] - TARGET[1])), size=5.5, extra=target if EARTH else None, leaf=None if EARTH else LEAVES[2])
+# Worlds 13 to 15: what hangs round the island, part of the model (not only of the photos)
+if WORLD == "Multiverse":  # the other worlds: an island like this one upside down in the sky to the north, a twin over each big floating rock, and shards of glass
+    for x, y, z, size, leaf in ((-46, 122, 66, 11.0, LEAVES[1]), (-80, 14, 33, 5.0, LEAVES[2]), (86, 8, 30, 4.6, LEAVES[0])):
+        first = len(made)
+        floating_rock(size=size, leaf=leaf)
+        turned(first, Matrix.Translation((x, y, z)) @ Matrix.Rotation(math.pi, 4, "X") @ Matrix.Rotation(rng.uniform(0, 6.28), 4, "Z"))
+    w13.sky_shards(((-70, -30, 20), (72, 40, 26), (-66, 58, 30), (64, -44, 6), (-92, 30, -14), (94, -24, 22), (30, 96, 40), (-18, 104, 34), (60, 86, 52), (-90, -40, -30), (88, 44, -22), (0, -78, -40)))
+elif WORLD == "Time Warp":  # two giant clock faces in the sky to the north, looking down at the plaza, and gears adrift
+    for x, y, z, radius, hour, minute in ((-44, 118, 58, 17.0, 10.0, 2.0), (58, 104, 40, 10.0, 4.0, 9.0)):
+        first = len(made)
+        w13.sky_clock(radius, hour, minute)
+        turned(first, Matrix.Translation((x, y, z)) @ Matrix.Rotation(-math.atan2(x, y), 4, "Z") @ Matrix.Rotation(0.3, 4, "X"))
+    for x, y, z, radius, teeth, colour, tilt in ((-84, -18, 24, 6.0, 10, LEAVES[0], 0.5), (88, -30, 12, 5.0, 8, LEAVES[1], -0.4), (78, 44, 34, 4.0, 8, LEAVES[2], 0.7), (-74, 52, 38, 4.5, 8, LEAVES[1], -0.6), (-58, -58, -8, 3.6, 6, LEAVES[2], 0.3)):
+        first = len(made)
+        w13.cog(radius, radius * 0.24, (0, 0, 0), colour, teeth=teeth, hub=GOLD, roughness=0.35)
+        turned(first, Matrix.Translation((x, y, z)) @ Matrix.Rotation(-math.atan2(x, y), 4, "Z") @ Matrix.Rotation(tilt, 4, "X"))
+elif WORLD == "Infinity":  # a soft rainbow standing behind the island, and lengths of stair that go up to nowhere
+    first = len(made)
+    w13.rainbow(54.0, band=2.4, steps=24)
+    turned(first, Matrix.Translation((0, 96, -8)))
+    for x, y, z, wide, turn in ((-82, -22, 4, 4.0, 0.4), (84, -34, -6, 3.4, 2.0), (76, 46, 22, 3.6, 4.0), (-70, 56, 26, 3.2, 5.2)):
+        first = len(made)
+        w13.sky_stair(12, wide)
+        turned(first, Matrix.Translation((x, y, z)) @ Matrix.Rotation(turn, 4, "Z"))
 
 # ---- Clouds: only the photos' backdrop ----
 kit.use("Backdrop")
@@ -1862,7 +1920,7 @@ for x, y, z, size in ((-112, 130, -34, 9), (114, 120, -26, 8), (-98, -10, -52, 6
                       (-120, 240, 78, 13), (105, 250, 95, 14), (-15, 330, 135, 15), (170, 200, 50, 10), (-190, 190, 45, 10)):  # the sky seen from the arrival pad
     place(cloud, (x, y, z), face=180 + rng.uniform(-25, 25), scale=size, colour=CLOUD)
 mist = Vector((*ring(POND, edge * 1.07), -31.0))  # where the waterfall ends
-for dx, dz, size in ((0, 0, 2.6), (-3.5, 1.5, 1.8), (3.8, 1.0, 2.0)) if LIQUID in ("water", "oasis", "stardust", "gas", "coolant", "acid") else ():  # ice, lava and the like throw up no mist
+for dx, dz, size in ((0, 0, 2.6), (-3.5, 1.5, 1.8), (3.8, 1.0, 2.0)) if LIQUID in ("water", "oasis", "stardust", "gas", "coolant", "acid", "stillwater") else ():  # ice, lava and the like throw up no mist
     place(cloud, (mist.x + dx, mist.y, mist.z + dz), face=POND, scale=size, colour={"stardust": CLOUD, "gas": "C8FFF8", "coolant": "C8FFE4", "acid": "F0FF9A"}.get(LIQUID, WHITE))
 if WORLD == "Moon":  # stars in its night sky
     for index in range(90):
@@ -1871,7 +1929,8 @@ if WORLD == "Moon":  # stars in its night sky
         far = rng.uniform(520, 700)
         ball(rng.uniform(1.4, 3.2), (x * far * math.sqrt(1 - rise * rise), y * far * math.sqrt(1 - rise * rise), rise * far), WHITE, segments=6, emission=3.0)
 # Worlds 6 to 12: the stars of the ones with a night (or a dawn) sky, in that world's colours
-STARS = {"The Void": ("F6C2FF", "FF7AD0", "78DCFF"), "Nebula": (WHITE, "FFE27A", "C8FFF8"), "Crystal Belt": (WHITE, "ECD8FF", "8CF0E6"), "Black Hole": ("FFD8A0", "FF8A28", "FF7AA8")}
+STARS = {"The Void": ("F6C2FF", "FF7AD0", "78DCFF"), "Nebula": (WHITE, "FFE27A", "C8FFF8"), "Crystal Belt": (WHITE, "ECD8FF", "8CF0E6"), "Black Hole": ("FFD8A0", "FF8A28", "FF7AA8"),
+         "Multiverse": ("FFB0E8", "D0FFFA", WHITE), "Time Warp": (WHITE, "FFE2A0", "A8D0FF")}
 for index in range(110 if WORLD in STARS else 0):
     x, y = ring(rng.uniform(0, 360), 1.0)
     rise, far = rng.uniform(-0.75, 0.9), rng.uniform(520, 700)
@@ -1917,10 +1976,21 @@ elif WORLD == "Moon":  # night: dark below the horizon too, where sky_ramp would
 elif WORLD in ("The Void", "Crystal Belt", "Black Hole"):  # night too, in their own colours: (far below, below, just under the horizon)
     far, below, near = {"The Void": ("2A1270", "160A3C", "30167A"), "Crystal Belt": ("1E4A8C", "101E4A", "24589A"), "Black Hole": ("6A1434", "2A0A20", "861A3C")}[WORLD]
     sky = ((0.0, far), (0.36, below), (0.47, near), (0.5, THEME["sky_horizon"]), (0.62, far), (0.8, below), (1.0, THEME["sky_top"]))
+elif WORLD == "Time Warp":  # night, deep blue all the way down
+    sky = ((0.0, "24389C"), (0.36, "121C5C"), (0.47, "2C48B0"), (0.5, THEME["sky_horizon"]), (0.62, "24389C"), (0.8, "141E60"), (1.0, THEME["sky_top"]))
 else:
     sky = kit.sky_ramp(THEME["sky_top"], THEME["sky_horizon"])
 kit.studio(OUT, draft=DRAFT, sky=sky)
 bpy.context.scene.cycles.samples = min(bpy.context.scene.cycles.samples, 64)
+if WORLD == "Time Warp":  # a night sky lights little: it lights the island three times as much as it shows (as base.py's `fill`), so the sand is sand and not mud
+    tree = bpy.context.scene.world.node_tree
+    rays, scale = tree.nodes.new("ShaderNodeLightPath"), tree.nodes.new("ShaderNodeMapRange")
+    scale.inputs["To Min"].default_value, scale.inputs["To Max"].default_value = 0.85 * 3.0, 0.85
+    tree.links.new(rays.outputs["Is Camera Ray"], scale.inputs["Value"])
+    tree.links.new(scale.outputs["Result"], tree.nodes["Background"].inputs["Strength"])
+    kit.sun.data.energy = 3.0
+elif WORLD == "Infinity":  # white ground under a full sun is only glare
+    kit.sun.data.energy = 2.2
 HERO_TARGET = Vector((0, 0, -14))
 # A player's eyes on the arrival pad, looking north at the eggs and the statue.
 photo(f"{SLUG}_ground", (0, -5.0, 5.3), (0, 30, 6.4), 20)
