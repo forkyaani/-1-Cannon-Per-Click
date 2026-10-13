@@ -60,7 +60,7 @@ Gems are the one currency that survives everything. Rebirths wipe coins. Events 
 | Rebirth pays 20 gems, no cap (C) | Past wave 300, every rebirth needs the same wave 300 (C: `rebirthWave`). My simulation: about 25 rebirths an hour between hours 3 and 10 of play, about 230 an hour between hours 10 and 30 (E). That is 500 to 4,600 gems an hour, against 91 a day from dailies | 20 gems for each of the 12 rebirth targets (240 in total). After that 5 each, at most 6 a day |
 | Gem Egg bonuses are fixed, 200 to 15,000 (C) | A new player has 60 gems in the first session (missions pay 60 a day, C). A Gem Common (200) is 800x a Basic Common (0.25): worth 18 waves. At wave 100 a Mars Common is 16,384, so even the Gem Legendary is worthless | Gem Egg mini cannons grow with you |
 | Weekly exclusives are fixed, 500 to 30,000 (C) | Same. The Dragon (30,000) loses to a Dune Egg Common (262,144) at wave 125 | Same fix |
-| Three slots cost 750 gems (C: 250 × 3) | About 125 Robux of gems, against 299 Robux for the +3 slots pass | 250 / 750 / 2,000 |
+| Three slots cost 750 gems (C: 250 × 3) | About 125 Robux of gems, against 99 Robux for the +3 slots pass (299 until 13 Oct) | 250 / 750 / 2,000 |
 
 - The simulation replays the Config formulas for a 6 taps/s player. It is a script, not a play-test.
 - Extends: `Config.RebirthDiamonds`, `rebirth()`, the Gem Egg's `defineEgg`, `Config.WeeklyFeatured`, `Config.WeeklyFixed`, `purchase()`.
@@ -210,12 +210,12 @@ Gems are the one currency that survives everything. Rebirths wipe coins. Events 
 
 | Pass (C price) | Gem version | Worth in Robux | Verdict |
 |---|---|---|---|
-| +3 slots, 299 | Three slots, 3,000 gems | 500 | The pass is cheaper. Both stack, up to 14 slots (C: 14 rack positions) |
-| +5 slots, 549 | none | | Pass only |
-| x3 Luck, 449 | Lucky Hatch at max: x2 for 16,980 gems | 2,830 | The pass is far cheaper. They multiply: Legendary 0.5% → 2.5% with both (C: `eggOdds`) |
-| +500 storage, 249 | Deep Pockets: +100 for 3,000 gems | 500 | The pass is five times bigger for half the price |
+| +3 slots, 99 | Three slots, 3,000 gems | 500 | The pass is cheaper. Both stack, up to 14 slots (C: 14 rack positions) |
+| +5 slots, 199 | none | | Pass only |
+| x3 Luck, 149 | Lucky Hatch at max: x2 for 16,980 gems | 2,830 | The pass is far cheaper. They multiply: Legendary 0.5% → 2.5% with both (C: `eggOdds`) |
+| +500 storage, 79 | Deep Pockets: +100 for 3,000 gems | 500 | The pass is five times bigger for half the price |
 | Auto Rebirth, 399 | Rental, 150 gems a day | 25 a day | The pass pays for itself in 16 days |
-| x3 Egg Opener, 349 | none | | Pass only |
+| x3 Egg Opener, 129 | none | | Pass only |
 | 2x Power 199, 2x Coins 149 (planned in PLAN) | 30-minute boosts, 30 gems | 5 each | Two hours a day costs 20 Robux, so the pass pays back in 10 days. Pass × boost = 4x |
 | Auto-Fire (planned) | Rental, 30 gems per 30 min | 5 | Same pattern |
 | 2x Event Loot, 249 (Halloween plan) | 30-minute boost, 80 gems | 13 | An hour a day costs 27 Robux, so the pass pays back in 9 event days. Pass × boost = 4x |
