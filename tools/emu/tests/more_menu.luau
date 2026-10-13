@@ -65,5 +65,13 @@ harness.click(more)
 check(drawer.Size.X.Offset <= 420, `no wider than the screen ({drawer.Size.X.Offset})`)
 harness.click(more)
 
+-- Notifications are not shown over the open drawer (on a phone they covered its buttons).
+local notices = gui:FindFirstChild("Notifications", true)
+check(notices ~= nil and notices.Visible == true, "the notifications show while the drawer is shut")
+harness.click(more)
+eq(notices.Visible, false, "and not while it is open")
+harness.click(backdrop)
+eq(notices.Visible, true, "and again once it is shut")
+
 check(harness.errors() == 0, "no errors")
 print(`{T.checks} checks passed`)

@@ -743,8 +743,18 @@ end
 
 local hatchToken = 0
 local rareUntil = 0 -- the os.clock() until which a Secret or Huge reveal cannot be taken off the screen
+local READ_SECONDS = 0.7 -- nor can any reveal, for this long after what came out is on the screen
+local hatchSkip = false -- a tap while the egg was still rocking: go straight to what came out
+local revealedAt: number? = nil -- the os.clock() at which this hatch showed what came out; nil until then
+-- A click or a tap. While the egg rocks it skips the rocking, and the player still sees what they got: it used
+-- to take the whole reveal away. Once that is showing, and has been for a moment, it closes the reveal.
 overlay.Activated:Connect(function()
-	if os.clock() < rareUntil then
+	if not revealedAt then
+		hatchSkip = true
+		return
+	end
+	local now = os.clock()
+	if now < rareUntil or now - revealedAt < READ_SECONDS then
 		return
 	end
 	hatchToken += 1
@@ -780,6 +790,7 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 	end
 	hatchToken += 1
 	local token = hatchToken
+	hatchSkip, revealedAt = false, nil
 	local lone = #reveals == 1
 	overlay.BackgroundColor3 = OVERLAY_COLOR
 	overlay.BackgroundTransparency = OVERLAY_TRANSPARENCY
@@ -830,6 +841,9 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 		if token ~= hatchToken then
 			return
 		end
+		if hatchSkip then
+			break -- tapped: no more rocking, the egg opens now
+		end
 		local lean = 5 + swing * 1.3
 		local goal = { Rotation = if swing % 2 == 0 then -lean else lean }
 		UI.sound("wobble", 1 + swing * 0.05)
@@ -868,6 +882,14 @@ function Effects.hatch(eggId: string?, results: { { pet: string, kept: boolean, 
 	if token ~= hatchToken then
 		return
 	end
+	-- A hop that was on its way down when the rocking was skipped.
+	for index in reveals do
+		local stage = cards[index].stage
+		if stage and stage.egg.Parent then
+			movePiece(stage.egg, CFrame.new())
+		end
+	end
+	revealedAt = os.clock()
 	local loudest = 1
 	for _, reveal in reveals do
 		loudest = math.max(loudest, tierOf(reveal.pet))
