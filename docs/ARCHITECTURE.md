@@ -166,7 +166,7 @@ Game.on("kill", function(player, data, state, info) ... end)
 | `Game.leadNear(player, range?)` | The living monster furthest along within `range` studs of the player's character (`Config.Defense.petRange` times the `petRange` modifiers when left out), or nil: what a Huge Shot is fired at and what the client draws the mini cannons shooting at. Nil while the player is away from their plot. (The mini cannons' own damage goes to the lead monster of the base, near or not) |
 | `Game.hurt(player, monster, amount)` | Damage to that one monster (from `state.monsters` or `Game.leadNear`). Nothing carries over. Returns whether it was dealt |
 | `Game.value(player, kind)`, `Game.breakdown(player, kind)` | A derived number as the game applies it, and where it comes from (see Modifiers) |
-| `Game.setPlace(player, place, index?)` | Moves a player: `"plot"`, `"market"`, `"island"` (index = the island) or `"visit"` (index = the slot of the base to be a guest on). False, and nobody moves, when the place cannot be reached (no such island, nobody owns that base, it is the player's own). It may wait for the place to stream in. It checks no permission: the Visit feature asks for an invitation first |
+| `Game.setPlace(player, place, index?)` | Moves a player: `"plot"`, `"market"`, `"island"` (index = the island) or `"visit"` (index = the slot of the base to be a guest on). False, and nobody moves, when the place cannot be reached (no such island, nobody owns that base, it is the player's own). It may wait for the place to stream in. It checks no permission: the Visit feature decides who may come (the owner's Visitors switch, an invitation, the wait after SEND HOME) |
 | `Game.owner(slot)`, `Game.guests(slot)` | The player who owns that base right now (or nil), and the players who are guests on it |
 | `Game.places.island = function(index) return CFrame end` | Registers where a player arrives on a world's island (`Islands.luau` does). Without one, `goIsland` answers "not open yet" |
 | `Game.homePrompts` | A list of `ProximityPrompt`s that send whoever triggers them back to their plot. Add a portal's prompt before `Game.start` (the islands' portals are in it) |
@@ -810,8 +810,21 @@ part-built island plus one unseen pillar per trunk, lamp and prop (`SOLIDS`, a l
   seconds it goes away whatever happened. It runs before `ReplicatedStorage` has arrived, so it requires
   nothing: its colours, fonts and text are copies of the kit's and of `Config.GameName`, the one place where
   that is allowed. Renaming `ArrivalPad`, `Plot_<slot>` or the `Slot` attribute means changing it too.
-- **Visits by invitation** (`Features/Visit.luau` x3; the rules are in the shared module). The VISIT menu
-  button (MORE drawer) opens a window listing the other players on the server. INVITE is the action
+- **Visits** (`Features/Visit.luau` x3; the rules are in the shared module). The VISIT menu
+  button (MORE drawer) opens a window listing the other players on the server, each with VISIT and INVITE.
+  VISIT is the action `visitGo(user id)`: the player goes to that owner's base at once, as a guest, with no
+  invitation. The server checks the id like every Visit action (a whole number, a player on this server, not
+  the asker, who owns a base) and refuses while the owner's Visitors switch is off ("Private"), for
+  `KickedSeconds` (120) after that owner sent this player home, and within `VisitGapSeconds` (5) of the
+  player's last visit. The owner gets the toast "<name> is visiting your base", at most once per
+  `NoticeSeconds` (60) about the same visitor; nothing opens on their screen. **The Visitors switch** is a
+  setting like Music and Sounds (`Features/Settings.luau` x3: `Settings.SAVED.visitors`, on by default,
+  saved under `data.features.settings`, switched with `settingToggle("visitors")`). The Visit server module
+  reads it from the save, publishes it as the Player attribute `Private` (every client greys that player's
+  VISIT button by it; the server never trusts the client's view) and, when it goes off, sends home the guests
+  who came with `visitGo`; guests who came by invitation stay. An invitation works whatever the switch says,
+  and overrules the wait after SEND HOME. No Roblox block list is read (the game reads none anywhere) and a
+  visit adds no chat or text. INVITE is the action
   `visitInvite(user id)`: it asks that player to come to the asker's base, lasts `Visit.InviteSeconds` (60) and
   is declined by ignoring it. It is rate-limited like a trade request: `InviteGapSeconds` (3) between two,
   `AgainSeconds` (30) after one ran out before the same player can be asked again, at most `MaxIncoming` (5)
@@ -819,12 +832,14 @@ part-built island plus one unseen pillar per trunk, lamp and prop (`SOLIDS`, a l
   the invitation and calls `Game.setPlace(guest, "visit", slot)`, which lands the guest near the host's
   arrival spot. The guest's `state.place` is `"visit"` and `state.visit` the host's slot; they are sent the
   host's field for as long as the visit lasts, their own base keeps fighting (their mini cannons' damage
-  lands there too) and nothing of theirs hurts the host's monsters. A guest has no rights on the base: every pad action only ever touches the asking player's own save,
+  lands there too) and nothing of theirs hurts the host's monsters. A guest has no rights on the base, invited or not: every action only ever touches the asking player's own save (none takes "the base I am on" from where the player stands),
   the client offers them no pad or teleporter prompt there, and the core refuses the teleporters to anyone
   but the owner. They go home with BASE (`goHome`); the host sends one home with SEND HOME
   (`visitKick(user id)`); the core sends every guest home when the host leaves the game, and a guest who
   respawns or falls lands on their own base. Published as `Meta_visit` (`invites`, `sent`, `later`, `nextAsk`,
-  `guests`, `host`). An invitation also shows a card with JOIN, and a "!" on the VISIT button.
+  `nextVisit`, `barred` (owner id = when this player may visit them again), `guests`, `host`). In the window a
+  row's second button is VISIT, JOIN while that player's invitation waits, and grey as "Private", "LATER" or
+  "HERE". An invitation also shows a card with JOIN, and a "!" on the VISIT button.
 - **Pause** is the action `setPaused` (`true`, `false`, or nothing to switch) and the `Paused` attribute:
   while `state.paused` the core takes no simulation step for that player's plot (nothing spawns, walks, fires,
   burns or counts down, the break between levels included) and keeps sending its field, so the monsters stand
@@ -946,7 +961,10 @@ and the leaderboards; the islands are the real ones, with stand-in egg stands). 
 enchanting with each key, the Shiny key's guarantee over many rolls, fusing and both windows, the speed pass
 and offline earnings (the same player leaving and coming back after a faked 30 seconds, 2 hours and 20 hours),
 pause (a level stops and resumes) and a visit with two players (invitation, expiry, JOIN, what a guest
-cannot do, BASE, SEND HOME, the host leaving).
+cannot do, BASE, SEND HOME, the host leaving). `tests/visit.luau` plays visits without an invitation with
+three players: VISIT, bad ids, the gap between two, what the host is told, a guest's actions, SEND HOME and the
+wait after it, the Visitors switch (off sends the uninvited home, an invitation still works), the window's
+buttons and the host leaving.
 `tests/offline.luau` joins a player whose save is two hours old and presses CLAIM on the welcome-back card. `tests/tutorial.luau` plays the first join: the welcome cards, the fan bonus (not in the group, Roblox not answering, a member, a second press, a later join), every walkthrough step from real actions, a rejoin, an old save, a failed level and the Studio replay. `tests/codes.luau` redeems codes: once, twice, junk, too fast, expired, each kind of reward, from the window and after a rejoin. `tests/admin.luau` is the admin grant tool's: grants to a player who is online, a caller who is no admin, bad ids, amounts and names, a full storage, a grant stored for a player who is away and paid once at the next join (`harness.setUser(name, id)` makes an account known to `GetUserIdFromNameAsync`), a crash between the save and the removal, the log and the window. `tests/analytics.luau` checks the funnel and the purchase events against a fake logger (each step once, in any order, nothing after a rejoin, an older save, a logger that fails or is missing). `tests/mastery.luau` is the mastery feature's own test. `tests/event.luau` is the event leaderboard's (earning, the freeze, the prizes, with made-up board contents), and `python3 run.py --all-features --real-leaderboard tests/event_board.luau` runs it on the real `Leaderboard.luau` and emulated OrderedDataStores (`harness.failOrdered(n)` makes their next n requests fail; in this emulator a thread that waits never wakes, so a test calls `Leaderboard.refresh()` and the event feature's `check()` itself). `python3 run.py --all-features --real-plots tests/defense_client.luau` runs the client
 against the real server and the real `Plots.luau` and checks the battlefield, the TOWER window, the level HUD
 and travel. `cd tools/emu2 && GAME_ROOT=<tree> python3 boot.py` boots the server with the real `Plots` and

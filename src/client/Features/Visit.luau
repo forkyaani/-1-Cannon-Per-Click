@@ -1,9 +1,11 @@
 -- Visits, client side: the VISIT window (menu button VISIT, in the MORE drawer) and a small card when an
--- invitation arrives. Bases are private, so this is the only way onto somebody else's: the window lists the
--- other players on the server, each with INVITE (ask them to come to my base) and, while that player's own
--- invitation to me is waiting, JOIN. A player who is on my base has SEND HOME instead of INVITE; a guest goes home
--- with GO HOME here or with the BASE menu button. The server decides everything
--- (src/server/Features/Visit.luau); this only shows what it published as State.feature("visit") and asks.
+-- invitation arrives. This is the only way onto somebody else's base: the window lists the other players on
+-- the server, each with VISIT (go and see their base now) and INVITE (ask them to come to mine). VISIT is
+-- greyed "Private" for a player who switched Visitors off in SETTINGS (their Private attribute), and turns
+-- into JOIN while that player's own invitation to me is waiting. A player who is on my base has SEND HOME
+-- instead of INVITE; a guest goes home with GO HOME here or with the BASE menu button. The server decides
+-- everything (src/server/Features/Visit.luau); this only shows what it published as State.feature("visit"),
+-- and asks.
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -54,7 +56,7 @@ function Feature.start(ctx)
 		TextColor3 = Colors.text,
 		TextWrapped = true,
 		MaxSize = 20,
-		Text = "Nobody else is on this server right now.\nWhen a friend joins, invite them to your base here!",
+		Text = "Nobody else is on this server right now.\nWhen a friend joins, visit their base or invite them to yours here!",
 		Parent = window.body,
 	})
 
@@ -63,6 +65,7 @@ function Feature.start(ctx)
 		button.BackgroundColor3 = color
 	end
 
+	local refresh: () -> () -- below: a row asks for it
 	local rows = {} -- [user id] = row
 	local function playerRow(other: Player)
 		local id = other.UserId
@@ -72,29 +75,35 @@ function Feature.start(ctx)
 		row.sub.Size = UDim2.new(1, -338, 0, 22)
 		row.icon.BackgroundColor3 = Color3.fromHSV(id % 360 / 360, 0.55, 0.95)
 		UI.face(row, id)
-		-- The main button invites them, or sends them home while they are on my base. The second one is JOIN,
-		-- while their own invitation waits.
+		-- The main button invites them, or sends them home while they are on my base. The second one takes me
+		-- to their base: VISIT, or JOIN while their own invitation waits (that gets me in even when they are private).
 		row.second = UI.button({
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -150, 0.5, 0),
 			Size = UDim2.fromOffset(120, ROW_HEIGHT - 18),
-			Text = "JOIN",
+			Text = "VISIT",
 			BackgroundColor3 = Colors.green,
-			Visible = false,
 			Parent = row.frame,
 		})
 		row.guest = false -- whether they are on my base right now
+		row.invited = false -- whether their invitation to me is waiting
+		-- A change of their Visitors switch shows at once, not at the next tick of the countdowns.
+		row.watch = other:GetAttributeChangedSignal(Rules.PRIVATE):Connect(function()
+			if window.frame.Visible then
+				refresh()
+			end
+		end)
 		row.button.Activated:Connect(function()
 			ctx.act(if row.guest then "visitKick" else "visitInvite", id)
 		end)
 		row.second.Activated:Connect(function()
-			ctx.act("visitJoin", id)
+			ctx.act(if row.invited then "visitJoin" else "visitGo", id)
 		end)
 		rows[id] = row
 		return row
 	end
 
-	local function refresh()
+	function refresh()
 		local info = State.feature("visit")
 		local time = State.now()
 		local inviting = {} -- [user id] = the invitation that player has waiting here
@@ -114,7 +123,7 @@ function Feature.start(ctx)
 		elseif next(guests) then
 			statusLabel.Text = "Players on your base are listed first. SEND HOME takes one back to their own base."
 		else
-			statusLabel.Text = `Bases are private. INVITE a player to show them yours: they have {Rules.InviteSeconds}s to join.`
+			statusLabel.Text = `VISIT takes you to a player's base. INVITE asks one to yours: they have {Rules.InviteSeconds}s to join.`
 		end
 
 		local others = {}
@@ -140,7 +149,8 @@ function Feature.start(ctx)
 		end)
 
 		local canAsk = (info.nextAsk or 0) <= time
-		local sent, later = info.sent or {}, info.later or {}
+		local canVisit = (info.nextVisit or 0) <= time
+		local sent, later, barred = info.sent or {}, info.later or {}, info.barred or {}
 		local shown = {}
 		for order, other in others do
 			local id = other.UserId
@@ -162,9 +172,19 @@ function Feature.start(ctx)
 			end
 			row.sub.Text = detail
 
-			row.second.Visible = invitation ~= nil
+			-- The way to their base. What the server would refuse is grey (it says why when pressed anyway).
+			local backAt = barred[tostring(id)]
+			row.invited = invitation ~= nil
 			if invitation then
 				setButton(row.second, `JOIN\n{math.max(1, math.ceil(invitation.expires - time))}s`, Colors.green)
+			elseif host and host.id == id then
+				setButton(row.second, "HERE", Colors.grey)
+			elseif other:GetAttribute(Rules.PRIVATE) == true then
+				setButton(row.second, "Private", Colors.grey)
+			elseif backAt and backAt > time then
+				setButton(row.second, `LATER\n{math.ceil(backAt - time)}s`, Colors.grey)
+			else
+				setButton(row.second, "VISIT", if canVisit then Colors.green else Colors.grey)
 			end
 			row.guest = guests[id] == true
 			if row.guest then
@@ -179,6 +199,7 @@ function Feature.start(ctx)
 		end
 		for id, row in rows do
 			if not shown[id] then
+				row.watch:Disconnect()
 				row.frame:Destroy()
 				rows[id] = nil
 			end

@@ -1,6 +1,7 @@
--- Settings, server half: the music and sound switches are kept in the save, so a player who turned the music
--- off does not hear it again on the next join or on another device. The client applies them
--- (src/client/Features/Settings.luau); nothing here changes the game.
+-- Settings, server half: the switches are kept in the save, so a player who turned the music off does not hear
+-- it again on the next join or on another device. The client applies the music and sound switches
+-- (src/client/Features/Settings.luau); nothing here changes the game. The Visitors switch is only kept here:
+-- the Visit feature reads it from the save and acts on it (src/server/Features/Visit.luau).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Settings = require(ReplicatedStorage.Shared.Features.Settings)

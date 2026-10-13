@@ -1,5 +1,6 @@
--- Settings, client side: the SETTINGS window with a switch for the music and one for the sounds. A switch
--- turns its mixer (UI.SoundGroups) up or down; the server keeps the choice in the save
+-- Settings, client side: the SETTINGS window with a switch for the music, one for the sounds and one for
+-- visitors. A sound switch turns its mixer (UI.SoundGroups) up or down (UI.setAudio does nothing for a key
+-- without a mixer, such as Visitors); the server keeps every choice in the save
 -- (src/server/Features/Settings.luau), and what it says is applied on every change of the player's state.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
