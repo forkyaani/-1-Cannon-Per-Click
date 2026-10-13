@@ -419,9 +419,15 @@ local function orb(name: string, color: Color3): TextButton
 	return button
 end
 
+-- Set where the notifications are made, further down: they are not shown while the drawer is open (on a phone
+-- they covered its buttons).
+local drawerChanged: ((open: boolean) -> ())? = nil
 local function setDrawer(open: boolean)
 	drawer.Visible = open
 	drawerBackdrop.Visible = open
+	if drawerChanged then
+		drawerChanged(open)
+	end
 end
 drawerBackdrop.Activated:Connect(function()
 	setDrawer(false)
@@ -618,6 +624,12 @@ local NOTE_GAP = 8
 local NOTE_MAX = 4
 -- In front of the windows: a notification is never hidden behind one.
 toastPanel = UI.panel({ Name = "Notifications", AnchorPoint = Vector2.new(1, 0), Size = UDim2.fromOffset(NOTE_WIDTH, 300), ZIndex = 30 })
+-- But never over the MORE drawer: its buttons are what the player is reaching for. The notifications that
+-- arrive meanwhile run out unseen, as they would have on screen.
+drawerChanged = function(open: boolean)
+	toastPanel.Visible = not open
+end
+toastPanel.Visible = not drawer.Visible
 
 local notes = {} -- on screen, newest first
 local noteInset = 0 -- design px kept free at the top of the stack (the story's dialogue box sits there)
