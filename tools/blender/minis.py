@@ -2298,28 +2298,29 @@ def u_doppel():  # its double follows it about, a dark one that floats and watch
     bands(PINK, ((0.66, 0),), thickness=0.1, emission=1)
 
     def double():
-        dark = "20143F"
+        dark = "2E1F5E"
         body(dark)
-        barrel("120A28", band=TEAL)
+        barrel("160C30", band=TEAL)
         ears(dark, "cat", inner=TEAL)
         for side in (-1, 1):
             ball(0.3, (side * 0.46, FRONT - 0.04, 1.45), TEAL, scale=(1, 0.25, 1.15), emission=3)
+        box((0.4, 0.1, 0.11), (0, FRONT - 0.04, 0.9), TEAL, bevel=0.04, emission=3)
         tail_wisps(dark, -0.05)
-    shifted((1.0, 1.2, 0.55), double)
+    shifted((1.1, 1.1, 1.25), double)  # over its shoulder, high enough that both eyes show
 
 
 def u_omniverse():  # every world at once: they hang in an arc over it, and it rides a portal of its own
     standard("C896FF", "FFE23A", shape="round", barrel_colour="6E3CC8")
-    centre, reach = Vector((0, 0.55, 1.35)), 2.25
-    for index in range(10):  # the thread they hang on
-        angle = math.radians(-81 + index * 18)
+    centre, reach = Vector((0, 0.55, 1.45)), 2.0
+    for index in range(8):  # the thread they hang on
+        angle = math.radians(-72 + index * 18)
         tube(0.05, reach * math.radians(18.5), centre + Vector((math.sin(angle), 0, math.cos(angle))) * reach, (math.cos(angle), 0, -math.sin(angle)), "FFFFFF", vertices=5, emission=2)
-    for degrees, radius, colour in ((-72, 0.3, PINK), (-38, 0.34, "5AE078"), (0, 0.42, SHINE), (38, 0.34, TEAL), (72, 0.3, "FF9A3C")):
+    for degrees, radius, colour in ((-72, 0.3, PINK), (-37, 0.34, "5AE078"), (0, 0.42, SHINE), (37, 0.34, TEAL), (72, 0.3, "FF9A3C")):
         angle = math.radians(degrees)
         place = centre + Vector((math.sin(angle), 0, math.cos(angle))) * reach
         ball(radius, place, colour, roughness=0.3, emission=0.5)
-        if degrees in (-38, 38):
-            torus(place, radius * 1.6, 0.05, WHITE, (math.radians(70), math.radians(degrees * 0.5), 0), segments=12, emission=1)
+        if abs(degrees) == 37:  # two of them have a ring, as Saturn has
+            torus(place, radius * 1.65, 0.06, WHITE, (math.radians(22), math.radians(degrees * 0.4), 0), segments=12, emission=1)
     star4(centre + Vector((0, -0.1, reach + 0.75)), 0.42, WHITE, emission=4)
     tube(1.7, 0.05, (0, 0.05, 0.02), (0, 0, 1), "B48CFF", vertices=20, emission=0.6)  # the portal under its wheels
     torus((0, 0.05, 0.08), 1.7, 0.1, PINK, segments=24, emission=1.2)
@@ -2328,14 +2329,15 @@ def u_omniverse():  # every world at once: they hang in an arc over it, and it r
 
 
 # -- Pendulum Egg (Time Warp) --
-def u_tick():  # an alarm clock: two bells on its head, and its face is the dial
+def u_tick():  # an alarm clock: two bells on its head and the handle over them
     standard("D7B46E", DEEP, shape="round", barrel_colour="7A5A2A")
     for side in (-1, 1):
-        ball(0.42, (side * 0.72, 0.1, 2.2), "FFE9A0", scale=(1, 1, 0.72), rotation=(0, side * math.radians(28), 0), roughness=0.2)
-        tube(0.07, 0.2, (side * 0.86, 0.1, 2.42), (side * 0.5, 0, 1), "8A6420", vertices=6)
-    for side in (-1, 1):  # the two little feet an alarm clock stands on
-        tube(0.12, 0.5, (side * 0.5, -0.75, 0.62), (side * 0.2, -0.5, -1), "8A6420", tip=0.07, vertices=6)
-    torus((0, -0.52, 1.3), 0.93, 0.08, "8A6420", UPRIGHT, segments=20, roughness=0.3)  # the rim of the dial
+        ball(0.52, (side * 0.76, -0.1, 2.18), "FFE9A0", scale=(1, 1, 0.7), rotation=(0, side * math.radians(30), 0), roughness=0.2)
+        tube(0.09, 0.22, (side * 0.93, -0.1, 2.46), (side * 0.55, 0, 1), "8A6420", vertices=6)
+    centre, reach = Vector((0, -0.1, 2.25)), 1.05
+    for index in range(6):  # the handle
+        angle = math.radians(-48 + index * 16)
+        tube(0.065, reach * math.radians(16.5), centre + Vector((math.sin(angle), 0, math.cos(angle))) * reach, (math.cos(angle), 0, -math.sin(angle)), "8A6420", vertices=6)
 
 
 def u_cuckoo():  # a cuckoo clock: a roof over its cannon, and the bird out on its perch
@@ -2401,7 +2403,7 @@ def u_aeon():  # all of time: wings of clock hands, the twelve hours a ring of s
     for side in (-1, 1):
         root = Vector((side * 0.85, 0.55, 1.5))
         ball(0.24, root, BRASS, roughness=0.2)
-        for index, (out, up, length) in enumerate(((0.62, 1.2, 1.8), (1.1, 0.62, 1.5), (1.25, 0.02, 1.15))):
+        for index, (out, up, length) in enumerate(((0.62, 1.2, 2.0), (1.1, 0.62, 1.7), (1.25, 0.02, 1.3))):
             along = Vector((side * out, 0.15, up)).normalized()
             colour = ("FFFFFF", "FFE9A0", AMBER)[index]
             tube(0.07, length * 0.6, root, along, colour, vertices=5, emission=1)
@@ -2432,18 +2434,19 @@ def u_mobius():  # it wears the band with one side: follow it round and you come
     moebius((0, 0, 1.4), 1.78, 0.58, SHINE, tilt=(math.radians(18), 0, 0), roughness=0.25, emission=0.35)
 
 
-def u_endless():  # a spiral that goes round and in for ever, turning behind its head
+def u_endless():  # a spiral at each side that goes round and in for ever
     standard("FFBEE1", "A06EFF", shape="round", barrel_colour="E678B4")
-    centre = Vector((0, 0.95, 2.05))
-    steps, turns = 34, 2.6
-    points = []
-    for step in range(steps + 1):
-        angle = 2 * math.pi * turns * step / steps
-        points.append(centre + Vector((math.sin(angle), 0, math.cos(angle))) * (0.12 + 1.5 * step / steps))
-    for step in range(steps):
-        a, b = points[step], points[step + 1]
-        tube(0.13, (b - a).length + 0.06, a, b - a, RAINBOW[(step * len(RAINBOW) * 2 // steps) % len(RAINBOW)], vertices=6, emission=0.5)
-    ball(0.2, centre, WHITE, emission=3)
+    steps, turns = 20, 2.1
+    for side in (-1, 1):
+        centre = Vector((side * 1.5, 0.35, 1.85))
+        points = []
+        for step in range(steps + 1):
+            angle = side * 2 * math.pi * turns * step / steps
+            points.append(centre + Vector((math.sin(angle), 0, math.cos(angle))) * (0.1 + 0.78 * step / steps))
+        for step in range(steps):
+            a, b = points[step], points[step + 1]
+            tube(0.115, (b - a).length + 0.05, a, b - a, RAINBOW[(step * len(RAINBOW) // steps) % len(RAINBOW)], vertices=6, emission=0.5)
+        ball(0.17, centre, WHITE, emission=3)
 
 
 def u_destiny():  # written in the stars: wings of them, and the one it follows over its head
@@ -2470,8 +2473,8 @@ def u_everything():  # all of it: six wings of gold, the sign itself over its cr
         for trio in trios:
             for out, up, length in trio:
                 along = Vector((side * out, 0.2, up)).normalized()
-                tube(0.22, length, (side * 0.85, 0.55, 1.5), along, SHINE, tip=0.0, vertices=6, roughness=0.25, emission=0.3)
-                tube(0.13, length * 0.5, Vector((side * 0.85, 0.5, 1.5)) + along * length * 0.58, along, WHITE, tip=0.0, vertices=6, emission=1)
+                tube(0.22, length, (side * 0.85, 0.55, 1.5), along, "F2B01E", tip=0.0, vertices=6, roughness=0.3)
+                tube(0.12, length * 0.42, Vector((side * 0.85, 0.5, 1.5)) + along * length * 0.64, along, "FFF6C8", tip=0.0, vertices=6)
     for index in range(12):  # every colour, a ring on the ground
         angle = math.radians(index * 30)
         place = Vector((math.cos(angle) * 1.75, 0.05 + math.sin(angle) * 1.75, 0.12))

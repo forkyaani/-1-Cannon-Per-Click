@@ -76,5 +76,7 @@ table.sort(added.halves)
 print(`[add_minis] {#added.halves} egg halves: {table.concat(added.halves, ", ")}`)
 print(`[add_minis] MiniCannons now holds {#minis:GetChildren()}, EggModels {#eggs:GetChildren()}, EggHalves {#halves:GetChildren()}`)
 -- Update 1 (worlds 13 to 15): import assets/models/minis/update1_minis.fbx and update1_egg_halves.fbx the same way
--- and run this file once. Expect 21 mini cannons, 3 eggs (mirroregg, clockworkegg, infinityegg) and 6 egg halves.
+-- and run this file once. Expect 42 mini cannons (30 from the eggs and 12 Secrets), 6 eggs (mirroregg, dimensionegg,
+-- clockworkegg, pendulumegg, infinityegg, eternityegg) and 12 egg halves. Both eggs of each world are in the two files
+-- since 13 Oct: before that they held the first egg of each only (21 mini cannons, 3 eggs, 6 halves).
 -- The ids come from one table, UPDATE1_IDS in tools/blender/minis.py: they must be the game's (Config.Pets).
