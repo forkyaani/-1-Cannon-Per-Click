@@ -478,3 +478,10 @@ Yaani: "add to update 1, make it so you can visit other peoples bases". Today a 
 - [ ] AD1. **[Yaani]** (not started: waits for Yaani's go) `Features/Visit` (shared, server, client): the VISIT window lists everybody on the server with a VISIT button that takes the player to that base at once (`Game.setPlace(player, "visit", slot)`), rate-limited; the owner sees who is on their base and can still send a guest home; a switch in SETTINGS, "Visitors: on / off" (on by default), for an owner who wants to be alone; invitations stay as they are. Emulator test. · **1 h 30**
 - [ ] AD2. **[d1v]** Studio, two accounts: visit without an invitation, the owner's kick, the switch off, a guest can build and buy nothing; into the place and published with AB9 if that has not gone out yet · **20 min**
 
+
+
+## AE. Two things players trip over (Victor, 13 Oct; d1v's)
+
+- [ ] AE1. **[d1v]** (taken: d1v, 13 Oct) Notifications cover the MORE menu on a phone: while the menu behind MORE is open, the notifications are not shown · **15 min**
+- [ ] AE2. **[d1v]** (taken: d1v, 13 Oct) A click or a tap during the egg's opening took the whole reveal off the screen, and the player never saw what they got. A tap while the egg is still rocking now skips to what came out; only a tap after that, and not in its first moment, closes it · **30 min**
+- [ ] AE3. **[d1v]** (taken: d1v, 13 Oct) In the place, seen, published **[S]**. `main` also holds Update 1 (AB9 is not done), so how this goes live is Victor's choice: with Update 1, or as these two changes alone on top of what is live · **30 min**
