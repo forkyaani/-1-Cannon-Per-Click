@@ -1596,7 +1596,7 @@ do
 	local fast = state.clock - before
 	check(fast > slow * 2.5 and fast < slow * 3.5, `at 3x the plot's fight runs three times as fast ({slow} against {fast})`)
 	-- 2x is free; 3x is the 3x Speed pass (the prelude gave this player every pass).
-	check(Config.Passes.gameSpeed ~= nil and Config.Passes.gameSpeed.price == 99 and Config.Passes.gameSpeed.id > 0, "the speed pass is in Config.Passes: 99 Robux, with its pass id")
+	check(Config.Passes.gameSpeed ~= nil and Config.Passes.gameSpeed.price == 39 and Config.Passes.gameSpeed.id > 0, "the speed pass is in Config.Passes: 39 Robux, with its pass id")
 	eq(Config.Passes.gameSpeed.name, "3x Speed", "and it is the 3x Speed pass")
 	check(T.meta().passes.gameSpeed == true, "the client is told the pass is owned")
 	debug("pass:gameSpeed", 0)
