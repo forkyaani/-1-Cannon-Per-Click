@@ -5,7 +5,7 @@
   late          the same for worlds 6 to 12 (14 eggs, 70 mini cannons, 28 Secrets), the 10 Secrets of the
                 marketplace's eggs and the last 4 Huges (late_minis.fbx).
   extras        the 18 mini cannons no egg hatches: crates, shops, events and rewards (extra_minis.fbx).
-  update1       worlds 13 to 15: 3 eggs, their 15 mini cannons and 6 Secrets (update1_minis.fbx).
+  update1       worlds 13 to 15: both eggs of each (6 eggs), their 30 mini cannons and 12 Secrets (update1_minis.fbx).
 
 Run: blender --background --python tools/blender/minis.py -- <output folder> [full | eggs | nophotos] [marketplace | worlds | late | extras | update1] [from=<row>]
 `from=shadowegg` photographs that row and the ones after it only (every model is still built and exported).
@@ -1900,9 +1900,21 @@ UPDATE1_IDS = {
     # Infinity, the Infinity Egg
     "infinityegg": "egg_infinity",
     "halo": "u_halo", "loop": "u_loop", "zenith": "u_zenith", "boundless": "u_boundless", "infinite": "u_infinite",
+    # The second egg of each world (Config.luau, WORLD_EGGS: the third and fourth entries of its row).
+    # Multiverse, the Dimension Egg
+    "dimensionegg": "egg_dimension",
+    "twin": "u_twin", "shimmer": "u_shimmer", "kaleidoscope": "u_kaleidoscope", "doppel": "u_doppel", "omniverse": "u_omniverse",
+    # Time Warp, the Pendulum Egg
+    "pendulumegg": "egg_pendulum",
+    "tick": "u_tick", "cuckoo": "u_cuckoo", "sundial": "u_sundial", "epoch": "u_epoch", "aeon": "u_aeon",
+    # Infinity, the Eternity Egg
+    "eternityegg": "egg_eternity",
+    "zero": "u_zero", "mobius": "u_mobius", "endless": "u_endless", "destiny": "u_destiny", "everything": "u_everything",
 }
 # The two Secrets every egg hides, by the egg's name without "Egg": (Glitched's colour, Forbidden's colour).
-UPDATE1_SECRET_EGGS = (("mirror", "4EE3C9", "8D3E60"), ("clockwork", "66DA9B", "A53532"), ("infinity", "77FFCC", "B65A64"))
+# The last three are the second eggs': Config's own blend (SECRETS' colour, 0.3 of the way to the egg's).
+UPDATE1_SECRET_EGGS = (("mirror", "4EE3C9", "8D3E60"), ("clockwork", "66DA9B", "A53532"), ("infinity", "77FFCC", "B65A64"),
+                       ("dimension", "3ABDAB", "791942"), ("pendulum", "32C0A2", "711B39"), ("eternity", "77F6B2", "B65249"))
 
 PINK, TEAL, VIOLET = "FF6EC8", "3CE0D2", "8C5AF0"  # Multiverse
 AMBER, BRASS, DEEP = "FFB43C", "C89B3C", "1E2E6E"  # Time Warp
@@ -2186,6 +2198,344 @@ def egg_infinity():  # white light, the gold sign on its front (over where it cr
         twinkle((x, -0.8, z), colour="FFF6C8")
 
 
+# ---------------------------------------------------------------------------------------------------
+# The second egg of each of the three worlds. Body colours are Config's (WORLD_EGGS), the eggs' are their
+# worlds' backdrop, as in the game. Each has an idea none of its world's first five has.
+# ---------------------------------------------------------------------------------------------------
+def star4(at, size, colour, core=False, **look):
+    """A four-pointed star, flat, facing the front: cheap, where twinkle() costs two balls."""
+    for dx, dz, reach in ((0, 1, 1.0), (0, -1, 1.0), (1, 0, 0.72), (-1, 0, 0.72)):
+        tube(size * 0.3, size * reach, at, (dx, 0, dz), colour, tip=0.0, vertices=4, **look)
+    if core:
+        ball(size * 0.3, at, colour, **look)
+
+
+def shifted(by, build):
+    """Builds something where it is not: every piece of `build` moved by `by`."""
+    global origin
+    kept = origin
+    origin = origin + Vector(by)
+    build()
+    origin = kept
+
+
+def moebius(at, radius, width, colour, tilt=(0, 0, 0), thick=0.08, segments=40, **look):
+    """A band with half a twist in it, joined to itself: one side, one edge."""
+    import bmesh
+    from mathutils import Euler
+    turn_to = Euler(tilt).to_matrix()
+    bm = bmesh.new()
+    loops = []
+    for step in range(segments):
+        angle = 2 * math.pi * step / segments
+        twist = math.pi * step / segments + math.pi / 2  # on edge where it starts, flat half way round
+        out, up = Vector((math.cos(angle), math.sin(angle), 0)), Vector((0, 0, 1))
+        wide = out * math.cos(twist) + up * math.sin(twist)
+        thin = up * math.cos(twist) - out * math.sin(twist)
+        loops.append([bm.verts.new(Vector(at) + turn_to @ (out * radius + wide * sx * width / 2 + thin * sy * thick / 2))
+                      for sx, sy in ((1, 1), (-1, 1), (-1, -1), (1, -1))])
+    for step in range(segments):
+        a, b = loops[step], loops[(step + 1) % segments]
+        if step == segments - 1:  # half a twist on: the band meets itself turned over
+            b = b[2:] + b[:2]
+        for index in range(4):
+            bm.faces.new((a[index], a[(index + 1) % 4], b[(index + 1) % 4], b[index]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    mesh = bpy.data.meshes.new("moebius")
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new("moebius", mesh)
+    scene.collection.objects.link(obj)
+    finish(obj, colour, **look)
+    for polygon in obj.data.polygons:
+        polygon.use_smooth = False
+
+
+# -- Dimension Egg (Multiverse) --
+def u_twin():  # never alone: a little one of itself rolls beside it, in the other colour
+    standard("78E6DC", PINK, shape="round", barrel_colour="2F9C9C")
+    x, y, size = 1.72, -0.35, 0.5
+    ball(1.05 * size, (x, y, 1.25 * size), "FF9BD2", scale=(1, 0.92, 0.9))
+    direction = Vector((0, -math.cos(math.radians(16)), math.sin(math.radians(16))))
+    start = Vector((x, y + 0.5 * size, 2.3 * size))
+    tube(0.34 * size, 1.25 * size, start, direction, "C8509A", vertices=8)
+    tube(0.42 * size, 0.2 * size, start + direction * 1.08 * size, direction, GOLD, vertices=8)
+    for side in (-1, 1):
+        tube(0.5 * size, 0.3 * size, (x + side * 0.85 * size, y, 0.5 * size), (side, 0, 0), "5A3A6E", vertices=8)
+        ball(0.3 * size, (x + side * 0.42 * size, y - 0.9 * size, 1.3 * size), INK, scale=(1, 0.35, 1.1), roughness=0.08)
+        tube(0.14 * size, 0.04, (x + side * 0.42 * size - 0.08 * size, y - 1.0 * size, 1.4 * size), (0, -1, 0), TEAL, vertices=6, emission=1.5)
+
+
+def u_shimmer():  # it glitters: stars on stalks for ears, and sparkles all round it
+    standard("FFAADC", TEAL, barrel_colour="FFF0FA")
+    for side in (-1, 1):
+        tube(0.06, 0.75, (side * 0.62, 0.1, 2.0), (side * 0.35, 0, 1), "FFF6C8", vertices=6)
+        star4((side * 0.9, 0.1, 2.95), 0.5, "FFF6C8", core=True, emission=2.5)
+    for x, y, z, size, colour in ((-1.55, -0.2, 1.75, 0.42, WHITE), (1.6, -0.3, 1.2, 0.36, WHITE), (1.45, 0.3, 2.35, 0.26, TEAL),
+                                  (-1.4, 0.3, 0.75, 0.26, TEAL), (-0.72, FRONT - 0.06, 0.72, 0.17, WHITE), (0.8, FRONT - 0.06, 1.95, 0.15, WHITE)):
+        star4((x, y, z), size, colour, emission=4)
+    bands("FFFFFF", ((0.62, 0),), thickness=0.09, emission=1)
+
+
+def u_kaleidoscope():  # a ruff of coloured shards, the same pattern all the way round
+    standard("FF6EBE", "FFE23A", barrel_colour=VIOLET)
+    centre = Vector((0, 0.5, 1.8))
+    for reach, length, radius, colours, turn_by in ((1.12, 0.5, 0.3, (TEAL, "FFE23A"), 0), (1.5, 0.62, 0.3, (VIOLET, WHITE), 22.5)):
+        for index in range(8):
+            angle = math.radians(index * 45 + turn_by)
+            out = Vector((math.sin(angle), 0, math.cos(angle)))
+            middle = centre + out * reach
+            if middle.z - length < 0.12:
+                continue  # it would stand in the ground
+            colour = colours[index % 2]
+            tube(radius, length, middle, out, colour, tip=0.0, vertices=4, roughness=0.15, emission=0.5)
+            tube(radius, length * 0.8, middle, -out, colour, tip=0.0, vertices=4, roughness=0.15, emission=0.5)
+
+
+def u_doppel():  # its double follows it about, a dark one that floats and watches
+    standard("6E50C8", "FF9BDC")
+    ears("6E50C8", "cat", inner=PINK)
+    bands(PINK, ((0.66, 0),), thickness=0.1, emission=1)
+
+    def double():
+        dark = "20143F"
+        body(dark)
+        barrel("120A28", band=TEAL)
+        ears(dark, "cat", inner=TEAL)
+        for side in (-1, 1):
+            ball(0.3, (side * 0.46, FRONT - 0.04, 1.45), TEAL, scale=(1, 0.25, 1.15), emission=3)
+        tail_wisps(dark, -0.05)
+    shifted((1.0, 1.2, 0.55), double)
+
+
+def u_omniverse():  # every world at once: they hang in an arc over it, and it rides a portal of its own
+    standard("C896FF", "FFE23A", shape="round", barrel_colour="6E3CC8")
+    centre, reach = Vector((0, 0.55, 1.35)), 2.25
+    for index in range(10):  # the thread they hang on
+        angle = math.radians(-81 + index * 18)
+        tube(0.05, reach * math.radians(18.5), centre + Vector((math.sin(angle), 0, math.cos(angle))) * reach, (math.cos(angle), 0, -math.sin(angle)), "FFFFFF", vertices=5, emission=2)
+    for degrees, radius, colour in ((-72, 0.3, PINK), (-38, 0.34, "5AE078"), (0, 0.42, SHINE), (38, 0.34, TEAL), (72, 0.3, "FF9A3C")):
+        angle = math.radians(degrees)
+        place = centre + Vector((math.sin(angle), 0, math.cos(angle))) * reach
+        ball(radius, place, colour, roughness=0.3, emission=0.5)
+        if degrees in (-38, 38):
+            torus(place, radius * 1.6, 0.05, WHITE, (math.radians(70), math.radians(degrees * 0.5), 0), segments=12, emission=1)
+    star4(centre + Vector((0, -0.1, reach + 0.75)), 0.42, WHITE, emission=4)
+    tube(1.7, 0.05, (0, 0.05, 0.02), (0, 0, 1), "B48CFF", vertices=20, emission=0.6)  # the portal under its wheels
+    torus((0, 0.05, 0.08), 1.7, 0.1, PINK, segments=24, emission=1.2)
+    torus((0, 0.05, 0.08), 1.42, 0.07, TEAL, segments=20, emission=1.2)
+    crown(top=3.02, y=0.1, radius=0.34, gems=TEAL)
+
+
+# -- Pendulum Egg (Time Warp) --
+def u_tick():  # an alarm clock: two bells on its head, and its face is the dial
+    standard("D7B46E", DEEP, shape="round", barrel_colour="7A5A2A")
+    for side in (-1, 1):
+        ball(0.42, (side * 0.72, 0.1, 2.2), "FFE9A0", scale=(1, 1, 0.72), rotation=(0, side * math.radians(28), 0), roughness=0.2)
+        tube(0.07, 0.2, (side * 0.86, 0.1, 2.42), (side * 0.5, 0, 1), "8A6420", vertices=6)
+    for side in (-1, 1):  # the two little feet an alarm clock stands on
+        tube(0.12, 0.5, (side * 0.5, -0.75, 0.62), (side * 0.2, -0.5, -1), "8A6420", tip=0.07, vertices=6)
+    torus((0, -0.52, 1.3), 0.93, 0.08, "8A6420", UPRIGHT, segments=20, roughness=0.3)  # the rim of the dial
+
+
+def u_cuckoo():  # a cuckoo clock: a roof over its cannon, and the bird out on its perch
+    body("96643C")
+    wheels()
+    barrel("5A3A22")
+    fuse()
+    face(AMBER)
+    for side in (-1, 1):
+        box((1.8, 1.55, 0.17), (side * 0.6, 0.35, 2.92), "B4322E", bevel=0.05, rotation=(0, side * math.radians(45), 0))
+    box((0.3, 1.65, 0.2), (0, 0.35, 3.56), "7A1E1C", bevel=0.06)  # the ridge
+    box((0.9, 0.14, 0.09), (1.3, -0.35, 1.72), "5A3A22", bevel=0.03)  # the perch
+    ball(0.3, (1.72, -0.35, 2.02), "FFE23A", scale=(0.9, 1.1, 1))
+    tube(0.12, 0.26, (1.72, -0.64, 2.02), (0, -1, 0), "FF8A1F", tip=0.0, vertices=6)
+    tube(0.16, 0.36, (1.72, -0.1, 2.05), (0, 1, 0.5), "E0B01C", tip=0.0, vertices=5)  # its tail
+    for side in (-1, 1):
+        tube(0.055, 0.03, (1.72 + side * 0.13, -0.6, 2.12), (0, -1, 0), INK, vertices=6)
+    tube(0.03, 0.75, (-1.12, -0.5, 1.5), (0, 0, 1), "FFE9A0", vertices=5)  # a weight on its chain, a fir cone
+    tube(0.17, 0.5, (-1.12, -0.5, 1.5), (0, 0, -1), "5A3A22", tip=0.03, vertices=6)
+    bands("5A3A22", ((0.62, 0),), thickness=0.1)
+
+
+def u_sundial():  # it wears the dial: the pointer on it throws its shadow, the sun stands over its shoulder
+    body("F5D782")
+    wheels()
+    tube(1.22, 0.13, (0, 0.05, 2.0), (0, 0, 1), "F4ECD0", vertices=20)
+    torus((0, 0.05, 2.1), 1.22, 0.07, BRASS, segments=20, roughness=0.3)
+    for index in range(9):  # the hours, round the front of it
+        angle = math.radians(-80 + index * 20)
+        out = Vector((math.sin(angle), -math.cos(angle), 0))
+        tube(0.07, 0.3, Vector((0, 0.05, 2.14)) + out * 0.8, out, DEEP, vertices=4)
+    barrel("B88A30", top=2.12)
+    tube(0.36, 1.0, (0.78, 0.4, 2.1), (0, 0.3, 1), AMBER, tip=0.0, vertices=4, emission=0.4)  # the pointer
+    tube(0.2, 0.85, (0.78, 0.3, 2.14), (0.25, -1, 0), "9A8A5A", tip=0.02, vertices=4)  # and its shadow
+    sun = Vector((-1.35, 0.3, 3.05))
+    ball(0.3, sun, "FFE23A", emission=2)
+    for index in range(8):
+        angle = math.radians(index * 45)
+        out = Vector((math.sin(angle), 0, math.cos(angle)))
+        tube(0.11, 0.3, sun + out * 0.34, out, "FFB01F", tip=0.0, vertices=4, emission=2)
+    fuse()
+    face("FF9632")
+
+
+def u_epoch():  # a tall case clock: finials on its top, a pendulum swinging at each side, an age in every stripe
+    standard("3C5ABE", "FFE9A0", shape="tall", barrel_colour="FFE9A0")
+    for side in (-1, 1):
+        pivot = Vector((side * 0.92, -0.1, 2.25))
+        swing = Vector((side * 0.42, 0, -1)).normalized()
+        ball(0.15, pivot, BRASS, roughness=0.2)
+        tube(0.05, 1.2, pivot, swing, "FFE9A0", vertices=6)
+        ball(0.34, pivot + swing * 1.3, AMBER, scale=(0.45, 1, 1), roughness=0.2, emission=0.8)
+        ball(0.17, pivot + swing * 1.3 + Vector((side * 0.08, 0, 0)), "FFE9A0", scale=(0.5, 1, 1), roughness=0.2)
+        tube(0.17, 0.5, (side * 0.6, 0.45, 2.42), (0, 0, 1), BRASS, tip=0.0, vertices=6)  # a finial
+        ball(0.12, (side * 0.6, 0.45, 2.95), "FFE9A0", roughness=0.2)
+    bands(AMBER, ((0.62, 0),), width=1.76, depth=1.66, thickness=0.1, emission=1.5)
+    bands("FFE9A0", ((0.8, 0),), width=1.76, depth=1.66, thickness=0.1)
+    bands(TEAL, ((0.98, 0),), width=1.76, depth=1.66, thickness=0.1, emission=1)
+
+
+def u_aeon():  # all of time: wings of clock hands, the twelve hours a ring of stars over its crown
+    standard("6EC8FF", "FFE9A0", barrel_colour=DEEP)
+    for side in (-1, 1):
+        root = Vector((side * 0.85, 0.55, 1.5))
+        ball(0.24, root, BRASS, roughness=0.2)
+        for index, (out, up, length) in enumerate(((0.62, 1.2, 1.8), (1.1, 0.62, 1.5), (1.25, 0.02, 1.15))):
+            along = Vector((side * out, 0.15, up)).normalized()
+            colour = ("FFFFFF", "FFE9A0", AMBER)[index]
+            tube(0.07, length * 0.6, root, along, colour, vertices=5, emission=1)
+            tube(0.25, length * 0.45, root + along * length * 0.55, along, colour, tip=0.0, vertices=4, emission=1)  # the hand's head
+            tube(0.25, length * 0.14, root + along * length * 0.55, -along, colour, tip=0.0, vertices=4, emission=1)
+    crown(top=3.02, y=0.1, radius=0.34, gems=AMBER)
+    torus((0, 0.1, 3.72), 0.9, 0.04, "FFE9A0", segments=24, emission=2)
+    for index in range(12):  # the hours
+        angle = math.radians(index * 30)
+        big = index % 3 == 0
+        place = Vector((math.sin(angle) * 0.9, 0.1 - math.cos(angle) * 0.9, 3.72))
+        for way in (1, -1):
+            tube(0.13 if big else 0.08, 0.34 if big else 0.18, place, (0, 0, way), WHITE if big else AMBER, tip=0.0, vertices=4, emission=3)
+    bands(DEEP, ((0.66, 0),), thickness=0.12)
+    bands("FFE9A0", ((0.66, 0),), width=1.98, depth=1.78, thickness=0.05, emission=1.5)
+
+
+# -- Eternity Egg (Infinity) --
+def u_zero():  # nothing at all: a nought stands up behind its head
+    standard("EBF0FA", "FFB01F", barrel_colour="9AA8C8")
+    nought = torus((0, 1.0, 2.7), 0.86, 0.15, SHINE, UPRIGHT, segments=20, roughness=0.2, emission=0.4)
+    for vertex in nought.data.vertices:
+        vertex.co.x *= 0.7
+
+
+def u_mobius():  # it wears the band with one side: follow it round and you come back turned over
+    standard("96D7FF", "FFF6C8", shape="round", barrel_colour="4A82C8")
+    moebius((0, 0, 1.4), 1.78, 0.58, SHINE, tilt=(math.radians(18), 0, 0), roughness=0.25, emission=0.35)
+
+
+def u_endless():  # a spiral that goes round and in for ever, turning behind its head
+    standard("FFBEE1", "A06EFF", shape="round", barrel_colour="E678B4")
+    centre = Vector((0, 0.95, 2.05))
+    steps, turns = 34, 2.6
+    points = []
+    for step in range(steps + 1):
+        angle = 2 * math.pi * turns * step / steps
+        points.append(centre + Vector((math.sin(angle), 0, math.cos(angle))) * (0.12 + 1.5 * step / steps))
+    for step in range(steps):
+        a, b = points[step], points[step + 1]
+        tube(0.13, (b - a).length + 0.06, a, b - a, RAINBOW[(step * len(RAINBOW) * 2 // steps) % len(RAINBOW)], vertices=6, emission=0.5)
+    ball(0.2, centre, WHITE, emission=3)
+
+
+def u_destiny():  # written in the stars: wings of them, and the one it follows over its head
+    standard("FFD764", "4AB4FF", barrel_colour="FFFAEB")
+    for side in (-1, 1):
+        star4((side * 1.5, 0.6, 1.8), 0.8, WHITE, core=True, emission=1.5)
+        star4((side * 2.05, 0.6, 2.6), 0.5, "FFF08A", core=True, emission=1.5)
+        star4((side * 1.95, 0.6, 1.05), 0.38, ("FF9BDC", "8FD6FF")[side > 0], emission=1.5)
+        tube(0.07, 0.75, (side * 0.85, 0.55, 1.6), (side * 1, 0.05, 0.3), "FFF08A", vertices=5, emission=1)
+    guide = Vector((0, 0.45, 4.0))
+    star4(guide, 0.7, WHITE, core=True, emission=3)
+    for index, colour in enumerate(("FF9BDC", "FFF08A", "8FD6FF")):  # the tail it leaves
+        tube(0.12 - index * 0.025, 0.42, guide + Vector((0.32 + index * 0.36, 0.1, -0.2 - index * 0.2)), (1, 0.1, -0.55), colour, tip=0.0, vertices=5, emission=2)
+    horns("FFFAEB", size=0.9)
+    bands("FFFAEB", ((0.66, 0),), thickness=0.1, emission=0.5)
+
+
+def u_everything():  # all of it: six wings of gold, the sign itself over its crown, every colour in a ring at its feet
+    standard("FFFAEB", "FF5A8C", barrel_colour=SHINE)
+    trios = (((0.42, 1.3, 1.7), (0.7, 1.1, 1.55), (0.95, 0.85, 1.3)),
+             ((1.25, 0.42, 1.4), (1.3, 0.16, 1.3), (1.25, -0.1, 1.1)),
+             ((1.05, -0.5, 0.95), (0.85, -0.75, 0.8)))
+    for side in (-1, 1):
+        for trio in trios:
+            for out, up, length in trio:
+                along = Vector((side * out, 0.2, up)).normalized()
+                tube(0.22, length, (side * 0.85, 0.55, 1.5), along, SHINE, tip=0.0, vertices=6, roughness=0.25, emission=0.3)
+                tube(0.13, length * 0.5, Vector((side * 0.85, 0.5, 1.5)) + along * length * 0.58, along, WHITE, tip=0.0, vertices=6, emission=1)
+    for index in range(12):  # every colour, a ring on the ground
+        angle = math.radians(index * 30)
+        place = Vector((math.cos(angle) * 1.75, 0.05 + math.sin(angle) * 1.75, 0.12))
+        ahead = Vector((-math.sin(angle), math.cos(angle), 0))
+        tube(0.12, 0.96, place - ahead * 0.48, ahead, RAINBOW[index % len(RAINBOW)], vertices=6, emission=0.5)
+    crown(top=3.02, y=0.1, radius=0.34, gems="FF5A8C")
+    for side in (-1, 1):
+        torus((side * 0.4, 0.1, 3.95), 0.4, 0.1, SHINE, UPRIGHT, segments=16, roughness=0.2, emission=0.6)
+    halo(top=4.6, colour="FFFFFF", radius=0.5)
+    star4((-1.25, 0.3, 3.6), 0.3, "FFF6C8", emission=4)
+    star4((1.3, 0.3, 3.4), 0.26, "FFF6C8", emission=4)
+
+
+# -- The three second eggs: each its world's backdrop colour (Config: an egg's colour). What is painted on one
+# is kept off the crack (egg_halves.py cuts at 1.93): under it or over it, never across. --
+def egg_dimension():  # the dark between the worlds: a portal low on its front, two rings, loose pieces of elsewhere
+    world_egg("342480", "6E50C8", roughness=0.15)
+    ring(TEAL, 2.45, tilt=9, thickness=0.09, emission=1.2)
+    ring(PINK, 3.0, tilt=-9, thickness=0.08, emission=1.2)
+    way = Vector((0, -1, -0.25)).normalized()
+    middle = Vector((0, -1.23, 1.12))
+    torus(middle + way * 0.03, 0.5, 0.1, PINK, (math.radians(104), 0, 0), segments=16, emission=1.2)
+    tube(0.46, 0.08, middle - way * 0.03, way, TEAL, vertices=12, emission=1.2)
+    tube(0.27, 0.06, middle + way * 0.03, way, "E6FBFF", vertices=10, emission=2)
+    crystals(TEAL, ((0.0, 0.0, 3.4, 0.24, 0.75, 0.0),), emission=1)
+    crystals(PINK, ((-0.3, 0.1, 3.3, 0.16, 0.5, -0.6), (0.3, 0.1, 3.3, 0.16, 0.5, 0.6)), emission=1)
+    for index, (x, y, z, size) in enumerate(((-1.25, -0.3, 3.35, 0.3), (1.2, -0.2, 3.7, 0.24), (1.35, 0.2, 2.95, 0.18), (-0.9, 0.3, 3.95, 0.16))):
+        box((size, size, size), (x, y, z), (PINK, TEAL, WHITE, TEAL)[index], bevel=0.01, emission=1.5)
+
+
+def egg_pendulum():  # night blue, a pendulum swinging across its front, the hours round its shoulder, an hourglass on top
+    world_egg("1C2C60", "3C5ABE", roughness=0.3)
+    ring(BRASS, 2.3, thickness=0.11, roughness=0.3)
+    reach = 1.35 * narrow(2.8) * math.sqrt(1 - ((2.8 - 1.8) / 1.78) ** 2)
+    for index in range(12):
+        angle = math.radians(index * 30 + 15)
+        out = Vector((math.cos(angle), math.sin(angle), 0))
+        tube(0.1, 0.24, out * (reach - 0.08) + Vector((0, 0, 2.8)), out + Vector((0, 0, 0.4)), AMBER, tip=0.0, vertices=4, emission=1.5)
+    pivot, bob = Vector((0, -1.37, 1.7)), Vector((0.36, -1.16, 0.72))
+    ball(0.14, pivot, "FFE9A0", roughness=0.2)
+    tube(0.05, (bob - pivot).length, pivot, bob - pivot, "FFE9A0", vertices=6)
+    ball(0.33, bob, AMBER, scale=(1, 0.4, 1), roughness=0.2, emission=0.8)
+    ball(0.17, bob + Vector((0, -0.09, 0)), "FFE9A0", scale=(1, 0.4, 1), roughness=0.2)
+    hourglass((0, 0, 3.5), size=0.9, frame="FFE9A0", sand=AMBER)
+    for x, y, r in ((-1.15, -0.5, 0.42), (1.2, -0.3, 0.36), (0.3, 1.15, 0.4)):  # sand that has run out of it
+        ball(r, (x, y, 0.05), "E8C88C", scale=(1.25, 1, 0.5))
+
+
+def egg_eternity():  # soft gold with wings: a white ring on its front, every colour in a row round its foot, a star on top
+    shell("FFE296", roughness=0.3, emission=0.1)
+    for z in (0.92, 1.3):
+        ring("FFFFFF", z, thickness=0.07, emission=0.3)
+    reach = 1.35 * narrow(1.11) * math.sqrt(1 - ((1.11 - 1.8) / 1.78) ** 2) + 0.02
+    for index in range(12):
+        angle = math.radians(index * 30 + 15)
+        ball(0.1, (math.cos(angle) * reach, math.sin(angle) * reach, 1.11), RAINBOW[index % len(RAINBOW)], roughness=0.2, emission=0.4)
+    torus((0, -1.1, 2.65), 0.4, 0.09, "FFFFFF", (math.radians(70), 0, 0), segments=16, emission=0.6)
+    star4((0, -1.17, 2.66), 0.24, "FFFFFF", emission=3)
+    for side in (-1, 1):
+        for out, up, length in ((0.75, 1.0, 1.35), (1.1, 0.55, 1.15), (1.2, 0.1, 0.85)):
+            tube(0.22, length, (side * 0.95, 0.25, 2.55), (side * out, 0.15, up), "FFFFFF", tip=0.0, vertices=6, emission=0.3)
+    star4((0, 0, 4.15), 0.6, SHINE, core=True, emission=2)
+
+
 UPDATE1_ROWS = [("egg_mirror", ("u_mirror", "u_glitch", "u_prism", "u_parallel", "u_paradox")),
                 ("egg_clockwork", ("u_sand", "u_brass", "u_clockwork", "u_chrono", "u_eternal")),
                 ("egg_infinity", ("u_halo", "u_loop", "u_zenith", "u_boundless", "u_infinite"))]
@@ -2195,6 +2545,12 @@ for index, (egg, glitch_colour, forbid_colour) in enumerate(UPDATE1_SECRET_EGGS)
     UPDATE1_SECRETS += [("glitched" + egg, glitched(glitch_colour, index + 1)), ("forbidden" + egg, forbidden(forbid_colour, index + 1))]
 UPDATE1_SET = [(UPDATE1_NAMES[egg], globals()[egg], [(UPDATE1_NAMES[model], globals()[model]) for model in minis])
                for egg, minis in UPDATE1_ROWS] + [("secrets13", None, UPDATE1_SECRETS[0:3]), ("secrets14", None, UPDATE1_SECRETS[3:6])]
+# The second eggs come after everything that was there before them: a model's place in the line-up is where it is built.
+UPDATE1_SECOND = [("egg_dimension", ("u_twin", "u_shimmer", "u_kaleidoscope", "u_doppel", "u_omniverse")),
+                  ("egg_pendulum", ("u_tick", "u_cuckoo", "u_sundial", "u_epoch", "u_aeon")),
+                  ("egg_eternity", ("u_zero", "u_mobius", "u_endless", "u_destiny", "u_everything"))]
+UPDATE1_SET += [(UPDATE1_NAMES[egg], globals()[egg], [(UPDATE1_NAMES[model], globals()[model]) for model in minis])
+                for egg, minis in UPDATE1_SECOND] + [("secrets15", None, UPDATE1_SECRETS[6:9]), ("secrets16", None, UPDATE1_SECRETS[9:12])]
 
 # A set of its own: one run with every world in it takes Blender far longer than two runs do.
 LATE_SET =LATE_ROWS + [("secrets%d" % (5 + index // 5), None, LATE_SECRETS[index:index + 5]) for index in range(0, len(LATE_SECRETS), 5)] + [
