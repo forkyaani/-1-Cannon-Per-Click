@@ -22,6 +22,8 @@ Still a MAYBE as an update, but if it happens these are settled:
   coins, items, mini cannons), whether they are online or not. Only Yaani's and d1v's accounts can use it,
   checked on the server, and every grant is logged. Today there are only redeem codes (anybody with the code)
   and the Studio-only debug cheat.
+- **Visit anybody's base** (Yaani, 13 Oct): go to another player's base without an invitation. Jobs: group AD
+  in `docs/RELEASE_TASKS.md`.
 
 Not answered yet: the open questions at the end.
 

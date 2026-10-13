@@ -470,3 +470,11 @@ Yaani, with a screenshot of the experience's Store tab: "these need to all be wa
 - [ ] AC2. **[open]** Creator Hub: set the new price on each of the seven passes (whoever has edit rights on the experience: Yaani's screenshot shows "Add Pass", d1v owns it) · **10 min**
 - [ ] AC3. **[open]** `Config.Passes` in `src/shared/Config.luau` (`price` on six passes) and the Tycoon pass's price where the STORE prints it, so the game shows what Roblox charges; anything in `docs/GEMS.md` or `docs/BALANCE.md` that quotes a pass price; into the place with AB9 · **15 min**
 
+
+## AD. Update 1: visit anybody's base (Yaani, 13 Oct)
+
+Yaani: "add to update 1, make it so you can visit other peoples bases". Today a visit is by invitation only (`Features/Visit`, the VISIT button behind MORE): the owner invites, the other accepts within 60 seconds. Nobody can go to a base unasked. Read as: a player picks anybody on the server and goes to their base, no invitation needed. Guests stay guests: they can look, and touch nothing.
+
+- [ ] AD1. **[Yaani]** (not started: waits for Yaani's go) `Features/Visit` (shared, server, client): the VISIT window lists everybody on the server with a VISIT button that takes the player to that base at once (`Game.setPlace(player, "visit", slot)`), rate-limited; the owner sees who is on their base and can still send a guest home; a switch in SETTINGS, "Visitors: on / off" (on by default), for an owner who wants to be alone; invitations stay as they are. Emulator test. · **1 h 30**
+- [ ] AD2. **[d1v]** Studio, two accounts: visit without an invitation, the owner's kick, the switch off, a guest can build and buy nothing; into the place and published with AB9 if that has not gone out yet · **20 min**
+
