@@ -9,7 +9,7 @@ Admin.WINDOW = "ADMIN" -- the window, and its menu button (made for admins only)
 -- (The owner of a user-owned place is an admin too; the server checks that, see its isAdmin.)
 Admin.IDS = {
 	[7421324429] = "D1v991",
-	-- TODO Yaani's user id: put it here, as `[1234567890] = "Yaani",`
+	[879278274] = "OhYaani", -- Yaani
 }
 
 -- What can be granted, in the order the window offers it. `cap` is the most in one grant; `needsId` kinds
