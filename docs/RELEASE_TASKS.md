@@ -487,3 +487,12 @@ Yaani: "add to update 1, make it so you can visit other peoples bases". Today a 
 - [x] AE1. **[d1v]** (done 13 Oct, commit a2a4cd5: `drawerChanged` in `src/client/Hud.luau` hides the notification panel while the drawer is open; three checks added to `more_menu.luau`) Notifications cover the MORE menu on a phone: while the menu behind MORE is open, the notifications are not shown · **15 min**
 - [x] AE2. **[d1v]** (done 13 Oct, commit a2a4cd5: `hatchSkip`, `revealedAt` and `READ_SECONDS = 0.7` in `src/client/Effects.luau`. A Secret's or a Huge's longer hold is unchanged. No emulator test plays the reveal) A click or a tap during the egg's opening took the whole reveal off the screen, and the player never saw what they got. A tap while the egg is still rocking now skips to what came out; only a tap after that, and not in its first moment, closes it · **30 min**
 - [x] AE3. **[d1v]** (done 13 Oct 21:43, as the two changes alone: branch `hotfix-live-13oct` = what was live (d0e828e) + AE1 + AE2, commit dc6890f. The place equals that branch (93 scripts by length and checksum), NOT `main`: Update 1 is still not in the place (AB9), and whoever does AB9 syncs from `main`, which holds both changes too. Seen in a Server & Clients test as Player1, desktop-sized: with two notifications up, MORE opened and they were gone, and one sent while it was open did not show; a click while the Basic Egg rocked went straight to RARE! Mini Steel Cannon, a second click at once did nothing, a click a second later closed it. Published, version 94. Not seen on a phone-sized screen. Seen and left: on the old side drawer the story's dialogue box still lies over the drawer's top row while it is talking) In the place, seen, published **[S]**. `main` also holds Update 1 (AB9 is not done), so how this goes live is Victor's choice: with Update 1, or as these two changes alone on top of what is live · **30 min**
+
+
+## AF. Telling players Update 1 is out (Victor, 14 Oct; d1v's)
+
+Victor chose three: the title tag, the description with a new code, a group shout (not a Discord post).
+
+- [ ] AF1. **[d1v]** (taken: d1v, 14 Oct) Code `UPDATE1`: 150 gems, its last day 15 November (`src/shared/Features/Codes.luau`); in the place and published · **10 min**
+- [ ] AF2. **[d1v]** (taken: d1v, 14 Oct) The experience's name becomes "🎃 [UPDATE 1] Defend a Base! [TD]" and the description opens with what Update 1 brings and the code · **10 min**
+- [ ] AF3. **[d1v]** (taken: d1v, 14 Oct) A shout on the Astral Crafts group · **5 min**

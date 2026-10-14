@@ -32,6 +32,7 @@ end
 
 T.section("the list")
 check(typeof(Codes.List.LAUNCH) == "table" and Codes.List.LAUNCH.gems == 100, "the launch code is there: LAUNCH, 100 gems")
+check(typeof(Codes.List.UPDATE1) == "table" and Codes.List.UPDATE1.gems == 150 and not Codes.expired(Codes.List.UPDATE1, Codes.day(2026, 11, 14)) and Codes.expired(Codes.List.UPDATE1, Codes.day(2026, 11, 15)), "Update 1's code: UPDATE1, 150 gems, its last day 15 November")
 eq(Codes.normalise("  launch \n"), "LAUNCH", "a typed code is trimmed and put in capitals")
 eq(Codes.normalise("LAUNCH!"), nil, "a code has letters and digits only")
 eq(Codes.normalise(""), nil, "nothing typed is not a code")

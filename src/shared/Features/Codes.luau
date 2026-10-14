@@ -35,6 +35,8 @@ Codes.List = {
 	LAUNCH = { gems = 100 },
 	-- The Halloween event's code (Victor, 10 Oct 2026): gone with the event (Config.Halloween.endsAt).
 	SPOOKY = { item = "pumpkincrate", amount = 2, gems = 50, expires = Codes.day(2026, 10, 31) },
+	-- Update 1's code (Victor, 14 Oct 2026): named in the description and the group shout. Do not change the word.
+	UPDATE1 = { gems = 150, expires = Codes.day(2026, 11, 15) },
 	-- Examples of the other kinds:
 	-- WEEKEND = { clears = 3, expires = Codes.day(2026, 12, 31) },
 	-- BOOM = { item = "power2x", amount = 2 },
