@@ -432,7 +432,7 @@ Yaani: the group reward must be more apparent: an icon for it on the screen. Tod
 Yaani, a minute later: make it thumbs up + group rewards, so people thumbs up the game. The game cannot see whether a player has liked it, and Roblox does not allow paying for a like, so the reward stays tied to the group (which the game can check) and the thumbs up is asked for on the same button and card, unpaid, as the welcome's like page does today.
 
 - [x] AA1. **[Yaani]** (done 12 Oct, code, commit bde71fb: a LIKE + GROUP button with "+250" under the stat row at the left edge, in both views, while the bonus is unpaid; a press opens one card (thumbs up the game, "There is no reward for it"; join the group; the bonus; CHECK, CLOSE); gone for good once paid; nothing opens by itself. All in `Features/Tutorial` (client and shared). `welcome_cards.luau` 83 checks, `tutorial.luau` and the smoke test pass. It shows the 👍 glyph until AA2's `like` icon is on the sheet. Not seen in Studio: AA3) The LIKE + GROUP button and its card · **45 min**
-- [ ] AA2. **[Yaani]** The icon's picture (a thumbs up with a gem), through the icon pipeline in `docs/ICONS.md`; until it is in, the button uses the gift icon · **20 min**
+- [ ] AA2. **[Yaani]** (taken: Yaani, 14 Oct 15:55) The icon's picture (a thumbs up with a gem), through the icon pipeline in `docs/ICONS.md`; until it is in, the button uses the gift icon · **20 min**
 - [ ] AA3. **[d1v]** Put AA1 and AA2 in the place, see the button, the card and the button gone after CHECK with an account that is in the group, publish · **15 min**
 
 
@@ -467,7 +467,7 @@ One Claude agent per job, each in its own git worktree and branch; AB8 merges th
 
 Yaani, with a screenshot of the experience's Store tab: "these need to all be way cheaper". Today, in Robux: 3x Speed 99 · +500 Mini Cannon Storage 249 · +3 Mini Cannon Slots 299 · x3 Egg Opener 349 · x3 Luck 449 · +5 Mini Cannon Slots 549 · HUGE Tycoon Cannon 1,499. The passes also have no pictures (grey tickets): that is Q9.
 
-- [x] AC1. **[Yaani]** (13 Oct, Yaani: "reduce the prices of all gamepasses significantly", no numbers named, so Claude chose about two thirds off; Yaani can change any of them) **New prices, Robux:** 3x Speed **39** (was 99) · +500 Mini Cannon Storage **79** (249) · +3 Mini Cannon Slots **99** (299) · x3 Egg Opener **129** (349) · x3 Luck **149** (449) · +5 Mini Cannon Slots **199** (549) · HUGE Tycoon Cannon **499** (1,499)
+- [x] AC1. **[Yaani]** (14 Oct: Yaani, "prices are good". 13 Oct, Yaani: "reduce the prices of all gamepasses significantly", no numbers named, so Claude chose about two thirds off; Yaani can change any of them) **New prices, Robux:** 3x Speed **39** (was 99) · +500 Mini Cannon Storage **79** (249) · +3 Mini Cannon Slots **99** (299) · x3 Egg Opener **129** (349) · x3 Luck **149** (449) · +5 Mini Cannon Slots **199** (549) · HUGE Tycoon Cannon **499** (1,499)
 - [ ] AC2. **[d1v]** Creator Hub: set AC1's price on each of the seven passes, **at the same publish as AC3's scripts** (the game prints its own numbers: until both are changed, the STORE and Roblox's prompt disagree) · **10 min**
 - [x] AC3. **[Yaani]** (done 13 Oct, code: `price` on the six passes in `Config.Passes` and on the Tycoon pass in `src/shared/Features/Huge.luau`; the pass table in `docs/GEMS.md`. Smoke, analytics, gifts and session tests pass. Not in the place: goes in with AB9) The game prints the new prices · **15 min**
 
