@@ -493,6 +493,6 @@ Yaani: "add to update 1, make it so you can visit other peoples bases". Today a 
 
 Victor chose three: the title tag, the description with a new code, a group shout (not a Discord post).
 
-- [ ] AF1. **[d1v]** (taken: d1v, 14 Oct) Code `UPDATE1`: 150 gems, its last day 15 November (`src/shared/Features/Codes.luau`); in the place and published · **10 min**
-- [ ] AF2. **[d1v]** (taken: d1v, 14 Oct) The experience's name becomes "🎃 [UPDATE 1] Defend a Base! [TD]" and the description opens with what Update 1 brings and the code · **10 min**
-- [ ] AF3. **[d1v]** (taken: d1v, 14 Oct) A shout on the Astral Crafts group · **5 min**
+- [x] AF1. **[d1v]** (done 14 Oct 21:47: in the place, 96 scripts equal, published as version 100; `codes.luau` checks it) Code `UPDATE1`: 150 gems, its last day 15 November (`src/shared/Features/Codes.luau`); in the place and published · **10 min**
+- [x] AF2. **[d1v]** (done 14 Oct 21:50; Roblox's public games API reads the new name and the description's new first lines) The experience's name becomes "🎃 [UPDATE 1] Defend a Base! [TD]" and the description opens with what Update 1 brings and the code · **10 min**
+- [x] AF3. **[d1v]** (done 14 Oct 21:52: an announcement "UPDATE 1 IS LIVE!" with the code, "Send notification to all members" ticked. The group has 2 members. Its description still says "+1 Cannon Per Click" and "12 worlds": not changed, nobody asked) A shout on the Astral Crafts group · **5 min**
