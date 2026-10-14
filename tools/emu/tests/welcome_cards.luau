@@ -106,8 +106,15 @@ local face = textOf(view.fanSlot)
 print("  BUTTON: " .. face)
 check(string.find(face, "LIKE + GROUP", 1, true) ~= nil, "it is labelled LIKE + GROUP")
 check(string.find(face, `+{Config.Fan.gems}`, 1, true) ~= nil, "with the gems on it")
-check(string.find(face, "👍", 1, true) ~= nil, "and a thumbs up (the glyph, until the sheet has its picture)")
--- The gem is the atlas picture: here it counts as loaded, so its glyph is hidden behind it.
+-- The thumbs up and the gem are atlas pictures (sheet I since 14 Oct): here they count as loaded, so the glyphs
+-- under them are hidden.
+local pictures = {}
+for _, image in view.fanSlot:GetDescendants() do
+	if image:IsA("ImageLabel") and image.Image == "rbxassetid://108746036087589" then
+		table.insert(pictures, image)
+	end
+end
+check(#pictures >= 1, "and the thumbs up with the group's faces, from sheet I")
 check(view.fanSlot:FindFirstChildWhichIsA("ImageLabel", true) ~= nil, "and a gem")
 check(view.cardGui.Enabled == false, "and nothing has opened by itself")
 

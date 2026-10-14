@@ -28,9 +28,9 @@ UI.Atlases = {
 	f = "rbxassetid://92148934171613",
 	g = "rbxassetid://89245700421390",
 	h = "rbxassetid://133537584728505",
-	-- Sheet I (14 Oct, docs/ICONS.md): the LIKE + GROUP button and the pictures Update 1 was missing. Not uploaded
-	-- yet: until it is, its names fall back to the stand-ins in ICON_ALIASES.
-	i = "",
+	-- Sheet I (14 Oct, docs/ICONS.md): the LIKE + GROUP button and the pictures Update 1 was missing. Uploaded to
+	-- OhYaani's account on 14 Oct, like sheets A and B.
+	i = "rbxassetid://108746036087589",
 }
 
 local hex = Color3.fromHex

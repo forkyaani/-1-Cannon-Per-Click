@@ -92,6 +92,6 @@ ASPcDvQHMmTK5YdU463s5rBhHV5p1j55cdMSS4h5qYjyOWt5R33c1-oUCeDfRHhy8z5S11uE. Cells:
 like_group (thumbs up with the group's faces: the button's picture), like_heart, group; world_multiverse,
 world_timewarp, world_infinity, tower_drill; tower_wildfire, tower_quake, visit, private; admin, gem_trade,
 price_cut, star. `assets/ui/atlas-i.png`, original in `assets/ui/sheets/sheet-i.png`.
-Until it is uploaded (`UI.Atlases.i` is ""), the worlds and towers show the stand-ins in `STAND_INS` in
-`src/client/UI.luau` and the LIKE + GROUP button shows its 👍 glyph.
+Uploaded on 14 Oct to OhYaani's account as Image 108746036087589 (`UI.Atlases.i`). Should a sheet's id ever be
+"", the worlds and towers fall back to `STAND_INS` in `src/client/UI.luau` and the LIKE + GROUP button to its 👍.
 
