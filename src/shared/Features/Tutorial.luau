@@ -222,7 +222,7 @@ Tutorial.Outro = { "group", "like" }
 Tutorial.FanButton = {
 	label = "LIKE + GROUP",
 	amount = `+{fan.gems}`,
-	icon = "like", -- the atlas picture (docs/ICONS.md); until the sheet has it, the glyph stands in
+	icon = "like_group", -- sheet I's thumbs up with the group's faces (docs/ICONS.md); the glyph stands in until it is uploaded
 	glyph = "👍",
 }
 Tutorial.FanCard = {

@@ -84,3 +84,14 @@ each sheet is listed above. Not yet uploaded to Roblox or wired into `UI.icon` (
 Known weak spots, not regenerated: sheet H (enchantments) has glow halos and no white sticker edge, unlike
 the others; sheet F's last cell (fusion) reads as a gatling gun; sheet D was cut with tolerance 65 because it
 came back with a tile behind each icon, and a faint dark fringe is left on a few.
+
+## Sheet I (14 Oct 2026)
+
+For the LIKE + GROUP button (AA2) and the pictures Update 1 was missing; one sheet, 20 credits, generation id
+ASPcDvQHMmTK5YdU463s5rBhHV5p1j55cdMSS4h5qYjyOWt5R33c1-oUCeDfRHhy8z5S11uE. Cells: like (thumbs up with a gem),
+like_group (thumbs up with the group's faces: the button's picture), like_heart, group; world_multiverse,
+world_timewarp, world_infinity, tower_drill; tower_wildfire, tower_quake, visit, private; admin, gem_trade,
+price_cut, star. `assets/ui/atlas-i.png`, original in `assets/ui/sheets/sheet-i.png`.
+Until it is uploaded (`UI.Atlases.i` is ""), the worlds and towers show the stand-ins in `STAND_INS` in
+`src/client/UI.luau` and the LIKE + GROUP button shows its 👍 glyph.
+

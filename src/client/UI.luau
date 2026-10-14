@@ -28,6 +28,9 @@ UI.Atlases = {
 	f = "rbxassetid://92148934171613",
 	g = "rbxassetid://89245700421390",
 	h = "rbxassetid://133537584728505",
+	-- Sheet I (14 Oct, docs/ICONS.md): the LIKE + GROUP button and the pictures Update 1 was missing. Not uploaded
+	-- yet: until it is, its names fall back to the stand-ins in ICON_ALIASES.
+	i = "",
 }
 
 local hex = Color3.fromHex
@@ -751,6 +754,10 @@ local ICONS = {
 	ench_splinter = { "h", 0, 1 }, ench_frostbite = { "h", 1, 1 }, ench_ember = { "h", 2, 1 }, ench_chain = { "h", 3, 1 },
 	ench_executioner = { "h", 0, 2 }, ench_greed = { "h", 1, 2 }, ench_treasure = { "h", 2, 2 }, ench_gemfinder = { "h", 3, 2 },
 	ench_lucky = { "h", 0, 3 }, ench_sweettooth = { "h", 1, 3 }, ench_longshot = { "h", 2, 3 }, ench_guardian = { "h", 3, 3 },
+	like = { "i", 0, 0 }, like_group = { "i", 1, 0 }, like_heart = { "i", 2, 0 }, group = { "i", 3, 0 },
+	world_multiverse = { "i", 0, 1 }, world_timewarp = { "i", 1, 1 }, world_infinity = { "i", 2, 1 }, tower_drill = { "i", 3, 1 },
+	tower_wildfire = { "i", 0, 2 }, tower_quake = { "i", 1, 2 }, visit = { "i", 2, 2 }, private = { "i", 3, 2 },
+	admin = { "i", 0, 3 }, gem_trade = { "i", 1, 3 }, price_cut = { "i", 2, 3 }, star = { "i", 3, 3 },
 }
 
 -- A picture from the atlas. `fallback` is what stands in for it (a glyph, a code-drawn shape): it stays
@@ -762,15 +769,19 @@ local ICON_ALIASES = {
 	pumpkincrate = "crate_pumpkin", cursedcrate = "crate_cursed",
 	mission_upgrades = "upgrade", mission_kills = "monster", mission_bosses = "boss", mission_waves = "wave",
 	mission_hatches = "hatch",
-	-- Worlds 13 to 15 have no medallion on sheet F yet: the nearest picture stands in for each.
+}
+-- Stand-ins for pictures on a sheet that is not uploaded yet (sheet I): used only while that sheet has no id.
+local STAND_INS = {
 	world_multiverse = "portal", world_timewarp = "clock", world_infinity = "crown",
-	-- The towers of 12 Oct have no picture of their own yet: each borrows the picture of a kind it is close to.
 	tower_drill = "tower_gatling", tower_wildfire = "tower_flame", tower_quake = "tower_mortar",
 }
 
 function UI.icon(name: string?, props, fallback: GuiObject?): ImageLabel?
 	name = name and (ICON_ALIASES[name] or name)
 	local cell = name and ICONS[name]
+	if name and STAND_INS[name] and (not cell or UI.Atlases[cell[1]] == "") then
+		cell = ICONS[STAND_INS[name]]
+	end
 	local atlas = cell and UI.Atlases[cell[1]]
 	if not atlas or atlas == "" then
 		return nil
